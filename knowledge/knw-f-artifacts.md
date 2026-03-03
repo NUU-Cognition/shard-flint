@@ -228,6 +228,7 @@ claude-sessions:
 - When you **create** a new artifact
 - When you **substantively edit** an artifact (status changes, content additions)
 - Do NOT track when you only read a file
+- Do NOT track on session init — reading files at startup is not a substantive edit
 
 ## Wikilinks
 
