@@ -1,12 +1,18 @@
-version: "1.0.0"
+version: "0.1.0"
 name: Flint
 shorthand: f
-description: Core agent environment for Flint workspaces. Defines how agents navigate, read shards, follow templates, manage sessions, and work with artifacts.
+description: Core agent environment for Flint workspaces. Defines shard rules, template rules, workspace conventions, and note types.
 
 install:
   - source: (System) Flint Init.md
     dest: Mesh/(System) Flint Init.md
     once: true
-
-folders:
-  - Mesh/Notes/
+  - source: otemp-f-default.md
+    dest: "Shards/(System) Obsidian Templates/otmp-f-note.md"
+    once: true
+  - source: otmp-f-concept.md
+    dest: "Shards/(System) Obsidian Templates/otmp-f-concept.md"
+    once: true
+  - source: otmp-f-record.md
+    dest: "Shards/(System) Obsidian Templates/otmp-f-record.md"
+    once: true

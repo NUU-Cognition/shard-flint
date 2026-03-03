@@ -1,204 +1,128 @@
 # Flint Agent Environment
 
-You are a terminal-based AI agent operating inside a Flint workspace. This shard defines your foundational capabilities — how to navigate the workspace, use shards, read templates, manage sessions, and create artifacts.
+You are a terminal-based AI agent operating inside a Flint. 
 
-## Your Environment
+# Flint
+
+A Flint is a workspace — a directory managed by the Flint CLI that organizes human knowledge and agent capabilities together. It contains a `Mesh/` & `Media/` content layer, a `Shards/` capabilities layer, and optionally `Subflints/` for nested workspaces. A Flint can reference external codebases and resources via `flint.toml`. Everything you read, write, and create lives inside the Flint.
+
+# Mesh
+
+The Mesh is a data structure which is a list of markdown files that reference each other and media. It is the content layer of a Flint — everything under `Mesh/` and `Media/`. It holds typed artifacts (`(Task)`, `(Plan)`, `(Notepad)`, etc.), notes, dashboards, system files, and archives. `Mesh/Types/` organizes artifacts by type into subfolders. `Mesh/Notes/` holds free-form notes. `Mesh/Archive/` stores completed work. Dashboards (`(Dashboard) *.md`) are live DataviewJS views that aggregate artifacts. `Media/` holds non-markdown files (images, PDFs, etc.). All workspace content goes into the Mesh — never write outside of it.
+
+# Shards
+
+Shards are cognitive programs — self-contained packages that extend what an agent can do inside a Flint. Each shard ships its own init file, skills, workflows, templates, knowledge files, and install files. Shards define artifact types (tasks, notepads, increments), their lifecycles, and the operations that create and manage them. Without shards, a Flint is just an empty workspace. With shards, it becomes a structured environment for planning, building, and tracking work.
+
+## Shard Rules
+
+Shards extend your capabilities. Each shard is a self-contained unit with its own context, skills, templates, workflows, and knowledge. **You must follow these rules strictly.**
+
+1. **Load before use.** Always read a shard's init file before using any of its skills, workflows, or templates. No exceptions.
+2. **On-demand only.** Never load all shards. Only init shards relevant to the current task.
+3. **Init gives you the rules.** A shard's init file defines what the shard does, its lifecycle, its file types, and how to use them. Read it fully.
+4. **Skills are atomic.** Skills are single-purpose tasks with no human checkpoints. Follow the skill's actions exactly.
+5. **Workflows have stages.** Workflows are multi-step tasks with human review points between stages. Do not skip stages.
+6. **Knowledge is reference.** Knowledge files contain deep reference material. Read them when you need detailed understanding.
+
+### Loading a Shard
+
+```
+@Shards/[Name]/init-[shorthand].md       # Load context (ALWAYS first)
+@Shards/[Name]/skills/sk-[sh]-[name].md  # Use a skill
+@Shards/[Name]/workflows/wkfl-[sh]-[name].md  # Use a workflow
+@Shards/[Name]/templates/tmp-[sh]-[name].md   # Read a template
+@Shards/[Name]/knowledge/knw-[sh]-[name].md   # Read knowledge
+```
+
+**Discovering shards**: List `Shards/` or run `flint shard list`.
+
+### Shard File Types
+
+| Pattern | Purpose |
+|---------|---------|
+| `shard.yaml` | Manifest — name, version, dependencies, install behavior |
+| `init-[sh].md` | Context — load first, defines shard rules |
+| `sk-[sh]-[name].md` | Skill — atomic task, follow actions exactly |
+| `wkfl-[sh]-[name].md` | Workflow — multi-stage, human review between stages |
+| `tmp-[sh]-[name].md` | Template — structural guide for creating artifacts |
+| `knw-[sh]-[name].md` | Knowledge — deep reference material |
+| `ast-[sh]-[name].[ext]` | Asset — non-markdown files |
+
+## Template Rules
+
+Templates define how to create artifacts. When you encounter an artifact with a `template` field in frontmatter, or when a skill/workflow tells you to use a template, **follow these rules strictly.**
+
+1. **Find and read the template first.** Search for `tmp-[sh]-[name]-[version].md` in the shard's `templates/` folder.
+2. **Templates are instructions, not scaffolds.** They tell you what to generate. Do not copy them verbatim.
+3. **Replace all placeholders.** Generated text has no brackets. Follow the instruction inside each placeholder.
+4. **Never output comments.** `/* */` blocks are for your understanding only.
+5. **Respect the structure.** The template defines sections, ordering, and what fields to include.
+## Required Reading
+
+**MANDATORY.** After loading this init, you MUST read all four knowledge files before doing anything else. These are not optional references — they contain the conventions you need to operate correctly. Read them now.
+
+1. [[knw-f-artifacts]] — Frontmatter, tags, naming, notes, session tracking
+2. [[knw-f-templates]] — Complete template syntax reference
+3. [[knw-f-cli]] — Flint CLI commands relevant to agent workflows
+
+Do not skip any. Do not skim. Read each file fully before proceeding with any task.
+
+## Agent Environment
 
 - **Working directory**: Flint root (parent of `Mesh/`, `Shards/`, etc.)
 - **Capabilities**: Read/write files, run shell commands, search codebase
 - **Context window**: Limited — load files on demand, never assume prior knowledge
 - **Session**: Stateless — each conversation starts fresh
 
-## First Action
+### First Action
 
-Always read `Mesh/(System) Flint Init.md` first. It contains:
-- What this Flint is about
-- How to navigate it
-- What shards are installed
-- Flint-specific instructions and workspace references
-
-## Workspace Structure
-
-```
-Flint Root/
-├── .flint/                    # Internal config (don't edit directly)
-├── Mesh/                      # All workspace content
-│   ├── (System) Flint Init.md # Workspace overview (read first)
-│   ├── (Dashboard) *.md       # DataviewJS dashboards
-│   ├── Types/                 # Typed artifacts by category
-│   │   ├── Tasks/
-│   │   ├── Plans/
-│   │   ├── Notepads/
-│   │   ├── Increments/
-│   │   └── ...
-│   ├── Notes/                 # Concept notes (untyped)
-│   ├── Archive/               # Completed/archived artifacts
-│   └── ...                    # Other workspace content
-├── Shards/                    # Installed shards (capabilities)
-│   ├── Core/
-│   ├── Projects/
-│   ├── (Dev) My Shard/        # Dev shards (local authoring)
-│   └── ...
-├── Subflints/                 # Nested Flint workspaces
-└── flint.toml                 # Flint configuration
-```
-
-For deep knowledge about workspace structure, see [[knw-f-workspace]].
-
-## Navigation
-
-Search for files directly rather than browsing directory trees. Use:
-- `mesh query --tag X` — Find notes by tag
-- File name patterns — Most artifacts follow `(Type) NNN Name.md`
-- Glob search — Find files by pattern
-
-## Shard System
-
-Shards extend your capabilities with context, skills, templates, workflows, and knowledge. Each shard is a self-contained unit focused on one domain.
-
-**Loading shards**: Shards are loaded **on demand**, not all at once. Only init shards relevant to the current task.
-
-1. Load context: `@Shards/[Name]/init-[shorthand].md`
-2. Use skills: `@Shards/[Name]/skills/sk-[shorthand]-[name].md`
-3. Use workflows: `@Shards/[Name]/workflows/wkfl-[shorthand]-[name].md`
-4. Use templates: `@Shards/[Name]/templates/tmp-[shorthand]-[name].md`
-5. Read knowledge: `@Shards/[Name]/knowledge/knw-[shorthand]-[name].md`
-
-**Discovering shards**: List the folders in `Shards/` or run `flint shard list`.
-
-**Important**: Always read a shard's init file before using any of its skills, workflows, or templates.
-
-### Shard File Types
-
-| Pattern | Purpose | When to Use |
-|---------|---------|-------------|
-| `shard.yaml` | Shard manifest | Defines name, version, dependencies, install behavior |
-| `init-[sh].md` | Context file | Load when you need that shard's capabilities |
-| `sk-[sh]-[name].md` | Skill | Atomic, single-purpose tasks (no human checkpoints) |
-| `wkfl-[sh]-[name].md` | Workflow | Multi-stage tasks with human review points |
-| `tmp-[sh]-[name].md` | Template | Structural guide for creating artifacts |
-| `knw-[sh]-[name].md` | Knowledge | Deep reference material on a topic |
-| `ast-[sh]-[name].[ext]` | Asset | Non-markdown files (images, scripts, data) |
-
-## Files and Artifacts
-
-### Typed Artifacts
-
-Files inside Flint are typed using a prefix: `(Type) NNN Name.md`
-
-```
-(Task) 076 Implement authentication.md
-(Plan) 003 Shard Registry.md
-(Notepad) 015 Planning session.md
-(Increment) 3.2.1 - Feature development.md
-```
-
-**ID generation**: Use `flint helper type newnumber <Type>` to get the next available number (zero-padded, 3 digits).
-
-```bash
-TASKNUM=$(flint helper type newnumber Task)
-# Creates: (Task) $TASKNUM My Task.md
-```
-
-**File location**: When creating typed files, check whether a folder for that type exists (e.g., `Mesh/Types/Tasks/`). If so, create the file there.
-
-### Concept Notes (Untyped)
-
-Notes without a `(Type)` prefix are **concept notes** — atomic, evergreen notes that capture a single idea. They live in `Mesh/Notes/` and follow [[tmp-f-note]].
-
-Key principles:
-- **Atomic** — one concept per note; two ideas = two notes, linked
-- **Concept-oriented** — title IS the concept, a complete phrase
-- **Densely linked** — every note should `[[link]]` to related concepts
-- **Associative** — no forced hierarchy; structure emerges from links
-- **Evolving** — revisit, refine, extend over time
-
-Use [[sk-f-create_note]] to create concept notes. Always check `Mesh/Notes/` first to avoid duplicates.
-
-## Template Syntax
-
-When editing an artifact with a `template` field in its frontmatter, find and read the corresponding template file. Templates use a special syntax for agent generation.
-
-For the complete template syntax reference, see [[knw-f-templates]]. Quick summary:
-
-| Pattern | Meaning | Output |
-|---------|---------|--------|
-| `[instruction]` | Generate text per instruction | Plain text (no brackets) |
-| `[opt1\|opt2\|...]` | Pick one option | Selected option |
-| `[opt1 (desc)\|opt2 (desc)]` | Options with descriptions | Selected option (no desc) |
-| `[[instruction]]` | Generate an Obsidian wikilink | `[[Document Title]]` |
-| `(continue)` | Repeat preceding pattern if needed | More items or stop |
-| `/* comment */` | Agent-only instruction | Not included in output |
-
-## Frontmatter Conventions
-
-All typed artifacts include standard YAML frontmatter. For the complete reference, see [[knw-f-artifacts]]. Key fields:
-
-```yaml
-id: [uuid]                           # Permanent identifier
-tags:                                 # Classification
-  - "#[type]"                        # e.g., #task, #notepad
-  - "#[shard]/[artifact]"            # e.g., #proj/task
-status: [state]                       # Lifecycle state
-increment: [[parent increment]]       # Parent version (if inc shard installed)
-template: tmp-[sh]-[name]            # Template this artifact follows
-[agent]-sessions:                     # Session tracking
-  - [session-id]
-```
+Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is about, how to navigate it, what shards are installed, and workspace-specific instructions.
 
 ### Session Tracking
 
 When editing files with frontmatter, append your session ID to the `[agent]-sessions` field:
-- If you are a Claude session: `claude-sessions: [your-session-id]`
-- If you are a Codex session: `codex-sessions: [your-session-id]`
+- Claude session: `claude-sessions: [your-session-id]`
+- Codex session: `codex-sessions: [your-session-id]`
 - If the field doesn't exist, create it. If it exists, append your ID.
 
-## Operating Principles
+### Operating Principles
 
 1. **Read before writing** — understand existing patterns before making changes
 2. **Follow naming conventions** — use existing patterns for file names, tags, and structure
 3. **Tag documents appropriately** — every artifact gets proper tags
 4. **Write outputs to Mesh/** — all workspace content lives under Mesh/
-5. **Use relative paths** — from flint root
+5. **Search, don't browse** — find files by name/tag, not by walking directories
 6. **Load shards on demand** — don't load what you don't need
-7. **Search, don't browse** — find files by name/tag, not by walking directories
 
-## Available Commands
+### Available Commands
+
+See [[knw-f-cli]] for the full CLI reference. Most commonly used:
 
 ```bash
-# Flint CLI
-flint shard list                      # List installed shards
-flint shard <shorthand>               # Show shard info
 flint helper type newnumber <Type>    # Get next artifact number
-
-# Mesh CLI
-mesh query --tag <tag>                # Find notes by tag
-mesh compile <file>                   # Compile a mesh document
-
-# Standard tools
-git, npm, pnpm, etc.                  # Standard development tools
+flint shard list                      # List installed shards
 ```
 
 ## Skills
 
 | Skill | File | Purpose |
 |-------|------|---------|
-| Create Note | `sk-f-create_note.md` | Create an evergreen concept note |
-| Init Update | `sk-f-init_update.md` | Update the Flint Init from current session |
-| Init Full Update | `sk-f-init_full_update.md` | Research entire Flint and rewrite Init |
-| Upgrade | `sk-f-upgrade.md` | Upgrade Flint to latest version |
+| Init Update | `sk-f-init_update.md` | Update the Flint Init from current session changes |
+| Init Full Update | `sk-f-init_full_update.md` | Research entire Flint and rewrite Init from scratch |
 
 ## Templates
 
 | Template | File | Purpose |
 |----------|------|---------|
-| Concept Note | `tmp-f-note.md` | Atomic evergreen concept note |
-| Flint Init | `tmp-f-flint_init.md` | `(System) Flint Init.md` structure |
+| Flint Init | `tmp-f-flint_init-v0.1.md` | Structure for `(System) Flint Init.md` |
+| Concept Note | `tmp-f-concept-v0.1.md` | Concept note — atomic idea, densely linked |
+| Record Note | `tmp-f-record-v0.1.md` | Record note — fact, event, or observation |
 
 ## Knowledge
 
-| Knowledge | File | Topic |
-|-----------|------|-------|
-| Workspace Structure | `knw-f-workspace.md` | Flint workspace anatomy and conventions |
-| Template Syntax | `knw-f-templates.md` | Complete guide to reading and generating from templates |
-| Artifact Conventions | `knw-f-artifacts.md` | Frontmatter, tags, status, naming, session tracking |
+| Knowledge            | File                 | Purpose                                                 |
+| -------------------- | -------------------- | ------------------------------------------------------- |
+| Template Syntax      | `knw-f-templates.md` | Complete guide to reading and generating from templates |
+| Artifact Conventions | `knw-f-artifacts.md` | Frontmatter, tags, naming, notes, session tracking      |
+| CLI Reference        | `knw-f-cli.md`       | Flint CLI commands for agent workflows                  |

@@ -4,23 +4,36 @@ Complete reference for reading and generating content from Flint templates. Temp
 
 ## What Templates Are
 
-A template is a markdown file that describes how to create an artifact. It is NOT a copy-paste scaffold. Templates contain:
+A template is a markdown file that describes how to create an artifact. It is NOT a copy-paste scaffold. 
+
+Templates contain:
+
+```markdown, @tmp-<shorthand>-<name>-<version>.md
+# File: Location/To/File Name.md
+
+\`\`\`markdown
+
+*Template instructions*
+
+\`\`\`
+```
+
 - A **filename pattern** showing where and how to name the output file
 - **Agent comments** (`/* */`) explaining intent and rules
 - **Placeholders** (`[instruction]`) that agents replace with generated content
 - **Structure** that the generated artifact should follow
 
-Templates live in `Shards/[Name]/templates/` and are referenced by their filename stem (e.g., `tmp-proj-task`).
+Templates live in `Shards/[Name]/templates/` and are referenced by their filename stem (e.g., `tmp-proj-task-v0.1`).
 
 ## Reading a Template
 
 When you encounter an artifact with a `template` field in its frontmatter:
 
 ```yaml
-template: tmp-proj-task
+template: "[[tmp-proj-task-v0.1]]"
 ```
 
-1. Search for a file named `tmp-proj-task.md` in any shard's `templates/` folder
+1. Search for a file named `tmp-proj-task-v0.1.md` in any shard's `templates/` folder
 2. Read the template to understand the artifact's structure
 3. Use the template's patterns to guide any edits or additions
 
@@ -84,6 +97,16 @@ Output:      - [[Task 104 Implement shard pull]]
 
 The generated link should be the exact title of the target markdown file (without the `.md` extension).
 
+#### Important! 
+
+When in YAML, the hyperlinked must by wrapped in quotation marks. 
+
+```markdown
+---
+hyperlink: "[[hyperlink]]"
+---
+```
+
 ### Continue: `(continue)`
 
 Parenthetical "continue" means "repeat the preceding pattern if there are more items":
@@ -132,18 +155,14 @@ Templates use code fences to wrap the template body. The outer fence shows the r
 
 \`\`\`markdown
 ---
-id: [generate-uuid4]
-status: [draft|todo|in-progress]
+yaml
 ---
 
-# Context
-
-[Description of task context]
+body
 \`\`\`
 ```
 
 The agent creates a file at the specified path with the content between the fences, replacing all placeholders.
-
 ## Template Conventions
 
 ### The `template` Field
@@ -151,7 +170,7 @@ The agent creates a file at the specified path with the content between the fenc
 Every artifact created from a template includes a `template` field in its frontmatter:
 
 ```yaml
-template: tmp-proj-task
+template: "[[tmp-proj-task-v0.1]]"
 ```
 
 This is the filename stem of the template (without `.md`). It creates a permanent link between the artifact and its template definition.
@@ -161,14 +180,15 @@ This is the filename stem of the template (without `.md`). It creates a permanen
 Templates include `[agent]-sessions` as a placeholder:
 
 ```yaml
-[agent]-sessions:
+[agent]-sessions: 
+  - "[[agent-session-uuid]]"
 ```
 
 Replace `[agent]` with your agent type (`claude`, `codex`, etc.) and add your session ID:
 
 ```yaml
 claude-sessions:
-  - abc123-def456
+  - "[[154d8abd-6089-4b1d-9969-6cb51dfe926b]]"
 ```
 
 ### UUID Generation

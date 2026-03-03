@@ -16,10 +16,5 @@ No active increments or workspaces yet.
 ## Navigation
 
 - `Mesh/` — All workspace content
+- `Media/` — All media documents
 - `Shards/` — Installed capabilities
-
-## Shards
-
-Run `flint shard list` to see installed shards.
-
-**Load shards on-demand:** Read `Shards/[Name]/init-[shorthand].md`
