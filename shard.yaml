@@ -1,3 +1,4 @@
+shard-spec: "0.1.0"
 version: "0.1.0"
 name: Flint
 shorthand: f
@@ -7,8 +8,8 @@ install:
   - source: (System) Flint Init.md
     dest: Mesh/(System) Flint Init.md
     once: true
-  - source: otemp-f-default.md
-    dest: "Shards/(System) Obsidian Templates/otmp-f-note.md"
+  - source: otmp-f-default.md
+    dest: "Shards/(System) Obsidian Templates/otmp-f-default.md"
     once: true
   - source: otmp-f-concept.md
     dest: "Shards/(System) Obsidian Templates/otmp-f-concept.md"
