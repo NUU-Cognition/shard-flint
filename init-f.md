@@ -60,7 +60,7 @@ Templates define how to create artifacts. When you encounter an artifact with a 
 5. **Respect the structure.** The template defines sections, ordering, and what fields to include.
 ## Required Reading
 
-**MANDATORY.** After loading this init, you MUST read all four knowledge files before doing anything else. These are not optional references — they contain the conventions you need to operate correctly. Read them now.
+**MANDATORY.** After loading this init, you MUST read all four knowledge files before doing anything else. These are not optional references — they contain the conventions you need to operate correctly. Read them now. DO NOT USE A SUBAGENT. YOU MUST READ DIRECTLY IN FULL. 
 
 1. [[knw-f-artifacts]] — Frontmatter, tags, naming, notes, session tracking
 2. [[knw-f-templates]] — Complete template syntax reference
