@@ -36,6 +36,15 @@ flint subflint                        # Manage subflints (nested Flints)
 flint connection                      # Manage connections to other Flints
 ```
 
+## Send / Inbox
+
+```bash
+flint send <target> <title> <instructions> <files...>  # Send files to another Flint's inbox as a bundle
+flint send "My Other Flint" "Auth Migration" "Move tasks to Tasks/" file1.md file2.md
+```
+
+Files land in the target Flint's `Inbox/(Bundle) Title/` directory. Use [[sk-f-inbox_process]] to process incoming bundles.
+
 ## Other Useful Commands
 
 ```bash

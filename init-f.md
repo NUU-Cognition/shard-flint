@@ -110,6 +110,8 @@ flint shard list                      # List installed shards
 |-------|------|---------|
 | Init Update | `sk-f-init_update.md` | Update the Flint Init from current session changes |
 | Init Full Update | `sk-f-init_full_update.md` | Research entire Flint and rewrite Init from scratch |
+| Send to Inbox | `sk-f-inbox_send.md` | Gather files for a topic and send them to another Flint |
+| Process Inbox | `sk-f-inbox_process.md` | Process incoming bundles from `Inbox/` into `Mesh/` |
 
 ## Templates
 

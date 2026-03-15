@@ -1,5 +1,5 @@
 shard-spec: "0.1.0"
-version: "0.1.2"
+version: "0.1.3"
 name: Flint
 shorthand: f
 description: Core agent environment for Flint workspaces. Defines shard rules, template rules, workspace conventions, and note types.
