@@ -13,6 +13,8 @@ tags:
 [agent]-sessions:
 created: YYYY-MM-DD
 template: "[[tmp-f-record-v0.1]]"
+authors: /* from .flint/identity.json; omit if no identity set */
+  - "[[@Person Name]]"
 ---
 
 [The fact, event, or observation being recorded.]

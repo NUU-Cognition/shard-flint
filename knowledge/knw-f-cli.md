@@ -10,6 +10,13 @@ flint helper type newnumber Task      # → 119
 flint helper type newnumber Notepad   # → 034
 ```
 
+## Identity
+
+```bash
+flint whoami "Name"                      # Set person identity → .flint/identity.json + Mesh/People/@Name.md
+flint whoami                             # Show current person identity
+```
+
 ## Shard Management
 
 ```bash

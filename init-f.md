@@ -79,6 +79,26 @@ Do not skip any. Do not skim. Read each file fully before proceeding with any ta
 
 Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is about, how to navigate it, what shards are installed, and workspace-specific instructions.
 
+### Identity
+
+A Flint can have a **person identity** — a binding between the current operator and a `Mesh/People/@Person.md` file. This is set per-machine via `flint whoami "Name"` and stored in `.flint/identity.json` (gitignored).
+
+```bash
+flint whoami "Nathan Luo"    # Set identity → .flint/identity.json
+flint whoami                 # Show current identity
+```
+
+**When creating or editing artifacts**, read `.flint/identity.json` and populate the `authors` frontmatter field with the person as a wikilink:
+
+```yaml
+authors:
+  - "[[@Nathan Luo]]"
+```
+
+- `authors` is a list (supports multiple people collaborating on one artifact)
+- If no identity is set (no `.flint/identity.json`), omit the `authors` field
+- Person files live in `Mesh/People/` with the `@` prefix convention
+
 ### Session Tracking
 
 When editing files with frontmatter, append your session ID to the `[agent]-sessions` field:

@@ -80,6 +80,8 @@ claude-sessions:
   - "[[154d8abd-6089-4b1d-9969-6cb51dfe926b]]"
   - "[[60be4985-9cd6-42f1-8245-e56c1ad68324]]"
 template: "[[tmp-proj-task-v0.1]]"
+authors:
+  - "[[@Nathan Luo]]"
 ---
 ```
 
@@ -99,6 +101,7 @@ template: "[[tmp-proj-task-v0.1]]"
 | `due`               | ISO 8601 date       | Deadline                                    |
 | `completed`         | ISO 8601 date       | Completion date                             |
 | `priority`          | `low\|medium\|high` | Priority level                              |
+| `authors`           | string[]            | Person wikilinks from `.flint/identity.json` |
 | `[agent]-sessions`  | string[]            | Session IDs of agents that edited this file |
 
 ## Tags
@@ -229,6 +232,41 @@ claude-sessions:
 - When you **substantively edit** an artifact (status changes, content additions)
 - Do NOT track when you only read a file
 - Do NOT track on session init — reading files at startup is not a substantive edit
+
+## Authorship
+
+Artifacts track who created or substantively edited them via the `authors` frontmatter field.
+
+### How It Works
+
+1. Read `.flint/identity.json` to get the current person (e.g. `@Nathan Luo`)
+2. When creating an artifact, add the person as a wikilink to `authors`
+3. When substantively editing an artifact, add the person if not already listed
+4. If no identity is set (file doesn't exist), omit the `authors` field entirely
+
+```yaml
+authors:
+  - "[[@Nathan Luo]]"
+  - "[[@Even Zhang]]"
+```
+
+### Person Files
+
+People are represented by marker files in `Mesh/People/`:
+
+```
+Mesh/People/@Nathan Luo.md
+Mesh/People/@Even Zhang.md
+```
+
+The `@` prefix is the naming convention. These files can be empty — the filename IS the identity. The `flint whoami "Name"` command creates the person file and writes `.flint/identity.json`.
+
+### Rules
+
+- `authors` is always a list (even with one person)
+- The person is the author, not the agent — agents act *on behalf of* the person
+- Do NOT add authors when only reading a file
+- Do NOT confuse authors with `[agent]-sessions` — sessions track agent involvement, authors track human attribution
 
 ## Wikilinks
 

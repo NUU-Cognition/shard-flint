@@ -12,6 +12,8 @@ tags:
   - "#note/concept"
 [agent]-sessions:
 template: "[[tmp-f-concept-v0.1]]"
+authors: /* from .flint/identity.json; omit if no identity set */
+  - "[[@Person Name]]"
 ---
 
 [Core assertion or concept definition in 1-3 sentences.]
