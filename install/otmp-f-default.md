@@ -1,5 +1,5 @@
 ---
 id: <%* tR += crypto.randomUUID() %>
 tags:
-  - "#note/default"
+  - "#note"
 ---

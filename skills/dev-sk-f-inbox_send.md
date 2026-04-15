@@ -1,4 +1,8 @@
-This skill belongs to the Flint shard. Ensure you have [[init-f]] in context before continuing.
+---
+description: "Gather files for a topic and send to another Flint"
+---
+
+Run `flint shard start-dev f` if you haven't already.
 
 # Skill: Send to Inbox
 

@@ -1,4 +1,8 @@
-This skill belongs to the Flint shard. Ensure you have [[init-f]] in context before continuing.
+---
+description: "Process incoming bundles from Inbox into Mesh"
+---
+
+Run `flint shard start-dev f` if you haven't already.
 
 # Skill: Process Inbox
 

@@ -1,4 +1,8 @@
-This skill belongs to the Flint shard. Ensure you have [[init-f]] in context before continuing.
+---
+description: "Research entire Flint and rewrite Init from scratch"
+---
+
+Run `flint shard start-dev f` if you haven't already.
 
 # Skill: Full Flint Init Update
 
@@ -30,7 +34,7 @@ Perform a comprehensive research pass across the entire Flint workspace and rewr
    - Workspace references with paths
    - Development commands
 
-3. **Rewrite the Init.** Generate a complete new `Mesh/(System) Flint Init.md` following [[tmp-f-flint_init]]. Replace the existing file entirely.
+3. **Rewrite the Init.** Generate a complete new `Mesh/(System) Flint Init.md` following [[dev-tmp-f-flint_init]]. Replace the existing file entirely.
 
 # Output
 

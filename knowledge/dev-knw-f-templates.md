@@ -1,3 +1,7 @@
+---
+description: "Complete template syntax reference for reading and generating artifacts"
+---
+
 # Knowledge: Template Syntax
 
 Complete reference for reading and generating content from Flint templates. Templates are instructions for agents — they define the structure and format of artifacts.
@@ -177,17 +181,17 @@ This is the filename stem of the template (without `.md`). It creates a permanen
 
 ### Session Tracking
 
-Templates include `[agent]-sessions` as a placeholder:
+Templates include `orbh-sessions` as a placeholder:
 
 ```yaml
-[agent]-sessions: 
+orbh-sessions:
   - "[[agent-session-uuid]]"
 ```
 
-Replace `[agent]` with your agent type (`claude`, `codex`, etc.) and add your session ID:
+Add your session ID when creating or substantively editing an artifact:
 
 ```yaml
-claude-sessions:
+orbh-sessions:
   - "[[154d8abd-6089-4b1d-9969-6cb51dfe926b]]"
 ```
 

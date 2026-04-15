@@ -1,4 +1,8 @@
-This skill belongs to the Flint shard. Ensure you have [[init-f]] in context before continuing.
+---
+description: "Update Flint Init from current session changes"
+---
+
+Run `flint shard start-dev f` if you haven't already.
 
 # Skill: Update Flint Init
 
@@ -16,8 +20,9 @@ Update `Mesh/(System) Flint Init.md` to reflect changes made during the current 
    - Active workspaces may have been added or completed
    - Recent milestones may need updating
    - Navigation references may need additions
+   - Mandates may have been added, deactivated, or changed — update the `### Mandates` table to list only active mandates with their one-line condition summary
 3. Update only the sections that need changes — don't rewrite the entire file
-4. Preserve the document's structure and follow [[tmp-f-flint_init]]
+4. Preserve the document's structure and follow [[dev-tmp-f-flint_init]]
 
 # Output
 

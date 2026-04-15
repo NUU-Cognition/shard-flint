@@ -1,3 +1,7 @@
+---
+description: "Frontmatter, tags, naming, notes, and session tracking conventions"
+---
+
 # Knowledge: Artifact Conventions
 
 Complete reference for artifact frontmatter, tags, naming, notes, and session tracking in Flint workspaces.
@@ -76,7 +80,7 @@ increment: "[[(Increment) 3.16.0 - Shard Registry]]"
 due: 2026-03-01
 completed:
 priority: high
-claude-sessions:
+orbh-sessions:
   - "[[154d8abd-6089-4b1d-9969-6cb51dfe926b]]"
   - "[[60be4985-9cd6-42f1-8245-e56c1ad68324]]"
 template: "[[tmp-proj-task-v0.1]]"
@@ -102,7 +106,7 @@ authors:
 | `completed`         | ISO 8601 date       | Completion date                             |
 | `priority`          | `low\|medium\|high` | Priority level                              |
 | `authors`           | string[]            | Person wikilinks from `.flint/identity.json` |
-| `[agent]-sessions`  | string[]            | Session IDs of agents that edited this file |
+| `orbh-sessions`     | string[]            | Session IDs of agents that edited this file |
 
 ## Tags
 
@@ -137,7 +141,7 @@ Notes are the base unit of free-form content in a Flint. They live in `Mesh/Note
 
 ### Base Note
 
-Any file in `Mesh/Notes/` with an `id` in frontmatter. A note is just a block of text — no required structure beyond having an ID and tags. The default Obsidian template (`otmp-f-note`) creates bare notes with just a UUID.
+Any file in `Mesh/Notes/` with an `id` in frontmatter. A note is just a block of text — no required structure beyond having an ID and tags. The default Obsidian template (`dev-otmp-f-note`) creates bare notes with just a UUID.
 
 ### Concept Notes
 
@@ -150,7 +154,7 @@ A concept note represents an atomic idea — a single concept that can be linked
 | Links | Densely linked to related concepts via `[[wikilinks]]` |
 | Lifecycle | Evergreen — revisit, refine, extend over time |
 
-Use [[tmp-f-concept]] when creating concept notes.
+Use [[dev-tmp-f-concept]] when creating concept notes.
 
 Good titles: `Context windows limit agent memory`, `Shards extend agent capabilities`
 Bad titles: `Notes from meeting`, `Misc thoughts`
@@ -166,7 +170,7 @@ A record note captures a fact, event, or observation. Tagged `#note/record`.
 | Links | Links to related concepts or artifacts |
 | Lifecycle | Generally static once created |
 
-Use [[tmp-f-record]] when creating record notes.
+Use [[dev-tmp-f-record]] when creating record notes.
 
 Good titles: `API rate limit is 1000 requests per minute`, `2026-03-03 Shard template install verified`
 
@@ -200,31 +204,28 @@ active → archived
 3. **Skills/workflows handle transitions** — don't change status ad-hoc; use the appropriate skill
 ## Session Tracking
 
-Agents track their involvement by appending session IDs to the frontmatter.
+Agents track their involvement by appending session IDs to the `orbh-sessions` frontmatter field. All agent types use a single unified field.
 
 ### How It Works
 
-1. When editing a file with frontmatter, check for a `[agent]-sessions` field
+1. When editing a file with frontmatter, check for an `orbh-sessions` field
 2. If it exists, append your session ID to the list
-3. If it doesn't exist, skip this step
+3. If it doesn't exist, create it with your session ID
 
 ```yaml
 # Before
-claude-sessions:
+orbh-sessions:
   - "[[previous-session-id]]"
 
 # After
-claude-sessions:
+orbh-sessions:
   - "[[previous-session-id]]"
   - "[[your-current-session-id]]"
 ```
 
-### Agent Types
+### Unified Field
 
-| Agent             | Field             |
-| ----------------- | ----------------- |
-| Claude (terminal) | `claude-sessions` |
-| Codex             | `codex-sessions`  |
+All agent runtimes (Claude Code, Codex, etc.) write to the same `orbh-sessions` field. There are no per-runtime session fields. Orbh sessions map to native runtime sessions via the runs model in the session JSON.
 
 ### When to Track
 

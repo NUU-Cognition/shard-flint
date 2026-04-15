@@ -1,10 +1,14 @@
+---
+description: "Flint Init system file structure"
+---
+
 # Filename: Mesh/(System) Flint Init.md
 
 /* This is the workspace overview file. It's the first thing every agent reads when starting a session.
    It should provide a complete, concise overview of what this Flint is about and how to navigate it.
 
    This file is installed with `once: true` — it gets created once, then maintained by agents using
-   [[sk-f-init_update]] and [[sk-f-init_full_update]].
+   [[dev-sk-f-init_update]] and [[dev-sk-f-init_full_update]].
 */
 
 ```markdown

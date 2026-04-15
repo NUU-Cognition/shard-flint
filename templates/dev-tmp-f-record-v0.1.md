@@ -1,3 +1,7 @@
+---
+description: "Record note — fact, event, or observation"
+---
+
 # Filename: Mesh/[Record Title].md
 
 /* Records capture facts, events, or observations.
@@ -12,7 +16,7 @@ tags:
   - "#note/record"
 [agent]-sessions:
 created: YYYY-MM-DD
-template: "[[tmp-f-record-v0.1]]"
+template: "[[dev-tmp-f-record-v0.1]]"
 authors: /* from .flint/identity.json; omit if no identity set */
   - "[[@Person Name]]"
 ---

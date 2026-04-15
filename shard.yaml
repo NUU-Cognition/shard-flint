@@ -1,19 +1,13 @@
-shard-spec: "0.1.0"
-version: "0.1.3"
+shard-spec: "0.2.0"
+version: "0.1.5"
 name: Flint
 shorthand: f
 description: Core agent environment for Flint workspaces. Defines shard rules, template rules, workspace conventions, and note types.
 
 install:
-  - source: (System) Flint Init.md
+  - source: inst-f-flint_init.md
     dest: Mesh/(System) Flint Init.md
     mode: once
   - source: otmp-f-default.md
-    dest: "Shards/(System) Obsidian Templates/otmp-f-default.md"
-    mode: once
-  - source: otmp-f-concept.md
-    dest: "Shards/(System) Obsidian Templates/otmp-f-concept.md"
-    mode: once
-  - source: otmp-f-record.md
-    dest: "Shards/(System) Obsidian Templates/otmp-f-record.md"
-    mode: once
+    dest: Shards/(Shards) Obsidian Templates/otmp-f-default.md
+    mode: force

@@ -1,3 +1,7 @@
+---
+description: "Concept note — atomic idea with dense links"
+---
+
 # Filename: Mesh/[Concept Title].md
 
 /* The title IS the concept — a complete phrase that stands alone.
@@ -11,7 +15,7 @@ id: [generate-uuid]
 tags:
   - "#note/concept"
 [agent]-sessions:
-template: "[[tmp-f-concept-v0.1]]"
+template: "[[dev-tmp-f-concept-v0.1]]"
 authors: /* from .flint/identity.json; omit if no identity set */
   - "[[@Person Name]]"
 ---
