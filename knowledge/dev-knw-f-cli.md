@@ -14,6 +14,41 @@ flint helper type newnumber Task      # → 119
 flint helper type newnumber Notepad   # → 034
 ```
 
+## Rename
+
+**Always use this** when renaming a Mesh artifact — it renames the file **and** rewrites every `[[Old Name]]` wikilink (including `[[Old|alias]]`, `[[Old#heading]]`, and `![[Old]]` embeds) under `Mesh/` in one pass. Don't do manual `mv` + grep/sed for artifact renames.
+
+```bash
+flint helper rename "<old>" "<new>"   # Rename by title; Unix-mv arg order (old first, new second)
+flint helper rename "(Task) 050 Smoke Old" "Smoke New"
+flint helper rename "(Task) 050 Smoke Old" "(Task) 050 Smoke New"   # Full new name also accepted
+```
+
+Behavior:
+- Looks up `<old>` by Mesh title (Mesh names are globally unique — no ambiguity).
+- Strips any `(Type) ` / `(Type) NNN ` / `(Type) X.N - ` prefix from `<new>`, keeping the prefix from the old filename.
+- Scope is `Mesh/` only. Files under `Shards/`, `Inbox/`, `Exports/`, `Archive/`, etc. are not touched.
+- Errors if the destination already exists or `<old>` is not found.
+
+Also available over HTTP as `POST /api/artifacts/by-title/<old>/rename` with body `{"title": "<new>"}`.
+
+## Delete
+
+**Always use this** when deleting a Mesh artifact — it removes the file **and** strips every wikilink to it from YAML frontmatter across `Mesh/` (scalar fields like `parent:` get their key removed; array fields like `artifact-refs:` get filtered, and the key is removed if the array becomes empty). **Body text is left untouched by design** — a dangling `[[Name]]` in prose is a harmless informational trace, not a structural invariant.
+
+```bash
+flint helper delete "<name>"                # Hard delete (rm) + frontmatter sweep
+flint helper delete "<name>" --archive      # Move to Mesh/Archive/ instead of hard-deleting
+flint helper delete "(Task) 042 Old Plan"
+```
+
+Behavior:
+- Looks up `<name>` by Mesh title (Mesh names are globally unique).
+- Scope is `Mesh/` only. `Shards/`, `Inbox/`, `Exports/`, `Archive/`, etc. are not touched.
+- Errors if `<name>` is not found.
+
+Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=true|false`.
+
 ## Identity
 
 ```bash

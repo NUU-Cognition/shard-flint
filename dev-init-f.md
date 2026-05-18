@@ -1,5 +1,6 @@
 ---
 required-reading:
+  - knowledge/dev-knw-f-models.md
   - knowledge/dev-knw-f-artifacts.md
   - knowledge/dev-knw-f-templates.md
   - knowledge/dev-knw-f-types.md
@@ -170,6 +171,27 @@ xdg-open "obsidian://open?vault=<vault-name-url-encoded>&file=<relative-path-url
 
 Derive the vault name from the Flint root directory (e.g. `(Flint) NUU Flint`). URL-encode both the vault name and the file path. Use the appropriate command for the current platform.
 
+### Deleting Artifacts
+
+**Always use `flint helper delete "<name>"`** when removing a Mesh artifact. Never `rm` the file directly or rely on Obsidian's delete.
+
+What it does:
+- Removes the file from disk.
+- **Sweeps every YAML frontmatter wikilink** to that artifact across `Mesh/`: scalar fields (e.g. `parent:`, `increment:`) lose their key; array fields (e.g. `artifact-refs:`, `orbh-sessions:`) get filtered, and the key is removed if the array becomes empty.
+- **Leaves body text alone by design** — a dangling `[[Name]]` in prose is an informational trace, not a structural invariant.
+
+```bash
+flint helper delete "<name>"              # Hard delete + frontmatter sweep
+flint helper delete "<name>" --archive    # Soft delete: move to Mesh/Archive/ instead of removing
+```
+
+Rules:
+- Looks up by Mesh title (Mesh names are globally unique).
+- Scope is `Mesh/` only — `Shards/`, `Inbox/`, `Exports/`, `Archive/` are untouched.
+- Errors if the name is not found — verify the title before retrying.
+
+See [[dev-knw-f-cli]] for the full CLI reference.
+
 ### Operating Principles
 
 1. **Read before writing** — understand existing patterns before making changes
@@ -186,6 +208,8 @@ See [[dev-knw-f-cli]] for the full CLI reference. Most commonly used:
 ```bash
 # Artifact helpers
 flint helper type newnumber <Type>    # Next artifact number (zero-padded, 3 digits)
+flint helper rename "<old>" "<new>"   # Rename a Mesh artifact + rewrite every [[Old]] wikilink under Mesh/
+flint helper delete "<name>"          # Delete artifact + strip every frontmatter wikilink to it (use --archive to soft-delete)
 
 # Identity
 flint whoami "Name"                   # Set person identity → .flint/identity.json
