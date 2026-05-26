@@ -2,6 +2,8 @@
 description: "Run a shard migration file against the workspace, then mark it finished"
 ---
 
+> [!important] THIS FILE IS AN INSTRUCTION. WHEN REFERENCED IT IS MEANT TO BE TAKEN AS AN ACTION.
+
 Run `flint shard start-dev f` if you haven't already.
 
 # Skill: Run Shard Migration

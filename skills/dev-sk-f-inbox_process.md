@@ -2,6 +2,8 @@
 description: "Process incoming bundles from Inbox into Mesh"
 ---
 
+> [!important] THIS FILE IS AN INSTRUCTION. WHEN REFERENCED IT IS MEANT TO BE TAKEN AS AN ACTION.
+
 Run `flint shard start-dev f` if you haven't already.
 
 # Skill: Process Inbox
