@@ -156,21 +156,6 @@ A Flint agent can run headless inside an Orbh session (no interactive terminal).
 
 Headless orchestration details (session lifecycle, status, interface keys, returning results) are owned by the Orbh shard — load `Shards/Orbh/init-foh.md` when operating in that context.
 
-### Obsidian Integration
-
-After creating an artifact, open it in Obsidian so the user can see it immediately. The vault name is the Flint's root directory name.
-
-```bash
-# macOS
-open "obsidian://open?vault=<vault-name-url-encoded>&file=<relative-path-url-encoded>"
-# Windows
-start "obsidian://open?vault=<vault-name-url-encoded>&file=<relative-path-url-encoded>"
-# Linux
-xdg-open "obsidian://open?vault=<vault-name-url-encoded>&file=<relative-path-url-encoded>"
-```
-
-Derive the vault name from the Flint root directory (e.g. `(Flint) NUU Flint`). URL-encode both the vault name and the file path. Use the appropriate command for the current platform.
-
 ### Deleting Artifacts
 
 **Always use `flint helper delete "<name>"`** when removing a Mesh artifact. Never `rm` the file directly or rely on Obsidian's delete.

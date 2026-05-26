@@ -6,9 +6,25 @@ Run `flint shard start-dev f` if you haven't already.
 
 # Skill: Stitch
 
-Construct a **stitch file** — a markdown file that bundles together everything the user wants stitched into a single exportable context. The file's body is a curated list of `[[wikilinks]]` to Mesh artifacts. Once created, the file is fed into `flint helper stitch` to resolve every link and copy the combined content to the clipboard for export to another LLM, document, or chat.
+Construct a **stitch file** — a markdown file that bundles together everything the user wants stitched into a single exportable context. The file's body is a curated list of `[[wikilinks]]` to Mesh artifacts **and/or `[[path/to/file]]` references to code or other files on disk**. Once created, the file is fed into `flint helper stitch` to resolve every link and copy the combined content to the clipboard for export to another LLM, document, or chat.
 
 This skill does NOT run `flint helper stitch` itself. It builds the input file and emits the exact command the user can paste into their terminal.
+
+## What `flint helper stitch` resolves
+
+The resolver branches on whether the wikilink target contains a `/`:
+
+| Target shape | Treated as | Resolution |
+|--------------|------------|------------|
+| `[[Title]]` (no slash) | **Mesh artifact** | Looked up by filename across `Mesh/`; matched artifact's body is stitched in |
+| `[[path/to/file]]` (contains a slash) | **File on disk** | Resolved as a path relative to the Flint root; file contents are read and stitched in |
+
+For path-style references:
+- **Markdown files** (`.md`) have their frontmatter stripped and body included verbatim.
+- **Code and other text files** are wrapped in a fenced code block with the language inferred from the extension (e.g. `.py` → `python`, `.tex` → `latex`, `.ts` → `typescript`, `.bib` → `bibtex`).
+- If the file does not exist on disk, the reference is reported as `unresolved` (same as a missing Mesh artifact).
+
+Use this to bundle source code alongside Mesh artifacts in a single stitched context — e.g. include `[[Workspace/Repos/<Repo Name>/src/main.py]]` next to the `(Task)` and `(Report)` that discuss it.
 
 # Input
 
@@ -22,7 +38,8 @@ This skill does NOT run `flint helper stitch` itself. It builds the input file a
 1. **Gather artifacts.** Unless the user gave an explicit list:
    - Search `Mesh/` for artifacts related to the topic — by filename, tags, frontmatter fields, and body content
    - Cast wide: typed artifacts (`(Task)`, `(Report)`, `(Notepad)`, `(Spec)`, `(Plan)`, etc.), notes, dashboards, system files, and metadata references
-   - Deduplicate; preserve a useful order (e.g. by type, then by number)
+   - **Also consider code/file references** when the topic involves a codebase — under `Workspace/Repos/<Repo>/...` or any other path under the Flint root. Include them as `[[path/from/flint/root/to/file.ext]]` wikilinks.
+   - Deduplicate; preserve a useful order (e.g. by type, then by number, then by file path)
 
 2. **Present and confirm.** Show the user:
    - The proposed stitch file title and target path
@@ -58,11 +75,18 @@ This skill does NOT run `flint helper stitch` itself. It builds the input file a
    - [[Artifact 1]]
    - [[Artifact 2]]
    - (continue)
+
+   ## Code
+
+   - [[Workspace/Repos/<Repo Name>/src/main.py]]
+   - [[Workspace/Repos/<Repo Name>/report/report.tex]]
+   - (continue)
    ```
 
    Notes on the body:
    - Anything that is NOT a `[[wikilink]]` is preserved verbatim in the stitched output as the leading section. Use this space to add context that the receiving LLM/reader should know about the bundle.
-   - Wikilinks may appear anywhere — `flint helper stitch` extracts them from the entire body. Grouping under headings (e.g. `## Tasks`, `## Reports`) is purely cosmetic.
+   - Wikilinks may appear anywhere — `flint helper stitch` extracts them from the entire body. Grouping under headings (e.g. `## Tasks`, `## Reports`, `## Code`) is purely cosmetic.
+   - **Mesh wikilinks** are bare titles with no slash: `[[(Task) 003 ...]]`. **Code/file wikilinks** are paths from the Flint root: `[[Workspace/Repos/<Repo>/src/foo.py]]`. The presence of `/` is what flips the resolver into file-on-disk mode.
    - Avoid putting example `[[Foo]]` wikilinks inside backticks if you do NOT want them resolved — `flint helper stitch` strips code spans before parsing, so backticked examples are correctly ignored. Use this to your advantage when documenting.
 
 5. **Emit the command.** Print the exact terminal command the user can copy-paste, quoting the path to handle spaces and parens:
@@ -72,8 +96,6 @@ This skill does NOT run `flint helper stitch` itself. It builds the input file a
    ```
 
    Also offer the `--print` variant for piping (`flint helper stitch --print "<path>" | pbcopy`-style workflows) and `--also-print` for both-clipboard-and-stdout.
-
-6. **Open in Obsidian** (optional — only if helpful in context). Use the platform-appropriate `obsidian://open?vault=...&file=...` URL so the user can review the file before stitching.
 
 # Output
 
