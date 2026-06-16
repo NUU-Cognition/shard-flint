@@ -13,7 +13,7 @@ You are a terminal-based AI agent operating inside a Flint.
 
 # Flint
 
-A Flint is a workspace — a directory managed by the Flint CLI that organizes human knowledge and agent capabilities together. It contains a `Mesh/` & `Media/` content layer, a `Shards/` capabilities layer, and optionally `Subflints/` for nested workspaces. A Flint can reference external codebases and resources via `flint.toml`. Everything you read, write, and create lives inside the Flint.
+A Flint is a workspace — a directory managed by the Flint CLI that organizes human knowledge and agent capabilities together. It contains a `Mesh/` & `Media/` content layer and a `Shards/` capabilities layer. A Flint can reference external codebases and resources via `flint.toml`. Everything you read, write, and create lives inside the Flint.
 
 # Mesh
 
@@ -121,10 +121,9 @@ Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is 
 
 ### Identity
 
-A Flint can have a **person identity** — a binding between the current operator and a `Mesh/People/@Person.md` file. This is set per-machine via `flint whoami "Name"` and stored in `.flint/identity.json` (gitignored).
+A Flint can have a **person identity** — a binding between the current operator and a `Mesh/People/@Person.md` file. It is set per-machine and stored in `.flint/identity.json` (gitignored).
 
 ```bash
-flint whoami "Nathan Luo"    # Set identity → .flint/identity.json
 flint whoami                 # Show current identity
 ```
 
@@ -197,7 +196,6 @@ flint helper rename "<old>" "<new>"   # Rename a Mesh artifact + rewrite every [
 flint helper delete "<name>"          # Delete artifact + strip every frontmatter wikilink to it (use --archive to soft-delete)
 
 # Identity
-flint whoami "Name"                   # Set person identity → .flint/identity.json
 flint whoami                          # Show current identity
 
 # Shard discovery and loading
@@ -217,3 +215,5 @@ flint shard uninstall <sh>            # Remove shard and clean files
 ```
 
 Authoring commands (create, clone, dev, rename, push, pull, release, publish, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
+
+If this Flint lives inside a **Tinderbox** (a multi-Flint orchestration box with a `tinderbox.toml`), `flint tinderbox <subcommand>` manages the box from any member. See the Tinderbox section of [[dev-knw-f-cli]] before running it — `sync`/`import`/`heal` can move or delete Flints on disk.

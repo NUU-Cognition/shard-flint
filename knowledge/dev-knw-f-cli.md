@@ -52,7 +52,6 @@ Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=
 ## Identity
 
 ```bash
-flint whoami "Name"                      # Set person identity → .flint/identity.json + Mesh/People/@Name.md
 flint whoami                             # Show current person identity
 ```
 
@@ -62,7 +61,6 @@ flint whoami                             # Show current person identity
 flint shard list                      # List installed + dev shards
 flint shard info <sh>                 # Detailed shard info
 flint shard status <sh>               # Status + pending migrations
-flint shard check                     # Check shard system integrity
 ```
 
 ## Shard Manifests (loading shards)
@@ -86,7 +84,6 @@ flint shard install --all-dev         # (Re)install all dev shards into their Sh
 flint shard reinstall <name>          # Re-run install entries (after new install files are added)
 flint shard update                    # Update installed shards to latest published versions
 flint shard uninstall <sh>            # Remove shard and clean files
-flint shard heal <name>               # Auto-repair shard issues (folders, manifest, naming, deps)
 ```
 
 ## Shard Versioning
@@ -125,9 +122,56 @@ flint sync                            # Sync all shards and mods from flint.toml
 
 ```bash
 flint workspace                       # Manage workspace references (codebases, URLs)
-flint subflint                        # Manage subflints (nested Flints)
-flint connection                      # Manage connections to other Flints
 ```
+
+## Tinderbox
+
+A **Tinderbox** is a directory that orchestrates multiple Flints (and shared codebases) as one declared, git-versioned unit. Its `tinderbox.toml` lists member Flints, shared repos, and connections; `flint tinderbox` materializes that declaration on the current machine. **This workspace IS a Tinderbox** — these commands operate on the box that contains it.
+
+- **Members** are declared in `[flints]` in one of two modes. **own** = the Tinderbox owns the Flint and clones it from a git URL into a folder under the box root. **reference** = the Flint lives in the global registry (`registry:Name`); sync points at the existing copy rather than cloning. Members may be `required` (a missing one is an error) or `optional` (a missing one is only a warning — for remotes a given machine cannot reach).
+- **Repos** (`[repos]`) are non-Flint codebases shared across the box. Same own/reference modes (clone into `Repos/` vs point at a local path). Each repo is exposed to `all` member Flints or a named subset, and surfaces in each exposed Flint as a codebase reference.
+- **Connections** (`[connections]`) declare which Flints reference each other — directional edges (`from -> to`) or interconnected groups. Sync wires these as references inside the child Flints.
+
+All `flint tinderbox` subcommands walk up from the current directory to find `tinderbox.toml`, so they run from the box root or from inside any member Flint.
+
+```bash
+# Lifecycle
+flint tinderbox init <name>                  # Bootstrap an empty Tinderbox here
+flint tinderbox init --from <url>            # Clone an existing Tinderbox from git, then sync (name comes from its toml)
+flint tinderbox start <name> [path]          # Promote the current Flint into a new Tinderbox (moves it under the box)
+flint tinderbox import <name> [source]       # MOVE a registered Flint into this box (or declare by URL if unregistered)
+flint tinderbox add <name> <source>          # Declare a Flint by git URL or registry:Name WITHOUT materializing (sync clones/references it)
+flint tinderbox remove <name>                # Eject a member: undeclare + strip wiring, keep it registered (--move-out <dir> relocates the folder)
+flint tinderbox rename <from> <to>           # Rename a member Flint (cascades connections/exposed-to/folder/registry)
+flint tinderbox rename --tinderbox <name>    # Rename the Tinderbox itself
+flint tinderbox dissolve                     # Tear down the box: eject every member (folders survive), strip wiring, remove tinderbox.toml
+
+# Sync, status, drift
+flint tinderbox sync                         # Materialize members, register them in Obsidian, wire connections + repos
+flint tinderbox status                       # Per-member: mode, tier, present, registered, connection fulfillment (+ Repos)
+flint tinderbox check                        # Detect drift between tinderbox.toml and disk (read-only; exits 1 on drift)
+flint tinderbox heal                         # Auto-fix drift (rewrites tinderbox.toml) then run a full sync — previews + confirms first
+
+# Repos and connections
+flint tinderbox repo add <name> <source>     # Clone a git repo into Repos/ (or path:<dir> reference) and expose it (--exposed-to, --mode)
+flint tinderbox repo remove <name>           # Drop a repo declaration + strip child references (--purge deletes the clone)
+flint tinderbox repo list                    # List declared repos: mode, location, present, exposed-to
+flint tinderbox connection add <from> <to>   # Declare a directional connection (or --group <names...> for an interconnected set)
+flint tinderbox connection remove <from> <to> # Remove a connection and strip the wired child references
+flint tinderbox connection list              # List declared connection edges and whether each is wired
+
+# Git and identity across the box
+flint tinderbox git sync                     # Sync the Tinderbox repo and run `flint git sync` in every member Flint
+flint tinderbox git publish <url>            # Add a remote and push the box's initial commit (renames branch to main; --yes skips confirm)
+flint tinderbox whoami <name>                # Propagate the person identity to every member Flint
+```
+
+**Sync flags:** `--dry-run` (preview clones/moves/deletes, change nothing), `--json` (machine-readable result/plan), `--full` (also run `flint sync` inside every member), `--only <names...>` / `--skip <names...>` (operate on a subset of declared members this run), `--yes` (accept prompts; deletes undeclared Flints that have saved work — needs `--force` for unsaved), `--delete-undeclared` (delete on-disk Flints not in the toml without prompting), `--no-open` (skip Obsidian registration). `status`/`check` also accept `--json`; `heal` accepts `--dry-run` and `--yes`.
+
+**Safety behaviors to know before running these:**
+- `sync` **materializes and can MOVE Flints on disk** — it clones missing own-mode members, and adopts/relocates a registry-matched member into the box (after verifying its git remote matches the declared source, with a prompt). `import` likewise **physically relocates** the Flint into the box (confirmed unless `--yes`).
+- `sync` can offer to **delete undeclared Flints** (on disk but not in the toml). It guards Flints with uncommitted/unpushed/no-remote work and prompts per-Flint; `--yes`/`--delete-undeclared` automate it, and `--force` is required to delete unsaved work.
+- `check` is read-only and reports drift (undeclared/missing/renamed members, broken materialization, stale registry/connections/repos). `heal` is the active repair — it **rewrites `tinderbox.toml` and runs a full sync**, so it previews the plan and confirms before applying (`--dry-run` to stop at the preview).
 
 ## Send / Inbox
 
@@ -141,8 +185,6 @@ Files land in the target Flint's `Inbox/(Bundle) Title/` directory. Use [[dev-sk
 ## Other Useful Commands
 
 ```bash
-flint repair                          # Repair flint to match current specs
 flint open                            # Open flint in configured applications
 flint export                          # Manage exports
-flint import                          # Manage imports from other flints
 ```

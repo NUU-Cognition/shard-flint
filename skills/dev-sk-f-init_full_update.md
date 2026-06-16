@@ -24,7 +24,6 @@ Perform a comprehensive research pass across the entire Flint workspace and rewr
    - Scan `Mesh/Types/Plans/` for active plans
    - Scan `Mesh/Types/Workspaces/` for active workspaces
    - Check workspace references (codebases, APIs) and their current state
-   - Check `Subflints/` for nested Flints
    - Read referenced codebases for development commands and current state
 
 2. **Synthesize findings.** Combine all research into a coherent overview:

@@ -260,7 +260,7 @@ Mesh/People/@Nathan Luo.md
 Mesh/People/@Even Zhang.md
 ```
 
-The `@` prefix is the naming convention. These files can be empty — the filename IS the identity. The `flint whoami "Name"` command creates the person file and writes `.flint/identity.json`.
+The `@` prefix is the naming convention. These files can be empty — the filename IS the identity. The per-machine identity binding lives in `.flint/identity.json`, which points at the matching person file.
 
 ### Rules
 
