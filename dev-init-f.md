@@ -121,21 +121,23 @@ Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is 
 
 ### Identity
 
-A Flint can have a **person identity** — a binding between the current operator and a `Mesh/People/@Person.md` file. It is set per-machine and stored in `.flint/identity.json` (gitignored).
+A Flint has a **person identity** — the operator's Name, bound to a `Mesh/People/@<Name>.md` file. The Name is **machine-global**, owned by the nuu CLI and stored in the shared `~/.nuucognition/config.toml` (the same value for every Flint on this machine). Set it once via first-run `flint setup`.
 
 ```bash
-flint whoami                 # Show current identity
+flint whoami                     # Show the operator Name + machine-name (and account status)
+flint config name "Your Name"    # Set the operator Name (routes to nuu)
 ```
 
-**When creating or editing artifacts**, read `.flint/identity.json` and populate the `authors` frontmatter field with the person as a wikilink:
+**When creating or editing artifacts**, resolve the operator Name (run `flint whoami`, or read `name` from `~/.nuucognition/config.toml`) and populate the `authors` frontmatter field with the person as a wikilink:
 
 ```yaml
 authors:
   - "[[@Nathan Luo]]"
 ```
 
+- The `@Person` is `@<Name>`; the `Mesh/People/@<Name>.md` marker is auto-created on first use.
 - `authors` is a list (supports multiple people collaborating on one artifact)
-- If no identity is set (no `.flint/identity.json`), omit the `authors` field
+- If no Name is set, omit the `authors` field (run `flint setup` to set it)
 - Person files live in `Mesh/People/` with the `@` prefix convention
 
 ### Session Tracking
@@ -196,7 +198,7 @@ flint helper rename "<old>" "<new>"   # Rename a Mesh artifact + rewrite every [
 flint helper delete "<name>"          # Delete artifact + strip every frontmatter wikilink to it (use --archive to soft-delete)
 
 # Identity
-flint whoami                          # Show current identity
+flint whoami                          # Show operator Name + machine-name (and account status)
 
 # Shard discovery and loading
 flint shard list                      # List installed + dev shards

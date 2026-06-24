@@ -17,7 +17,7 @@ tags:
 [agent]-sessions:
 created: YYYY-MM-DD
 template: "[[dev-tmp-f-record-v0.1]]"
-authors: /* from .flint/identity.json; omit if no identity set */
+authors: /* from the global operator Name (flint whoami); omit if no name set */
   - "[[@Person Name]]"
 ---
 

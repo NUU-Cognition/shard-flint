@@ -105,7 +105,7 @@ authors:
 | `due`               | ISO 8601 date       | Deadline                                    |
 | `completed`         | ISO 8601 date       | Completion date                             |
 | `priority`          | `low\|medium\|high` | Priority level                              |
-| `authors`           | string[]            | Person wikilinks from `.flint/identity.json` |
+| `authors`           | string[]            | Person wikilinks from the global operator Name (`flint whoami`) |
 | `orbh-sessions`     | string[]            | Session IDs of agents that edited this file |
 
 ## Tags
@@ -240,10 +240,10 @@ Artifacts track who created or substantively edited them via the `authors` front
 
 ### How It Works
 
-1. Read `.flint/identity.json` to get the current person (e.g. `@Nathan Luo`)
+1. Resolve the operator Name — run `flint whoami` (routes to `nuu whoami`), or read the `name` key from the shared `~/.nuucognition/config.toml` — and form the person as `@<Name>` (e.g. `@Nathan Luo`)
 2. When creating an artifact, add the person as a wikilink to `authors`
 3. When substantively editing an artifact, add the person if not already listed
-4. If no identity is set (file doesn't exist), omit the `authors` field entirely
+4. If no Name is set, omit the `authors` field entirely (the operator sets it with `flint setup` / `flint config name`)
 
 ```yaml
 authors:
@@ -260,7 +260,7 @@ Mesh/People/@Nathan Luo.md
 Mesh/People/@Even Zhang.md
 ```
 
-The `@` prefix is the naming convention. These files can be empty — the filename IS the identity. The per-machine identity binding lives in `.flint/identity.json`, which points at the matching person file.
+The `@` prefix is the naming convention. These files can be empty — the filename IS the identity, and the marker is auto-created on first use. The operator Name lives machine-globally in `~/.nuucognition/config.toml` (owned by the nuu CLI); the `@Person` is `@<Name>`.
 
 ### Rules
 

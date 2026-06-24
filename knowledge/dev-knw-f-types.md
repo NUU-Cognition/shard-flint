@@ -99,7 +99,7 @@ types:
   - Task                          # Installs type definition file
 
 folders:
-  - "Mesh/Types/Tasks (Task)"    # Creates artifact storage folder
+  - "Mesh/Types/Tasks"    # Creates artifact storage folder
   - Mesh/Archive/Tasks            # Creates archive folder
 ```
 
