@@ -91,18 +91,20 @@ Use this to bundle source code alongside Mesh artifacts in a single stitched con
    - **Mesh wikilinks** are bare titles with no slash: `[[(Task) 003 ...]]`. **Code/file wikilinks** are paths from the Flint root: `[[Workspace/Repos/<Repo>/src/foo.py]]`. The presence of `/` is what flips the resolver into file-on-disk mode.
    - Avoid putting example `[[Foo]]` wikilinks inside backticks if you do NOT want them resolved — `flint helper stitch` strips code spans before parsing, so backticked examples are correctly ignored. Use this to your advantage when documenting.
 
-5. **Emit the command.** Print the exact terminal command the user can copy-paste, quoting the path to handle spaces and parens:
+5. **Emit the command.** Print the exact terminal command the user can copy-paste, quoting the title to handle spaces and parens:
 
    ```
-   flint helper stitch "Mesh/Notes/(Stitch) <Title>.md"
+   flint helper stitch "(Stitch) <Title>"
    ```
 
-   Also offer the `--print` variant for piping (`flint helper stitch --print "<path>" | pbcopy`-style workflows) and `--also-print` for both-clipboard-and-stdout.
+   The argument is the stitch file's **Mesh title** (no path, no `.md`) — `flint helper stitch` looks it up by title across `Mesh/` (the same way `rename`/`delete` do). A path-style argument containing a `/` (e.g. `"Mesh/Notes/(Stitch) <Title>.md"`) is still accepted and read directly from disk for backwards compatibility.
+
+   Also offer the `--print` variant for piping (`flint helper stitch --print "<title>" | pbcopy`-style workflows) and `--also-print` for both-clipboard-and-stdout.
 
 # Output
 
 - A stitch file written to the chosen path (default `Mesh/Notes/(Stitch) <Title>.md`)
-- The exact `flint helper stitch "<path>"` command printed for the user to paste into their terminal
+- The exact `flint helper stitch "<Mesh Title>"` command printed for the user to paste into their terminal
 
 # Notes
 

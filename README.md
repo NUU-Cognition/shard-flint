@@ -15,8 +15,6 @@ Shards/(Dev) Flint/
     sk-f-init_full_update.md    # Full research & rewrite of Flint Init
   templates/
     tmp-f-flint_init-v0.1.md    # (System) Flint Init template
-    tmp-f-concept-v0.1.md       # Concept note template
-    tmp-f-record-v0.1.md        # Record note template
   knowledge/
     knw-f-workspace.md          # Workspace structure reference
     knw-f-templates.md          # Template syntax reference
@@ -25,8 +23,6 @@ Shards/(Dev) Flint/
   install/
     (System) Flint Init.md      # Default Flint Init for new workspaces
     otemp-f-default.md          # Obsidian template: bare note (UUID only)
-    otmp-f-concept.md           # Obsidian template: concept note
-    otmp-f-record.md            # Obsidian template: record note
 ```
 
 ## What This Shard Covers

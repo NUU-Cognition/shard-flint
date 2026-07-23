@@ -129,7 +129,7 @@ tags:
 ### Shard Tags
 
 Each shard defines its own tag namespace using its shorthand:
-- Flint (`f`): `#note`, `#note/concept`, `#note/record`
+- Flint (`f`): `#note` (see the Invironments shard for the `#ie/` structure namespace)
 - Projects (`proj`): `#proj/task`
 - Increments (`inc`): `#inc/stream`, `#inc/checkpoint`, `#inc/active`, `#inc/complete`
 - Notepad (`ntpd`): `#ntpd/notepad`
@@ -137,42 +137,7 @@ Each shard defines its own tag namespace using its shorthand:
 
 ## Notes
 
-Notes are the base unit of free-form content in a Flint. They live in `Mesh/Notes/` and are differentiated purely by tags.
-
-### Base Note
-
-Any file in `Mesh/Notes/` with an `id` in frontmatter. A note is just a block of text — no required structure beyond having an ID and tags. The default Obsidian template (`dev-otmp-f-note`) creates bare notes with just a UUID.
-
-### Concept Notes
-
-A concept note represents an atomic idea — a single concept that can be linked to other concepts. Tagged `#note/concept`.
-
-| Property | Rule |
-|----------|------|
-| Title | IS the concept — a complete phrase that stands alone |
-| Scope | One concept per note; two ideas = two notes, linked |
-| Links | Densely linked to related concepts via `[[wikilinks]]` |
-| Lifecycle | Evergreen — revisit, refine, extend over time |
-
-Use [[dev-tmp-f-concept]] when creating concept notes.
-
-Good titles: `Context windows limit agent memory`, `Shards extend agent capabilities`
-Bad titles: `Notes from meeting`, `Misc thoughts`
-
-### Record Notes
-
-A record note captures a fact, event, or observation. Tagged `#note/record`.
-
-| Property | Rule |
-|----------|------|
-| Title | Describes what was recorded |
-| Scope | One fact/event per note |
-| Links | Links to related concepts or artifacts |
-| Lifecycle | Generally static once created |
-
-Use [[dev-tmp-f-record]] when creating record notes.
-
-Good titles: `API rate limit is 1000 requests per minute`, `2026-03-03 Shard template install verified`
+Notes are the base unit of free-form content in a Flint — one editable model per file, tagged `#note`. **Note structure and placement are owned by the Invironments shard (`ie`)**, a dependency of Flint: every note carries exactly one `#ie/sections/<name>` tag saying which mesh section it lives in, and a note created with no destination goes to the **New** section (`Mesh/Main/`). Use `flint shard ie note` to create notes and [[tmp-ie-note-v0.1]] for their structure. There are no note subtypes — one flat `#note`, with structure added only when it pays off.
 
 ## Status Management
 
