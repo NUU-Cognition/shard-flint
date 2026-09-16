@@ -1,5 +1,7 @@
 ---
 description: "Flint CLI commands for agent workflows"
+orbh-sessions:
+  - "[[87347e6b-2363-4434-9a98-f1d641049fa7]]"
 ---
 
 # Knowledge: CLI Reference
@@ -13,6 +15,45 @@ flint helper type newnumber <Type>    # Next number for a typed artifact (zero-p
 flint helper type newnumber Task      # → 119
 flint helper type newnumber Notepad   # → 034
 ```
+
+## Session Markdown Pins
+
+Use pins to show important Markdown files first in the current session's finder. Open the finder with `Ctrl-]` then `o`.
+
+```bash
+flint helper pins set "Mesh/Types/Tasks/(Task) 687 Example.md" "Mesh/Notes/Design.md"
+flint helper pins add "Mesh/Notes/Decision.md"
+flint helper pins remove "Mesh/Notes/Decision.md"
+flint helper pins list
+flint helper pins clear
+flint helper pins list --session <id> --path /path/to/flint
+```
+
+The helper uses `ORBH_SESSION_ID` unless you pass `--session`. Use `--orb-root` or `--at` for an explicit store.
+It follows the current session's workspace after a shell directory change. It rejects a target from another Flint.
+
+`set` replaces the list in argument order. `add` appends new paths and removes duplicates. `remove` accepts missing files.
+`list` prints JSON. `clear` writes an empty list. Quote each filename, including its extension.
+
+Paths are relative to the Flint root. Absolute paths within that root also work.
+Additions must be readable `.md` or `.markdown` files of at most 2 MiB.
+Hidden paths, symbolic links, and dependency or build directories are outside the finder scope.
+The helper checks all additions before it writes. An invalid addition leaves the list unchanged.
+
+The session interface key `flint:markdown-pins` holds a JSON array of path strings. It is separate from `artifacts`.
+The helper uses the normal session setter, including manager routing and durable events.
+Pins stay with the session across resume and compaction. Child sessions start with their own list.
+
+The finder shows matching pins first in stored order. Other matches keep the usual fuzzy ranking.
+It refreshes pins while open. A missing file remains visible as unavailable.
+Renames do not update pins automatically. Remove the old path and add the new path after a rename.
+Malformed interface values produce an error without a write.
+
+Pins belong to the displayed session in Flint attach, interactive, and explicit transcript or detail views.
+A general cockpit list or picker has no pin owner. Standalone Orbh, Strike, and dashboards do not use these pins.
+
+Task workflows use `add` when `ORBH_SESSION_ID` is set. Keep completed tasks pinned until the session changes the list.
+Do not pin every file that an agent reads or edits.
 
 ## Rename
 
