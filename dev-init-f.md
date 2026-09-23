@@ -23,7 +23,7 @@ The Mesh is **flat** — folders are display only; structure lives in frontmatte
 
 # Shards
 
-Shards are cognitive programs — self-contained packages that extend what an agent can do inside a Flint. Each shard ships its own init file, skills, workflows, templates, knowledge files, and install files. Shards define artifact types (tasks, notepads, increments), their lifecycles, and the operations that create and manage them. Without shards, a Flint is just an empty workspace. With shards, it becomes a structured environment for planning, building, and tracking work.
+Shards are cognitive programs — self-contained packages that extend what an agent can do inside a Flint. A shard has a **source** (the files a person edits) and a **shard** (the built package that agents load). Each shard ships its own init file, skills, workflows, templates, knowledge files, and install files. Shards define artifact types (tasks, notepads, increments), their lifecycles, and the operations that create and manage them. Without shards, a Flint is just an empty workspace. With shards, it becomes a structured environment for planning, building, and tracking work.
 
 ## Shard Rules
 
@@ -38,7 +38,7 @@ Shards extend your capabilities. Each shard is a self-contained unit with its ow
 
 ### Loading a Shard
 
-Run `flint shard start <name>` to get the shard's manifest — it lists the init file, required reading, skills, workflows, templates, and knowledge files with descriptions. Read the init file and required reading files before using any capabilities.
+Run `flint shard start <name>` to get the shard's manifest — it lists the init file, required reading, skills, workflows, templates, and knowledge files with descriptions. Read the init file and required reading files before using any capabilities. `start` loads the shard (the build). When the source changed after the build, `start` prints a notice with `flint shard build <alias>` and loads the build anyway.
 
 ```
 @Shards/[Name]/init-[sh].md                        # Load context (ALWAYS first)
@@ -48,21 +48,23 @@ Run `flint shard start <name>` to get the shard's manifest — it lists the init
 @Shards/[Name]/knowledge/knw-[sh]-[name].md        # Read knowledge
 ```
 
-**Dev shards** live at `Shards/(Dev Remote) <Name>/` or `Shards/(Dev Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load the dev-prefixed files in those folders. See Lifecycle Modes below.
+**Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <name>` only when you edit it. See Source and Shard below.
 
 **Discovering shards**: List `Shards/` or run `flint shard list`.
 
-### Lifecycle Modes
+### Source and Shard
 
-Every shard is in one of three modes. The folder-name prefix signals the mode:
+Every shard has two entities. The folder name says which one a folder holds:
 
-| Mode | Folder | Editable? |
-|------|--------|-----------|
-| `installed` | `Shards/<Name>/` | No — overwritten on update |
-| `dev-remote` | `Shards/(Dev Remote) <Name>/` | Yes — changes pushed to origin |
-| `dev-local` | `Shards/(Dev Local) <Name>/` | Yes — no remote |
+| Entity | Folder | Editable? | Loaded by |
+|--------|--------|-----------|-----------|
+| The shard (the build) | `Shards/<Name>/` | No — overwritten by the next build or install | `flint shard start` |
+| A remote source | `Shards/(Source Remote) <Name>/` | Yes — a clone of a repository; changes are pushed to origin | `flint shard start-dev` |
+| A local source | `Shards/(Source Local) <Name>/` | Yes — no repository | `flint shard start-dev` |
 
-Dev and installed copies coexist. They are presences of one shard with one `id` (in `shard.yaml`), and the Flint keeps one record per shard: `<alias> = { id, source, ... }` in `flint.toml`, and `flint.json#shards[<id>]`. Source files inside dev folders are prefixed `dev-`; the installer strips the prefix when producing the installed copy. The one exception is the `install/` folder — its contents are literal payloads (dashboards, type definitions, Obsidian templates) and carry no `dev-` prefix.
+The shard id is `shard.yaml#id`; the source id is `shard.yaml#source.id`. The package address is `@org/shard/<name>`, and `@org/name` is its short form. `flint shard build <alias>` makes the shard from its source and strips the `dev-` prefix. The one exception is the `install/` folder — its contents are literal payloads (dashboards, type definitions, Obsidian templates) and carry no `dev-` prefix.
+
+The Flint keeps the shard state in three places: `flint.toml` holds the intent (`<alias> = "<spec>"`, or `{ source = "<spec>", git?, from = "source"?, use? }`); `flint.json#shards[<shard id>]` is the lock (the state: `published`, `snapshot`, or `edited`, with its proof); `.flint/shards.json` holds the facts of this machine. A reference to a shard is a package spec: `@org/name[@version][#place]`.
 
 ### Shard File Types
 
@@ -78,21 +80,21 @@ Dev and installed copies coexist. They are presences of one shard with one `id` 
 | `tmp-[sh]-[name]-v<X.X>.md` | Template — versioned structural guide for creating artifacts |
 | `knw-[sh]-[name].md` | Knowledge — deep reference material |
 | `ast-[sh]-[name].[ext]` | Asset — non-markdown files |
-| `mig-[sh]-<from>-to-<to>.md` | Migration — upgrade script when installed version bumps |
+| `mig-[sh]-<from>-to-<to>.md` | Migration — upgrade script when the version of the shard bumps |
 | `inst-[sh]-[name].md` | Install payload (under `install/`) — dashboards, system files, folder anchors; `dest` field in `shard.yaml` carries the literal target filename |
 | `otmp-[sh]-[name].md` | Obsidian template (under `install/`) — human-facing template for the Obsidian picker |
 | `type-[sh]-[type].md` | Type definition (under `install/`) — driven by `types:` field, installs to `Mesh/Metadata/Types/` |
 | `scripts/<name>.js` | Script — Node.js command, invoked via `flint shard <sh> <name>` |
 
-Dev-mode files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything under `install/` is the exception — `inst-`, `otmp-`, `type-` files carry no `dev-` prefix.
+Source files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything under `install/` is the exception — `inst-`, `otmp-`, `type-` files carry no `dev-` prefix.
 
 ### Shard Manifest
 
 Each shard has a `shard.yaml` at its root declaring identity, dependencies, and installation behavior:
 
-- `shard-spec`, `id`, `version`, `name`, `shorthand`, `description`
-- `formerNames`, `formerShorthands`, `of` — the rename history and the fork source, written by the CLI
-- `dependencies:` — other shards required: `{ source, id?, version? }` (e.g. `source: NUU-Cognition/shard-flint`)
+- `shard-spec`, `id` (the shard id), `org` (the org slug of the package), `source: { id, of? }` (the source id), `version`, `name`, `shorthand`, `description`
+- `formerNames`, `formerShorthands`, `of` — the rename history and the fork origin, written by the CLI
+- `dependencies:` — a map from package name to range (e.g. `"@nuu-cognition/flint": "^0.2"`)
 - `setup:` — `full | flint | local` when the shard needs one-time setup
 - `types:` — artifact types the shard manages (installs `(Type) ...` files to `Mesh/Metadata/Types/`)
 - `folders:` — artifact storage folders to create under `Mesh/`
@@ -204,21 +206,27 @@ flint helper delete "<name>"          # Delete artifact + strip every frontmatte
 flint whoami                          # Show operator Name + machine-name (and account status)
 
 # Shard discovery and loading (<ref> = alias, shorthand, id, or address)
-flint shard list                      # One row per shard: alias, shorthand, role, version, source, id
+flint shard list                      # One row per shard: alias, shorthand, state, version, address, id
 flint shard info <ref>                # Detailed shard info
-flint shard status <ref>              # Record, dependencies, checkout, pending migrations
-flint shard start <ref>               # Dynamic manifest (installed, interactive)
-flint shard start-dev <ref>           # Dynamic manifest (dev, interactive)
-flint shard hstart <ref>              # Dynamic manifest (installed, headless)
-flint shard hstart-dev <ref>          # Dynamic manifest (dev, headless)
+flint shard status <ref>              # Record, state, dependencies, Git state of the source, pending migrations
+flint shard start <ref>               # Dynamic manifest of the shard (interactive)
+flint shard start-dev <ref>           # Dynamic manifest of the source (interactive)
+flint shard hstart <ref>              # Dynamic manifest of the shard (headless)
+flint shard hstart-dev <ref>          # Dynamic manifest of the source (headless)
+flint resolve <spec>                  # Where a package is: this Flint, this machine, or the registry
 
 # Shard lifecycle
-flint shard install <source>          # Install from owner/repo, a path, or an address @/flint/<flint>/shard/<alias>
-flint shard install --all-dev         # (Re)install all dev shards
-flint shard update [<ref>]            # Update installed shards
-flint shard uninstall <ref>           # Remove shard and clean files
+flint shard install @org/name[@range][#place]   # Install a package (the registry, or a place)
+flint shard install --from-git <owner/repo[#ref]>   # Install from a Git location
+flint shard install --from-path <dir>           # Install from a folder on this machine
+flint shard build <ref>               # Build the shard from its source in this Flint
+flint shard install --all-dev         # Build the shard of every source
+flint shard update [<ref>]            # Move each shard to the highest version inside its range
+flint shard uninstall <ref>           # Remove the shard and clean files
 ```
 
-Authoring commands (create, id, rename, fork, clone, dev, push, pull, release, publish, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
+Authoring commands (create, build, dev, clone, release, fork, rename, id, push, pull, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
+
+> Old words: the "Dev Local" and "Dev Remote" folders are now the local source `(Source Local)` and the remote source `(Source Remote)`; a "dev shard" is a source; the "installed copy" is the shard (the build).
 
 If this Flint lives inside a **Tinderbox** (a multi-Flint orchestration box with a `tinderbox.toml`), `flint tinderbox <subcommand>` manages the box from any member. See the Tinderbox section of [[dev-knw-f-cli]] before running it — `sync`/`import`/`heal` can move or delete Flints on disk.

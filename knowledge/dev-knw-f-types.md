@@ -8,7 +8,7 @@ Complete reference for how shards declare, author, and install artifact type def
 
 ## Overview
 
-Every shard that manages an artifact type (Task, Notepad, Increment, etc.) ships a **type definition file** — a markdown document that describes the type's properties, lifecycle, templates, and naming conventions. These files live in the shard's `install/` folder and are installed into `Mesh/Metadata/Types/` during shard installation.
+Every shard that manages an artifact type (Task, Notepad, Increment, etc.) ships a **type definition file** — a markdown document that describes the type's properties, lifecycle, templates, and naming conventions. These files live in the `install/` folder of the source and of the shard, and the install (or the build) copies them into `Mesh/Metadata/Types/`.
 
 The `types:` field in `shard.yaml` drives this process. Each declared type maps to a source file by naming convention and installs to a shard-qualified destination.
 
@@ -52,7 +52,7 @@ Mesh/Metadata/Types/(Type) <Name> . <Subname> (<Shard Display Name> Shard).md
 
 - `(Type)` is a literal marker — all type definition files carry this type prefix
 - `<Name>` is the human-readable type name in Title Case
-- `<Shard Display Name>` is the shard's `name` field from `shard.yaml` (the Title, also when the shard is installed under another alias)
+- `<Shard Display Name>` is the shard's `name` field from `shard.yaml` (the Title, also when the shard has another alias in `flint.toml`)
 - ` Shard` is a literal suffix — part of the context qualifier
 - Subtypes use `. <Subname>` (dot-space separator) per MKD untyped subfile convention
 
@@ -65,7 +65,7 @@ Mesh/Metadata/Types/(Type) <Name> . <Subname> (<Shard Display Name> Shard).md
 | `Learning Report` | Learn | `(Type) Learning Report (Learn Shard).md` |
 | `Note.Concept` | Flint | `(Type) Note . Concept (Flint Shard).md` |
 
-The shard context qualifier prevents collisions — two shards with different Titles that declare the same type name produce distinct files. Two shards with one Title (installed under two aliases) share the destination; the second install keeps the first file.
+The shard context qualifier prevents collisions — two shards with different Titles that declare the same type name produce distinct files. Two shards with one Title (under two aliases) share the destination; the second install keeps the first file.
 
 ## shard.yaml Declaration
 
@@ -153,11 +153,11 @@ The manifest parser normalizes this to the string format automatically. The `sou
 
 ## Install Semantics
 
-- **Mode:** `once` — the installer copies the file only if the destination does not exist. Users may customize the installed copy.
+- **Mode:** `once` — the install copies the file only if the destination does not exist. Users may change the file in the Mesh.
 - **Template processing:** `{{uuid}}` and `{{date}}` placeholders are resolved at install time.
 - **ID preservation:** If the destination file already exists (on reinstall with force), the existing `id` is preserved.
-- **Readonly tag:** Every installed type file receives `#readonly` in its tags (also when the source is a Dev Local or a checkout).
-- **Record:** The install lists each type file in `flint.json#shards[<id>].payloads[]` with `kind: type`, `sha256`, `mode`, and the Mesh `id`. Health reads the type files from this record, not from the installed `shard.yaml`.
+- **Readonly tag:** Every installed type file receives `#readonly` in its tags (also when the shard is a build of a local or a remote source).
+- **Record:** The install lists each type file in `flint.json#shards[<id>].payloads[]` with `kind: type`, `sha256`, `mode`, and the Mesh `id`. Health reads the type files from this lock record, not from the `shard.yaml` of the build.
 - **Rename:** `flint shard rename <alias> --title` (and the `moved` heal of `flint sync` in a consumer Flint) moves the type file to the new qualifier. The file keeps its `id`, and the `[[wikilinks]]` to it follow.
-- **Reference:** A shard installed with `use = "reference"` still installs its type files into the Mesh.
+- **Reference:** A shard bound with `use = "reference"` (no build here) still installs its type files into the Mesh.
 - **Uninstall:** When a shard is removed, its unchanged type definition files are deleted. A changed file stays.

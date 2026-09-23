@@ -98,55 +98,82 @@ flint whoami                             # Show current person identity
 
 ## Shard Discovery
 
-A `<ref>` is the alias of the shard (its key in `flint.toml`), its shorthand, its full id (`<uuid>` or `@<uuid>`), or its address (`@/flint/<flint>/shard/<alias>`). The alias wins. A reference that names two shards is refused as `ambiguous`, with one next command per shard in the form `@<id>`.
+A shard is a package with two entities: the **source** (the files a person edits, in `Shards/(Source Local) <Name>/` or `Shards/(Source Remote) <Name>/`) and the **shard** (the build in `Shards/<Name>/`). `flint.toml` is the intent, `flint.json#shards[<shard id>]` is the lock, and the NUU Shard Registry gives the versions of each package.
+
+A `<ref>` is the alias of the shard (its key in `flint.toml`), its shorthand, its full id (`<uuid>` or `@<uuid>`), or its package address (`@org/name` or `@org/shard/name`). The alias wins. A reference that names two shards is refused as `ambiguous`, with one next command per shard in the form `@<id>`.
 
 ```bash
-flint shard list [--json]             # One row per shard: ALIAS SHORTHAND ROLE VERSION SOURCE ID
-flint shard info <ref> [--json]       # Detailed shard info (identity, source, folder, dependencies)
-flint shard status <ref> [--json]     # Record, dependencies, checkout state, pending migrations
+flint shard list [--json]             # One row per shard: ALIAS SHORTHAND STATE VERSION ADDRESS ID
+flint shard info <ref> [--json]       # Detailed shard info (identity, state, folders, dependencies)
+flint shard status <ref> [--json]     # Record, state, request, Git state of the source, dependencies, pending migrations
 flint shard status <ref> --health     # Also run the health check
-flint resolve <address>               # Resolve a shard address to its entity and presences
+flint resolve <spec>                  # The answer of the walk: this Flint, this machine, or the registry
 ```
 
-`--json`: `list` gives `{ rows: ShardRow[] }`; `status` and `info` give one `ShardRow` plus `details`. A `ShardRow` is `{ id, held, alias, shorthand, name, address, role, source, version, edit, use, folders: { installed?, checkout? }, setup, pending }`.
+```
+$ flint shard list
+Shards
+  ALIAS      SHORTHAND   STATE         VERSION     ADDRESS                         ID
+  notepad    ntpd        published     1.1.3       @nuu-cognition/shard/notepad    76d64e3e
+  sketchpad  skp         edited        1.0.0       @nuu-cognition/shard/sketchpad  35e92068 (held)
+  drafts     d           no build      0.1.0       @nuu-cognition/shard/drafts     5696b7b7
+```
+
+`--json`: `list` gives `{ rows: ShardRow[] }`; `status` and `info` give one `ShardRow` plus `details`. A `ShardRow` is `{ id, held, alias, shorthand, name, address, request, state, version, from, registry, use, folders: { shard?, source? }, setup, pending }`.
 
 ## Shard Manifests (loading shards)
 
 `start` / `hstart` assemble a dynamic manifest from each shard's files (init, skills, workflows, templates, knowledge — read from each file's `description` frontmatter). Run the variant that matches your mode.
 
 ```bash
-flint shard start <ref>               # Installed, interactive (loads init-<sh>.md)
-flint shard start-dev <ref>           # Dev, interactive (loads dev-init-<sh>.md)
-flint shard hstart <ref>              # Installed, headless (loads hinit-<sh>.md, prefers hwkfl-*)
-flint shard hstart-dev <ref>          # Dev, headless
+flint shard start <ref>               # The shard, interactive (loads init-<sh>.md)
+flint shard start-dev <ref>           # The source, interactive (loads dev-init-<sh>.md)
+flint shard hstart <ref>              # The shard, headless (loads hinit-<sh>.md, prefers hwkfl-*)
+flint shard hstart-dev <ref>          # The source, headless
 ```
 
-The header names the shard: `# Shard: <Name> (<sh>) v<version>`, then `Id`, `Alias`, `Address`, `Role` (`canon`, `draft`, `replica`, or `reference`), and `Source`. A shard installed by reference (`use = "reference"`) loads from its source folder.
+The header names the shard: `# Shard: <Name> (<sh>) v<version>`, then `Id`, `Alias`, `Address`, `State` (`published <tag>`, `snapshot <sha>`, or `edited`), and `Request`. A shard bound by reference (`use = "reference"`) loads from the folder in its place. `start` of a shard whose source changed after the build prints `The build of <alias> is stale: its source changed after the build. Next: flint shard build <alias>` on stderr and loads the build.
 
 The start refuses and exits 1 when setup is required (it prints `FORCE SETUP`, the setup file, and the `SETUP REQUIRED` banner), when shard migrations are pending, or when a reference source is gone. With `--json` the output is one JSON value, also on a refusal (`{ ok: false, code, reason, next }`).
 
 ## Shard Install / Update
 
+A package spec is `@org/name[@version][#place]`: `@version` is an exact version, a caret range (`^1.1`), or a tilde range (`~1.1.3`); `#place` is a machine name or the slug of a Flint on this machine. Without `#place`, the install asks this Flint, this machine, then the registry.
+
 ```bash
-flint shard install <source>          # Install from owner/repo, a path, or an address @/flint/<flint>/shard/<alias>
-flint shard install <source> --alias <alias>   # Install under another key (a second shard with the same slug)
-flint shard install <source> --reference       # No copy under Shards/; the loader reads the source folder
-flint shard install <source> --no-deps         # Do not install the missing dependencies first
-flint shard install --all-dev         # (Re)install all dev shards into their Shards/<Name>/ copies
-flint shard reinstall [<ref>]         # Install the copy again from its source (no ref: every installed shard)
-flint shard update [<ref>]            # Update installed shards to latest published versions
-flint shard uninstall <ref>           # Remove the shard, its record, and its unchanged payload files
+flint shard install @org/name[@range][#place]    # From the registry (published), or from a place
+flint shard install --from-git <owner/repo[#ref]>  # From a Git location; the registry names the state
+flint shard install --from-path <dir>            # From a folder on this machine
+flint shard install <input> --alias <alias>      # Install under another key (a second shard with the same slug)
+flint shard install <input> --reference          # No build under Shards/; the loader reads the folder in its place
+flint shard install <input> --no-deps            # Do not install the missing dependencies first
+flint shard build <ref>               # Build the shard from its source in this Flint
+flint shard install --all-dev         # Build the shard of every source
+flint shard reinstall [<ref>]         # Install the shard again from its record (a source record builds)
+flint shard update [<ref>]            # Move each shard to the highest version inside the range of its spec
+flint shard uninstall <ref>           # Remove the build, its lock record, and its unchanged payload files
 ```
 
-An install writes the record `<alias> = { id, source }` in `flint.toml`, the record `flint.json#shards[<id>]`, and the local entry in `.flint/shards.json`. It installs the missing dependencies first, with one plan line each. It refuses before any write when the alias or the shorthand is taken, or when a dependency is below its floor.
+```
+$ flint shard install @nuu-cognition/notepad@^1.1
+✓ Resolved @nuu-cognition/shard/notepad 1.1.0
+✓ Installed Notepad 1.1.0
+  Spec    : @nuu-cognition/notepad@^1.1
+  Address : @nuu-cognition/shard/notepad
+  State   : published 1.1.0
+  Registry: published
+```
+
+An install writes the record `<alias> = "<spec>"` in `flint.toml` (no id), the lock record `flint.json#shards[<id>]` with the state, and the local entry in `.flint/shards.json`. From the registry it checks the shard id and the package hash of the version before any write. It installs the missing dependencies first, with one plan line each. It refuses before any write when the alias or the shorthand is taken, when a present dependency is outside its range, or when the id or the hash differs from the registry. When the registry does not answer, an install from Git or from a path goes on and the lock says `registry: unchecked`.
 
 ## Shard Versioning
 
 ```bash
-flint shard versions <ref>            # List remote versions (GitHub source)
-flint shard pin <ref> <version>       # Lock shard to a specific version (GitHub source)
-flint shard unpin <ref>               # Remove version lock
+flint shard versions <ref>            # The versions in the registry, else the Git tags of its location
+flint shard install <alias>@<version> # An exact version in the spec is the pin
 ```
+
+`pin` and `unpin` are retired: they print `pin is retired: the spec carries the version (flint shard install <alias>@<version>)`.
 
 ## Shard Setup
 
@@ -173,7 +200,7 @@ flint shard scripts <sh>              # List executable scripts for a shard
 flint shard <sh> <script> [args...]   # Run a declared script
 ```
 
-> Authoring commands (`create`, `type add`, `id`, `rename`, `fork`, `clone`, `dev`, `push`, `pull`, `release`, `publish`, `unpublish`, `published`) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring shards.
+> Authoring commands (`create`, `build`, `type add`, `id`, `rename`, `fork`, `clone`, `dev`, `push`, `pull`, `release`, `unpublish`, `published`) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring shards. `publish` is a deprecated alias of `release`.
 
 ## Sync
 
@@ -182,7 +209,9 @@ flint sync                            # Sync all shards and mods from flint.toml
 flint sync --dry-run                  # Show the plan; write nothing
 ```
 
-For shards, sync installs a missing copy, follows a rename of the source (the folder, the key, and the type files move; the id stays), refreshes the path of a reference, and records the checkout state of each dev checkout. It reports a missing dependency or a dependency below its floor as not current, with the next command. It gives a notice for a checkout that is a draft, behind, or dirty, and never changes the checkout. On a Flint whose shard records are still in the legacy shape, a shard write is refused with the next command `flint migrate run`.
+For shards, sync runs two reconciles. **The shard reconcile** makes each `Shards/<Name>/` match the lock: it installs a missing shard, builds a stale build of a source again, fetches the locked version when the build differs from the lock, follows a rename (the folder, the key, the address, and the type files move; the id stays), refreshes the path of a reference, and records a changed registry answer with a notice. **The source reconcile** records the Git state of each source and gives a notice for a source that is a draft, behind, or dirty; it never changes a source. A missing dependency or a dependency outside its range is not current, with the next command. On a Flint whose shard records are in an older shape, a shard write is refused with the next command `flint migrate run`.
+
+> Old words: the "Dev Local" and "Dev Remote" folders are now the local source `(Source Local)` and the remote source `(Source Remote)`; a "checkout" of a shard is a remote source; the "installed copy" is the shard (the build).
 
 ## Workspace
 
