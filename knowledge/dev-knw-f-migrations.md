@@ -262,8 +262,8 @@ flint migrate run           # Test execution
 | Scope | Workspace-wide | Per-shard |
 | Trigger | CLI version changes | Shard version changes |
 | Location | `flint-migrations` package (compiled into CLI) | `migrations/` folder in shard repo |
-| Tracking | `flint.json.migrations` | `flint.json` per-shard version |
-| CLI | `flint migrate *` | `flint shard <name> migrate *` |
+| Tracking | `flint.json.migrations` | `flint.json#shards[<id>]`: `version`, `migrations`, `pending` |
+| CLI | `flint migrate *` | `flint shard migrate * <ref>` |
 | Types | script, agent, manual | script, agent, manual |
 
 Both systems share the same conceptual model (three types, multi-step, auto-chaining) but operate independently.

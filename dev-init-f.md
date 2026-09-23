@@ -62,7 +62,7 @@ Every shard is in one of three modes. The folder-name prefix signals the mode:
 | `dev-remote` | `Shards/(Dev Remote) <Name>/` | Yes — changes pushed to origin |
 | `dev-local` | `Shards/(Dev Local) <Name>/` | Yes — no remote |
 
-Dev and installed copies coexist. Source files inside dev folders are prefixed `dev-`; the installer strips the prefix when producing the installed copy. The one exception is the `install/` folder — its contents are literal payloads (dashboards, type definitions, Obsidian templates) and carry no `dev-` prefix.
+Dev and installed copies coexist. They are presences of one shard with one `id` (in `shard.yaml`), and the Flint keeps one record per shard: `<alias> = { id, source, ... }` in `flint.toml`, and `flint.json#shards[<id>]`. Source files inside dev folders are prefixed `dev-`; the installer strips the prefix when producing the installed copy. The one exception is the `install/` folder — its contents are literal payloads (dashboards, type definitions, Obsidian templates) and carry no `dev-` prefix.
 
 ### Shard File Types
 
@@ -90,8 +90,9 @@ Dev-mode files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything un
 
 Each shard has a `shard.yaml` at its root declaring identity, dependencies, and installation behavior:
 
-- `shard-spec`, `version`, `name`, `shorthand`, `description`
-- `dependencies:` — other shards required (e.g. `NUU-Cognition/shard-flint`)
+- `shard-spec`, `id`, `version`, `name`, `shorthand`, `description`
+- `formerNames`, `formerShorthands`, `of` — the rename history and the fork source, written by the CLI
+- `dependencies:` — other shards required: `{ source, id?, version? }` (e.g. `source: NUU-Cognition/shard-flint`)
 - `setup:` — `full | flint | local` when the shard needs one-time setup
 - `types:` — artifact types the shard manages (installs `(Type) ...` files to `Mesh/Metadata/Types/`)
 - `folders:` — artifact storage folders to create under `Mesh/`
@@ -202,22 +203,22 @@ flint helper delete "<name>"          # Delete artifact + strip every frontmatte
 # Identity
 flint whoami                          # Show operator Name + machine-name (and account status)
 
-# Shard discovery and loading
-flint shard list                      # List installed + dev shards
-flint shard info <sh>                 # Detailed shard info
-flint shard status <sh>               # Status + pending migrations
-flint shard start <name>              # Dynamic manifest (installed, interactive)
-flint shard start-dev <name>          # Dynamic manifest (dev, interactive)
-flint shard hstart <name>             # Dynamic manifest (installed, headless)
-flint shard hstart-dev <name>         # Dynamic manifest (dev, headless)
+# Shard discovery and loading (<ref> = alias, shorthand, id, or address)
+flint shard list                      # One row per shard: alias, shorthand, role, version, source, id
+flint shard info <ref>                # Detailed shard info
+flint shard status <ref>              # Record, dependencies, checkout, pending migrations
+flint shard start <ref>               # Dynamic manifest (installed, interactive)
+flint shard start-dev <ref>           # Dynamic manifest (dev, interactive)
+flint shard hstart <ref>              # Dynamic manifest (installed, headless)
+flint shard hstart-dev <ref>          # Dynamic manifest (dev, headless)
 
 # Shard lifecycle
-flint shard install <source>          # Install from owner/repo or path
+flint shard install <source>          # Install from owner/repo, a path, or an address @/flint/<flint>/shard/<alias>
 flint shard install --all-dev         # (Re)install all dev shards
-flint shard update                    # Update installed shards
-flint shard uninstall <sh>            # Remove shard and clean files
+flint shard update [<ref>]            # Update installed shards
+flint shard uninstall <ref>           # Remove shard and clean files
 ```
 
-Authoring commands (create, clone, dev, rename, push, pull, release, publish, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
+Authoring commands (create, id, rename, fork, clone, dev, push, pull, release, publish, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
 
 If this Flint lives inside a **Tinderbox** (a multi-Flint orchestration box with a `tinderbox.toml`), `flint tinderbox <subcommand>` manages the box from any member. See the Tinderbox section of [[dev-knw-f-cli]] before running it — `sync`/`import`/`heal` can move or delete Flints on disk.
