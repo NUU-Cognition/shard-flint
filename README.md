@@ -13,6 +13,7 @@ Shards/(Dev) Flint/
   skills/
     sk-f-init_update.md         # Update Flint Init from session changes
     sk-f-init_full_update.md    # Full research & rewrite of Flint Init
+    sk-f-shard_browse.md        # Browse the shard catalog, suggest shards for the Flint's purpose, install picks
   templates/
     tmp-f-flint_init-v0.1.md    # (System) Flint Init template
   knowledge/
@@ -28,6 +29,7 @@ Shards/(Dev) Flint/
 ## What This Shard Covers
 
 - **Shard rules** — How to load, use, and discover shards (strict protocol)
+- **Choosing shards** — Core shards come with every Flint; `flint shard browse` shows the public and local catalog; browse before you install or create a shard
 - **Template rules** — How to read and generate from templates (strict protocol)
 - **Agent environment** — Working directory, capabilities, sessions
 - **Workspace structure** — Mesh, Shards, Types, Notes, Archive

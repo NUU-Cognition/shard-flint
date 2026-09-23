@@ -1,6 +1,28 @@
 ---
-id:
+id: {{uuid}}
 tags:
   - "#f/init"
 ---
-to be filled out. reference [[dev-tmp-f-flint_init-v0.1]]
+
+# My Flint
+
+This is a new Flint. The core shards (Flint, Orbh) are installed. No other shards are installed yet, and the purpose of this Flint is not set.
+
+## First Session
+
+Agent: do these steps in the first session, in this order.
+
+1. Ask the operator one question: "What is this Flint for?" Do not guess.
+2. Run `flint shard browse`. It lists every public shard and every local dev shard on this machine, with install status.
+3. Follow [[sk-f-shard_browse]]: suggest the shards that fit the purpose, and install the operator's picks with `flint shard install <SOURCE> --with-deps`.
+4. Rewrite this file with [[tmp-f-flint_init-v0.1]]: the purpose of the Flint, the Shards table, and the navigation.
+
+## Shards
+
+Purpose not yet set — run `flint shard browse` and suggest shards once the operator states the purpose.
+
+## Navigation
+
+- `Mesh/` — All workspace content
+- `Media/` — All media documents
+- `Shards/` — Installed capabilities (`flint shard list`)

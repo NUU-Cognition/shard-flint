@@ -24,6 +24,19 @@ tags:
 
 [detailed paragraph description of what this Flint is about and its primary purpose. Try to make this timeless. We don't want to update this very often]
 
+## Shards
+
+/* The shards installed for this Flint's purpose, and why. Update this list when a shard is installed or removed.
+   Core shards (Flint, Orbh) are always present — list only the shards chosen for the purpose. */
+
+| Shard | Why it is here |
+|---|---|
+| [[Shard name]] | [one line: the capability this Flint uses it for] |
+(continue)
+
+/* If the operator has not yet said what this Flint is for, keep the line below and run [[dev-sk-f-shard_browse]] when they do. */
+[Optional: "Purpose not yet set — run `flint shard browse` and suggest shards once the operator states the purpose."]
+
 ## [Monorepo|Repo] Overview
 
 /* If the Flint relates to a codebase, describe the codebase structure here. */
