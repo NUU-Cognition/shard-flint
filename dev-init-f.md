@@ -50,7 +50,7 @@ Run `flint shard start <name>` to get the shard's manifest — it lists the init
 
 **Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <name>` only when you edit it. See Source and Shard below.
 
-**Discovering shards**: List `Shards/` or run `flint shard list`.
+**Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse` shows what exists — public shards (registry + GitHub) and local dev shards on this machine — with install status. See Choosing Shards below.
 
 ### Source and Shard
 
@@ -87,6 +87,16 @@ The Flint keeps the shard state in three places: `flint.toml` holds the intent (
 | `scripts/<name>.js` | Script — Node.js command, invoked via `flint shard <sh> <name>` |
 
 Source files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything under `install/` is the exception — `inst-`, `otmp-`, `type-` files carry no `dev-` prefix.
+
+### Choosing Shards
+
+Every Flint is created with the **core shards** (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`). Everything else is chosen for what the Flint is for. The rules:
+
+1. **Browse before you build.** Run `flint shard browse` (or `flint shard browse <keyword>`) before you install a shard and before you create one. If a shard already provides the capability, install it. Do not create a duplicate shard.
+2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards from the catalog and install the operator's picks with `flint shard install <SOURCE> --with-deps`.
+3. **On demand later.** When the operator asks for a capability, browse first and install the matching shard. Prefer a public shard over a local dev shard (`flint://…`); a dev shard is a working version from another Flint on this machine.
+4. **Core missing?** `flint shard browse` reports it. Run `flint shard install --core`.
+5. **Load after install.** Run `flint shard start <name>` and read the init file before you use a new shard.
 
 ### Shard Manifest
 
@@ -207,6 +217,8 @@ flint whoami                          # Show operator Name + machine-name (and a
 
 # Shard discovery and loading (<ref> = alias, shorthand, id, or address)
 flint shard list                      # One row per shard: alias, shorthand, state, version, address, id
+flint shard browse [keyword]          # Browse installable shards: public (registry + GitHub) + local sources, with status
+flint shard browse --available        # Only shards this Flint does not have yet
 flint shard info <ref>                # Detailed shard info
 flint shard status <ref>              # Record, state, dependencies, Git state of the source, pending migrations
 flint shard start <ref>               # Dynamic manifest of the shard (interactive)

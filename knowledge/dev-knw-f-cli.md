@@ -121,6 +121,37 @@ Shards
 
 `--json`: `list` gives `{ rows: ShardRow[] }`; `status` and `info` give one `ShardRow` plus `details`. A `ShardRow` is `{ id, held, alias, shorthand, name, address, request, state, version, from, registry, use, folders: { shard?, source? }, setup, pending }`.
 
+## Shard Browsing (what you can install)
+
+`browse` shows every shard that exists, not only the ones in this Flint. Use it before you install anything, and before you create a shard — if a shard already provides the capability, install it instead of writing a duplicate. Aliases: `search`, `available`.
+
+```bash
+flint shard browse                    # Core shards + public shards + local dev shards, with install status for this Flint
+flint shard browse <keyword>          # Filter by name, shorthand, description, source, or Flint name
+flint shard browse --public           # Public shards only (skips the local scan)
+flint shard browse --local            # Local dev shards only (no network)
+flint shard browse --available        # Hide shards this Flint already has
+flint shard browse --json             # Machine-readable catalog (same fields)
+flint shard browse --no-github        # Registry entries only; skip unregistered public repos
+flint shard browse --wide             # Full-width table
+```
+
+What the sections mean:
+
+| Section | Source | `SOURCE` column (the install argument) |
+|---|---|---|
+| **Core Shards** | Fixed list: `NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh` | `owner/repo` |
+| **Public Shards** | NUU Shard Registry + public `shard-*` repos of the `NUU-Cognition` GitHub org. Each repo's `shard.yaml` fills `LATEST`, shorthand, and description. | `owner/repo` |
+| **Local Dev Shards** | `(Dev Remote)` / `(Dev Local)` folders in every Flint registered on this machine. Working versions, possibly unreleased. | `flint://<Flint Name>/<shard>` |
+
+`STATUS` is about this Flint: `installed vX`, `dev vX` (a dev folder here, not installed), or `—` (not present). A public source that is unreachable is reported as a warning; the rest of the catalog still renders.
+
+**Core shards** are installed into every new Flint by `flint init`, whatever preset is used. If one is missing, browse says so:
+
+```bash
+flint shard install --core            # Install the missing core shards (present ones are skipped)
+```
+
 ## Shard Manifests (loading shards)
 
 `start` / `hstart` assemble a dynamic manifest from each shard's files (init, skills, workflows, templates, knowledge — read from each file's `description` frontmatter). Run the variant that matches your mode.
