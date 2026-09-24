@@ -301,7 +301,7 @@ flint tinderbox connection remove <from> <to> # Remove a connection and strip th
 flint tinderbox connection list              # List declared connection edges and whether each is wired
 
 # Git and identity across the box
-flint tinderbox git sync                     # Sync the Tinderbox repo and run `flint git sync` in every member Flint (the local sync included)
+flint tinderbox git sync                     # Sync the Tinderbox repo and run `flint git sync` in every member Flint (the local sync included; `--no-sync` for transport only)
 flint tinderbox git publish <url>            # Add a remote and push the box's initial commit (renames branch to main; --yes skips confirm)
 # flint tinderbox whoami <name>              # Removed (Task 1024 D10). The Name is machine-global: flint setup sets it once for every Flint
 ```
