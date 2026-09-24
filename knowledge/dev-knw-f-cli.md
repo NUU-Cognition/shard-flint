@@ -100,7 +100,7 @@ flint whoami                             # Show current person identity
 
 A shard is a package with two entities: the **source** (the files a person edits, in `Shards/(Source Local) <Name>/` or `Shards/(Source Remote) <Name>/`) and the **shard** (the build in `Shards/<Name>/`, or the alias as a Title when the alias is not the slug of the name). `flint.toml` is the intent, `flint.json#shards[<shard id>]` is the lock, and the NUU Shard Registry gives the versions of each package. The words are in the glossary of the spec ([[(Spec) Flint Shards#Glossary]]).
 
-A `<ref>` names one shard of this Flint. One resolver reads it in this order: the alias (its key in `flint.toml`), the shorthand, the address (`@org/<slug>` or `@org/shard/<slug>`), the id (`<uuid>`, `@<uuid>`, or a prefix of eight or more characters), then a former name, slug, address, or shorthand. A former form prints `moved: <old> is now <new>` and goes on. The current name and a folder name are not a ref: use the alias. A ref that names two shards is refused as `ambiguous`, with one next command per shard that names its alias.
+A `<ref>` names one shard of this Flint. One resolver reads it in this order: the alias (its key in `flint.toml`), the shorthand, the address (`@org/<slug>` or `@org/shard/<slug>`), the id (`<uuid>`, `@<uuid>`, or a prefix of eight or more characters), then a former address (`@org/<former slug>` or `@org/shard/<former slug>`) or a former shorthand. A former form prints `moved: <old> is now <new>` and goes on. A bare word is an alias or a shorthand; a name is an address. The name, a former name, a bare former slug, and a folder name are not a ref: use the alias, or the address for a former name. A ref that names two shards is refused as `ambiguous`, with one next command per shard that names its alias.
 
 ```bash
 flint shard list [--json]             # One row per shard: ID ADDRESS ALIAS SHORTHAND VERSION STATE
@@ -123,45 +123,32 @@ Shards
 
 `--json`: `list` gives `{ rows: <row>[] }`; `status` gives `{ ...<row>, details, moved?, health? }`. A row is `{ id, held, alias, shorthand, name, address, request, state, version, from, registry, use, folders: { shard?, source? }, setup, pending, stale }`.
 
-## Shard Browsing (what you can install)
+## Shard Browsing (not in this build of the CLI)
 
-`browse` shows every shard that exists, not only the ones in this Flint. Use it before you install anything, and before you create a shard — if a shard already provides the capability, install it instead of writing a duplicate. Aliases: `search`, `available`.
+`flint shard browse` and `flint shard install --core` are not in this build of the CLI (planned). `flint shard browse` answers `not-found` (the CLI reads `browse` as a ref), and `flint shard install --core` answers `unknown option '--core'`. Until they exist, use these commands before you install a shard and before you create one:
 
 ```bash
-flint shard browse                    # Core shards + public shards + local sources, with install status for this Flint
-flint shard browse <keyword>          # Filter by name, shorthand, description, source, or Flint name
-flint shard browse --public           # Public shards only (skips the local scan)
-flint shard browse --local            # Local sources only (no network)
-flint shard browse --available        # Hide shards this Flint already has
-flint shard browse --json             # Machine-readable catalog (same fields)
-flint shard browse --no-github        # Registry entries only; skip unregistered public repos
-flint shard browse --wide             # Full-width table
+flint shard list                      # What this Flint has
+flint resolve @org/shard/<slug>       # Where one package is: this Flint, this machine, or the registry
+flint shard install @org/<slug>       # Install a package and its missing dependencies
 ```
 
-What the sections mean:
+The public shards are on the registry site: `https://shards.nuucognition.com/registry` (search by name or description). If a shard already provides the capability, install it instead of writing a duplicate. A local source in another Flint of this machine is a working version; install it as `@org/<slug>#<flint slug>`.
 
-| Section | Source | `SOURCE` column (the install argument) |
-|---|---|---|
-| **Core Shards** | Fixed list: `NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh` | `owner/repo` |
-| **Public Shards** | NUU Shard Registry + public `shard-*` repos of the `NUU-Cognition` GitHub org. Each repo's `shard.yaml` fills `LATEST`, shorthand, and description. | `owner/repo` |
-| **Local Sources** | `(Source Remote)` / `(Source Local)` folders in every Flint registered on this machine. Working versions, possibly unreleased. | `@org/<slug>#<flint slug>` |
-
-`STATUS` is about this Flint: `installed vX`, `dev vX` (a dev folder here, not installed), or `—` (not present). A public source that is unreachable is reported as a warning; the rest of the catalog still renders.
-
-**Core shards** are installed into every new Flint by `flint init`, whatever preset is used. If one is missing, browse says so:
+**Core shards** are Flint (`@nuu-cognition/flint`) and Orbh (`@nuu-cognition/orbh`). `flint init` installs the shards of its preset. When `flint shard list` has no row for one of them, install it:
 
 ```bash
-flint shard install --core            # Install the missing core shards (present ones are skipped)
+flint shard install @nuu-cognition/orbh
 ```
 
 ## Shard Manifests (loading shards)
 
-`start` / `hstart` assemble a dynamic manifest from each shard's files (init, skills, workflows, templates, knowledge — read from each file's `description` frontmatter). Run the variant that matches your mode.
+`start` / `hstart` assemble a dynamic manifest from each shard's files (init, skills, workflows, templates, knowledge — read from each file's `description` frontmatter). Run the variant that matches your mode. `hstart` loads `hinit-<sh>.md` and its required reading in place of `init-<sh>.md`; a shard with no headless init refuses `hstart` with the next command `flint shard start <ref>`.
 
 ```bash
 flint shard start <ref>               # The shard, interactive (loads init-<sh>.md)
 flint shard start-dev <ref>           # The source, interactive (loads dev-init-<sh>.md)
-flint shard hstart <ref>              # The shard, headless (loads hinit-<sh>.md, prefers hwkfl-*)
+flint shard hstart <ref>              # The shard, headless (loads hinit-<sh>.md, lists hwkfl-*)
 flint shard hstart-dev <ref>          # The source, headless
 ```
 

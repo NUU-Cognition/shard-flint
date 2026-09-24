@@ -23,19 +23,17 @@ Find the shards that exist before you build anything. Show the operator the cata
 
 # Actions
 
-1. Confirm the core shards are present:
+`flint shard browse` and `flint shard install --core` are not in this build of the CLI (planned). Use the commands below until they exist.
+
+1. Confirm the core shards are present. `flint shard list` must have a row for `flint` and for `orbh`. Install a missing one:
    ```bash
-   flint shard browse --local --available   # fast, no network; the Core Shards block is at the top of a full browse
-   flint shard install --core               # only if a core shard is reported missing
+   flint shard list                         # what this Flint has
+   flint shard install @nuu-cognition/orbh  # only if the row is missing (the same for @nuu-cognition/flint)
    ```
-2. Read the catalog:
+2. Read the catalog. Search the registry site `https://shards.nuucognition.com/registry` by name or description. It shows the public shards. Check one package from the CLI:
    ```bash
-   flint shard browse                       # public (registry + GitHub) and local dev shards, with install status
-   flint shard browse <keyword>             # filter by name, shorthand, description, source, or Flint
-   flint shard browse --available           # hide what this Flint already has
-   flint shard browse --json                # machine-readable, same fields
+   flint resolve @nuu-cognition/shard/<slug>  # the rung (this Flint, this machine, or the registry), the address, the tag
    ```
-   Read the `DESCRIPTION` column. The `SOURCE` column is the exact install argument. `STATUS` says what this Flint already has.
 3. Match shards to the purpose. Use this table as the starting point, then add matches from the catalog descriptions:
 
    | Purpose of the Flint | Suggest |
@@ -51,13 +49,13 @@ Find the shards that exist before you build anything. Show the operator the cata
    | Author shards | `NUU-Cognition/shard-knap` |
    | Drive a browser | `NUU-Cognition/shard-agent-browser`, `NUU-Cognition/shard-chrome-use` |
 
-   Prefer a public shard over a local dev shard. Suggest a local dev shard (`flint://<Flint>/<shard>`) only when no public shard covers the need, and say that it is a working version from another Flint on this machine.
+   Prefer a public shard over a local source. Suggest a local source (`@org/<slug>#<flint slug>`) only when no public shard covers the need, and say that it is a working version from another Flint on this machine.
 4. Present the suggestions to the operator as a short list: shard name, one line on why it fits, and the install source. Ask which ones to install. Do not install without the operator's pick.
-5. Install the picks. Dependencies are installed with `--with-deps`:
+5. Install the picks. The missing dependencies are installed too:
    ```bash
-   flint shard install <SOURCE> [<SOURCE>...] --with-deps
+   flint shard install <spec> [<spec>...]
    ```
-6. For every installed shard, run `flint shard start <name>` and read its init file before you use it.
+6. For every installed shard, run `flint shard start <alias>` and read its init file before you use it.
 7. Record the result in `Mesh/(System) Flint Init.md`: the purpose of the Flint and the shards installed for it. Follow [[dev-tmp-f-flint_init-v0.1]] and [[dev-sk-f-init_update]].
 
 # Output

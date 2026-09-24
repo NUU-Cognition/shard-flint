@@ -50,7 +50,7 @@ Run `flint shard start <ref>` (the alias or the shorthand) to get the shard's ma
 
 **Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <ref>` only when you edit it. See Source and Shard below.
 
-**Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse` shows what exists — public shards (registry + GitHub) and the sources in other Flints of this machine — with install status. See Choosing Shards below.
+**Discovering shards**: `flint shard list` shows what this Flint has. The registry site (`https://shards.nuucognition.com/registry`) shows the public shards, and `flint resolve <spec>` says where one package is. `flint shard browse` is not in this build of the CLI (planned). See Choosing Shards below.
 
 ### Source and Shard
 
@@ -90,13 +90,13 @@ Source files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything unde
 
 ### Choosing Shards
 
-Every Flint is created with the **core shards** (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`). Everything else is chosen for what the Flint is for. The rules:
+The **core shards** are Flint (`@nuu-cognition/flint`) and Orbh (`@nuu-cognition/orbh`). Everything else is chosen for what the Flint is for. `flint shard browse` and `flint shard install --core` are not in this build of the CLI (planned). Until they exist, the rules use `flint shard list` and the registry site. The rules:
 
-1. **Browse before you build.** Run `flint shard browse` (or `flint shard browse <keyword>`) before you install a shard and before you create one. If a shard already provides the capability, install it. Do not create a duplicate shard.
-2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards from the catalog and install the operator's picks with `flint shard install <SOURCE> --with-deps`.
-3. **On demand later.** When the operator asks for a capability, browse first and install the matching shard. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine (install it as `@org/<slug>#<flint>`).
-4. **Core missing?** `flint shard browse` reports it. Run `flint shard install --core`.
-5. **Load after install.** Run `flint shard start <name>` and read the init file before you use a new shard.
+1. **Look before you build.** Before you install a shard and before you create one, run `flint shard list` (what this Flint has) and search the registry site `https://shards.nuucognition.com/registry` (what exists). `flint resolve @org/shard/<slug>` says whether a package is in this Flint, on this machine, or in the registry. If a shard already provides the capability, install it. Do not create a duplicate shard.
+2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards and install the operator's picks with `flint shard install <spec>` (the missing dependencies come too).
+3. **On demand later.** When the operator asks for a capability, look first and install the matching shard. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine (install it as `@org/<slug>#<flint>`).
+4. **Core missing?** `flint init` installs the shards of its preset. When `flint shard list` has no row for `flint` or `orbh`, install the missing one: `flint shard install @nuu-cognition/flint` or `flint shard install @nuu-cognition/orbh`.
+5. **Load after install.** Run `flint shard start <alias>` and read the init file before you use a new shard.
 
 ### Shard Manifest
 
@@ -166,9 +166,9 @@ When editing files with frontmatter, append your session ID to the `orbh-session
 
 A Flint agent can run headless inside an Orbh session (no interactive terminal). In that mode:
 
-- Load `hinit-<sh>.md` instead of `init-<sh>.md` when starting a shard (use `flint shard hstart <name>` / `hstart-dev` for the dynamic manifest).
-- Prefer `hwkfl-<sh>-<name>.md` workflows over their interactive `wkfl-*` counterparts — headless workflows drop human stage gates and report progress via Orbh session keys instead.
-- Not every shard provides a headless init or headless workflows. If none exist, the regular interactive files are used.
+- Run `flint shard hstart <ref>` (`hstart-dev` for a source). It loads `hinit-<sh>.md` and its required reading, in place of `init-<sh>.md`.
+- `hstart` lists each `hwkfl-<sh>-<name>.md` in place of the interactive `wkfl-*` of the same name, and it lists a `wkfl-*` that has no headless variant. Headless workflows drop human stage gates and report progress via Orbh session keys instead.
+- A shard with no headless init refuses `hstart` with the next command `flint shard start <ref>`. Run that command and read the interactive init. There is no automatic fallback.
 
 Headless orchestration details (session lifecycle, status, interface keys, returning results) are owned by the Orbh shard — load `Shards/Orbh/init-foh.md` when operating in that context.
 
@@ -215,10 +215,9 @@ flint helper delete "<name>"          # Delete artifact + strip every frontmatte
 # Identity
 flint whoami                          # Show operator Name + machine-name (and account status)
 
-# Shard discovery and loading (<ref> = alias, shorthand, address, or id; a former name resolves with a moved note)
+# Shard discovery and loading (<ref> = alias, shorthand, address, or id; a former address or a former shorthand resolves with a moved note)
 flint shard list                      # One row per shard: id, address, alias, shorthand, version, state
-flint shard browse [keyword]          # Browse installable shards: public (registry + GitHub) + local sources, with status
-flint shard browse --available        # Only shards this Flint does not have yet
+# flint shard browse, flint shard install --core: not in this build of the CLI (planned)
 flint shard status <ref>              # The row, the Git state of the source, dependencies, pending migrations (info is an alias)
 flint shard start <ref>               # Dynamic manifest of the shard (interactive)
 flint shard start-dev <ref>           # Dynamic manifest of the source (interactive)

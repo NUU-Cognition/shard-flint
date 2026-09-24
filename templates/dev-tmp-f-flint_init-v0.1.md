@@ -27,7 +27,7 @@ tags:
 ## Shards
 
 /* The shards installed for this Flint's purpose, and why. Update this list when a shard is installed or removed.
-   Core shards (Flint, Orbh) are always present — list only the shards chosen for the purpose. */
+   Do not list the core shards (Flint, Orbh); list only the shards chosen for the purpose. */
 
 | Shard | Why it is here |
 |---|---|
@@ -35,7 +35,7 @@ tags:
 (continue)
 
 /* If the operator has not yet said what this Flint is for, keep the line below and run [[dev-sk-f-shard_browse]] when they do. */
-[Optional: "Purpose not yet set — run `flint shard browse` and suggest shards once the operator states the purpose."]
+[Optional: "Purpose not yet set — follow [[dev-sk-f-shard_browse]] once the operator states the purpose."]
 
 ## [Monorepo|Repo] Overview
 

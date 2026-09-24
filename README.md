@@ -29,7 +29,7 @@ Shards/(Dev) Flint/
 ## What This Shard Covers
 
 - **Shard rules** — How to load, use, and discover shards (strict protocol)
-- **Choosing shards** — Core shards come with every Flint; `flint shard browse` shows the public and local catalog; browse before you install or create a shard
+- **Choosing shards** — look before you install or create a shard: `flint shard list` and the registry site (`flint shard browse` is planned; it is not in this build of the CLI)
 - **Template rules** — How to read and generate from templates (strict protocol)
 - **Agent environment** — Working directory, capabilities, sessions
 - **Workspace structure** — Mesh, Shards, Types, Notes, Archive
