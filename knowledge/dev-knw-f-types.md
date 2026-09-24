@@ -158,6 +158,6 @@ The manifest parser normalizes this to the string format automatically. The `sou
 - **ID preservation:** If the destination file already exists (on reinstall with force), the existing `id` is preserved.
 - **Readonly tag:** Every installed type file receives `#readonly` in its tags (also when the shard is a build of a local or a remote source).
 - **Record:** The install lists each type file in `flint.json#shards[<id>].payloads[]` with `kind: type`, `sha256`, `mode`, and the Mesh `id`. Health reads the type files from this lock record, not from the `shard.yaml` of the build.
-- **Rename:** `flint shard rename <alias> --name` (and the `moved` heal of `flint sync` in a consumer Flint) moves the type file to the new qualifier. The file keeps its `id`, and the `[[wikilinks]]` to it follow. See [[(Spec) Flint Shards . Rename]].
+- **Rename:** `flint shard rename <alias> --name` (and the `moved` heal in a consumer Flint: `flint sync` for a rename that the source, the place, or the build shows, `flint shard install` for a rename that the registry reports) moves the type file to the new qualifier. The file keeps its `id`, and the `[[wikilinks]]` to it follow. See [[(Spec) Flint Shards . Rename]].
 - **Reference:** A shard bound with `use = "reference"` (no build here) still installs its type files into the Mesh.
 - **Uninstall:** When a shard is removed, its unchanged type definition files are deleted. A changed file stays.

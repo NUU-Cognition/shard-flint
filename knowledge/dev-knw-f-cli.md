@@ -2,6 +2,7 @@
 description: "Flint CLI commands for agent workflows"
 orbh-sessions:
   - "[[87347e6b-2363-4434-9a98-f1d641049fa7]]"
+  - "[[97c9f9ca-46fb-41d8-a7c1-c1a1e099f8b9]]"
 ---
 
 # Knowledge: CLI Reference
@@ -161,6 +162,7 @@ The start refuses and exits 1 when setup is required (it prints `FORCE SETUP`, t
 A package spec is `@org/name[@version][#place]`: `@version` is an exact version, a caret range (`^1.1`), or a tilde range (`~1.1.3`); `#place` is a machine name or the slug of a Flint on this machine. Without `#place`, the install asks this Flint, this machine, then the registry.
 
 ```bash
+flint shard install                              # No argument: make the lock match the specs of flint.toml
 flint shard install @org/name[@range][#place]    # From the registry (published), or from a place
 flint shard install --from-git <owner/repo[#ref]>  # From a Git location; the registry names the state
 flint shard install --from-path <dir>            # From a folder on this machine
@@ -170,9 +172,11 @@ flint shard install <input> --no-deps            # Do not install the missing de
 flint shard build <ref>               # Build the shard from its source in this Flint
 flint shard install --all-dev         # Build the shard of every source
 flint shard reinstall [<ref>]         # Install the shard again from its record (a source record builds)
-flint shard update [<ref>]            # Move each shard to the highest version inside the range of its spec
+flint shard update [<ref>]            # Move the lock of each shard to the highest version inside the range of its spec
 flint shard uninstall <ref>           # Remove the build, its lock record, and its unchanged payload files
 ```
+
+`flint shard install` with no argument reads every record of `flint.toml`. A record that the lock does not satisfy (no lock line, or the range, the place, or the Git location changed) is installed or built, after its missing dependencies. A record that the lock satisfies is not moved: only `flint shard update` moves a version inside its range. Then one registry read per record with a hash records the registry answer and follows a rename that the registry reports. When the registry does not answer, the notice is `The registry did not answer. The answers were not recorded.` `--dry-run` shows the plan and the answers and writes nothing.
 
 ```
 $ flint shard install @nuu-cognition/meeting-notes@^0.1
@@ -230,12 +234,28 @@ flint shard <ref> <script> [args...]  # Run a declared script
 
 ## Sync
 
+Three commands, one job each:
+
+- `flint sync` makes the files of this Flint match its lock and its declarations.
+- `flint shard install` makes the lock match the specs.
+- `flint git sync` exchanges history with origin.
+
+Shards are packages. `flint shard install` is `pnpm install`: a spec that the lock does not satisfy is resolved, and a satisfied lock is not moved. `flint shard update` is `pnpm update`. `flint sync` is `pnpm install --frozen-lockfile`.
+
 ```bash
-flint sync                            # Sync all shards and mods from flint.toml
-flint sync --dry-run                  # Show the plan; write nothing
+flint sync                            # Make the files match the lock and the declarations
+flint sync --dry-run                  # Show the plan; write nothing (the same as flint plan)
+flint shard install                   # Make the lock match the specs; record the registry answers
+flint shard install --dry-run         # Show the plan and the registry answers; write nothing
+flint git sync                        # Exchange history with origin; the local sync runs before the push
+flint git sync --no-sync              # Transport only: no local sync
 ```
 
-For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`) makes each build match the lock: it installs a missing shard, builds a stale build of a source again, fetches the locked version when the build differs from the lock, follows a rename (`moved: <Old> is now <New> (<address>); the folder, the key, and the type files followed`; the id stays), refreshes the path of a reference, and records a changed registry answer with a notice. **The source reconcile** (feature `shard-sources`) records the Git state of each source and gives a notice for a source that is a draft, behind, or dirty; it never changes a source. A missing dependency or a dependency outside its range is not current, with the next command. The rename process is in [[(Spec) Flint Shards . Rename]]. On a Flint with the 0.6.0 shard records, `list`, `status`, and `start` read them with a notice, and every shard write is refused with the next command `flint migrate run`.
+`flint sync` has two steps: `Resolve Flint` and `Reconcile content`. It never asks the registry, never moves the lock, and never touches origin. It fetches only bytes that the lock or a declaration names and that are absent or differ: a locked build, the Obsidian payload pin, a declared source that is not cloned, a repository clone, a source repository snapshot. `flint sync --dry-run` and `flint plan` open no socket. A halted rebase blocks the run (exit 2) with the next command `flint git sync --continue`. When the branch has commits that origin does not have, sync gives the notice `Local history is N commits ahead of origin. Run flint git sync.` The flags `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs.
+
+For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`) makes each build match the lock: it installs a missing locked build from the lock, builds a stale build of a source again, fetches the locked version when the build differs from the lock, follows a rename that the source, the place, or the build shows (`moved: <Old> is now <New> (<address>); the folder, the key, and the type files followed`; the id stays), and refreshes the path of a reference. A record with no lock line is not current (`not-locked`), with the next command `flint shard install`. **The source reconcile** (feature `shard-sources`) records the Git state of each source and gives a notice for a source that is a draft, behind, or dirty; it never changes a source. A missing dependency or a dependency outside its range is not current, with the next command. The rename process is in [[(Spec) Flint Shards . Rename]]. On a Flint with the 0.6.0 shard records, `list`, `status`, and `start` read them with a notice, and every shard write is refused with the next command `flint migrate run`.
+
+`flint git sync` checkpoints the local work, fetches, integrates, runs the local sync, checkpoints the writes of the sync, and pushes. A conflict halts before the local sync: resolve it, then run `flint git sync --continue`. `flint git merge` does the same with no push.
 
 
 ## Workspace
@@ -267,7 +287,7 @@ flint tinderbox rename --tinderbox <name>    # Rename the Tinderbox itself
 flint tinderbox dissolve                     # Tear down the box: eject every member (folders survive), strip wiring, remove tinderbox.toml
 
 # Sync, status, drift
-flint tinderbox sync                         # Materialize members, register them in Obsidian, wire connections + repos
+flint tinderbox sync                         # Materialize members, register them in Obsidian, wire connections + repos, then run `flint sync` in each member
 flint tinderbox status                       # Per-member: mode, tier, present, registered, connection fulfillment (+ Repos)
 flint tinderbox check                        # Detect drift between tinderbox.toml and disk (read-only; exits 1 on drift)
 flint tinderbox heal                         # Auto-fix drift (rewrites tinderbox.toml) then run a full sync — previews + confirms first
@@ -281,16 +301,16 @@ flint tinderbox connection remove <from> <to> # Remove a connection and strip th
 flint tinderbox connection list              # List declared connection edges and whether each is wired
 
 # Git and identity across the box
-flint tinderbox git sync                     # Sync the Tinderbox repo and run `flint git sync` in every member Flint
+flint tinderbox git sync                     # Sync the Tinderbox repo and run `flint git sync` in every member Flint (the local sync included)
 flint tinderbox git publish <url>            # Add a remote and push the box's initial commit (renames branch to main; --yes skips confirm)
 # flint tinderbox whoami <name>              # Removed (Task 1024 D10). The Name is machine-global: flint setup sets it once for every Flint
 ```
 
-**Sync flags:** `--dry-run` (preview clones/moves/deletes, change nothing), `--json` (machine-readable result/plan), `--full` (also run `flint sync` inside every member), `--only <names...>` / `--skip <names...>` (operate on a subset of declared members this run), `--yes` (accept prompts; deletes undeclared Flints that have saved work — needs `--force` for unsaved), `--delete-undeclared` (delete on-disk Flints not in the toml without prompting), `--no-open` (skip Obsidian registration). `status`/`check` also accept `--json`; `heal` accepts `--dry-run` and `--yes`.
+**Sync flags:** `--dry-run` (preview the box work and the sync plan of each member, change nothing), `--json` (machine-readable result/plan), `--only <names...>` / `--skip <names...>` (operate on a subset of declared members this run), `--no-open` (skip Obsidian registration). `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs. `tinderbox sync` does no Git transport in the members; `flint tinderbox git sync` does. `status`/`check` also accept `--json`; `heal` accepts `--dry-run` and `--yes`.
 
 **Safety behaviors to know before running these:**
 - `sync` **materializes and can MOVE Flints on disk** — it clones missing own-mode members, and adopts/relocates a registry-matched member into the box (after verifying its git remote matches the declared source, with a prompt). `import` likewise **physically relocates** the Flint into the box (confirmed unless `--yes`).
-- `sync` can offer to **delete undeclared Flints** (on disk but not in the toml). It guards Flints with uncommitted/unpushed/no-remote work and prompts per-Flint; `--yes`/`--delete-undeclared` automate it, and `--force` is required to delete unsaved work.
+- `sync` keeps undeclared folders (on disk but not in the toml). `check` reports them.
 - `check` is read-only and reports drift (undeclared/missing/renamed members, broken materialization, stale registry/connections/repos). `heal` is the active repair — it **rewrites `tinderbox.toml` and runs a full sync**, so it previews the plan and confirms before applying (`--dry-run` to stop at the preview).
 
 ## Send / Inbox

@@ -228,14 +228,21 @@ flint shard hstart-dev <ref>          # Dynamic manifest of the source (headless
 flint resolve <spec>                  # Where a package is: this Flint, this machine, or the registry
 
 # Shard lifecycle
+flint shard install                   # Make the lock match the specs of flint.toml (pnpm install)
 flint shard install @org/name[@range][#place]   # Install a package (the registry, or a place)
 flint shard install --from-git <owner/repo[#ref]>   # Install from a Git location
 flint shard install --from-path <dir>           # Install from a folder on this machine
 flint shard build <ref>               # Build the shard from its source in this Flint
 flint shard install --all-dev         # Build the shard of every source
-flint shard update [<ref>]            # Move each shard to the highest version inside its range
+flint shard update [<ref>]            # Move the lock of each shard to the highest version inside its range (pnpm update)
 flint shard uninstall <ref>           # Remove the shard and clean files
+
+# Sync and transport
+flint sync                            # Make the files match the lock and the declarations (pnpm install --frozen-lockfile)
+flint git sync                        # Exchange history with origin; the local sync runs before the push
 ```
+
+Three commands, one job each. `flint sync` makes the files of this Flint match its lock and its declarations. `flint shard install` makes the lock match the specs. `flint git sync` exchanges history with origin. `flint sync` never asks the registry, never moves the lock, and never touches origin.
 
 Authoring commands (create, build, dev, clone, release, fork, rename, id, push, pull, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
 
