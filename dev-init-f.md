@@ -90,7 +90,7 @@ Source files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything unde
 
 ### Choosing Shards
 
-The **core shards** are Flint (`@nuu-cognition/flint`) and Orbh (`@nuu-cognition/orbh`). Everything else is chosen for what the Flint is for. A new Flint gets the shards of its preset: `blank` (the default of `flint create`) has Flint and Orbh; `default` has Flint, Invironments, Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code, and no Orbh. An install from a path or a Git location needs no NUU account and no org; only `flint shard publish` needs an org. `flint shard browse` and `flint shard install --core` are not in this build of the CLI (planned). Until they exist, the rules use `flint shard list` and the registry site. The rules:
+The **core shards** are Flint (`@nuu-cognition/flint`) and Orbh (`@nuu-cognition/orbh`). Everything else is chosen for what the Flint is for. A new Flint gets the shards of its preset. The preset `blank` (the default of `flint create`) gives Flint and Orbh. The preset `default` gives Flint, Invironments, Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code, and no Orbh. An install from a path or a Git location needs no NUU account and no org. Only `flint shard publish` needs an org (Task 1035, WP4). `flint shard browse` and `flint shard install --core` are not in this build of the CLI (planned). Until they exist, the rules use `flint shard list` and the registry site. The rules:
 
 1. **Look before you build.** Before you install a shard and before you create one, run `flint shard list` (what this Flint has) and search the registry site `https://shards.nuucognition.com/registry` (what exists). `flint resolve @org/shard/<slug>` says whether a package is in this Flint, on this machine, or in the registry. If a shard already provides the capability, install it. Do not create a duplicate shard.
 2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards and install the operator's picks with `flint shard install <spec>` (the missing dependencies come too).
@@ -138,7 +138,7 @@ Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is 
 
 A Flint has a **person identity** — the operator's Name, bound to a `Mesh/People/@<Name>.md` file. The Name is **machine-global**, owned by the nuu CLI and stored in the shared `~/.nuucognition/config.toml` (the same value for every Flint on this machine). Set it once via first-run `flint setup`.
 
-The Name and the machine names (`machine-name` and the machine proper name) come from `flint setup`, which calls `nuu setup`. Login (`nuu login`) and an org are optional: Flint works with no NUU account and no org, and no local command checks them. A Flint with no org has the address `@/flint/<slug>`; `flint org set <org> --id <uuid>` gives it an org later and keeps its id.
+The Name and the machine names (`machine-name` and the machine proper name) come from `flint setup`, which calls `nuu setup` (Task 1035, WP2 and WP3). Login (`nuu login`) and an org are optional: Flint works with no NUU account and no org, and no local command checks them. A Flint with no org has the address `@/flint/<slug>`; `flint org set <org> --id <uuid>` gives it an org later and keeps its id.
 
 ```bash
 flint whoami                     # Show the operator Name + machine-name (and account status)
@@ -152,7 +152,7 @@ authors:
   - "[[@Nathan Luo]]"
 ```
 
-- The `@Person` is `@<Name>`; `flint create` writes the `Mesh/People/@<Name>.md` marker, and it is auto-created on first use.
+- The `@Person` is `@<Name>`; `flint create` writes the `Mesh/People/@<Name>.md` marker (Task 1035, WP3), and it is auto-created on first use.
 - `authors` is a list (supports multiple people collaborating on one artifact)
 - If no Name is set, omit the `authors` field (run `flint setup` to set it)
 - Person files live in `Mesh/People/` with the `@` prefix convention
