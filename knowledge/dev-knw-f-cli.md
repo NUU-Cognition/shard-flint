@@ -283,7 +283,7 @@ flint tinderbox connection list              # List declared connection edges an
 # Git and identity across the box
 flint tinderbox git sync                     # Sync the Tinderbox repo and run `flint git sync` in every member Flint
 flint tinderbox git publish <url>            # Add a remote and push the box's initial commit (renames branch to main; --yes skips confirm)
-flint tinderbox whoami <name>                # Propagate the person identity to every member Flint
+# flint tinderbox whoami <name>              # Removed (Task 1024 D10). The Name is machine-global: flint setup sets it once for every Flint
 ```
 
 **Sync flags:** `--dry-run` (preview clones/moves/deletes, change nothing), `--json` (machine-readable result/plan), `--full` (also run `flint sync` inside every member), `--only <names...>` / `--skip <names...>` (operate on a subset of declared members this run), `--yes` (accept prompts; deletes undeclared Flints that have saved work — needs `--force` for unsaved), `--delete-undeclared` (delete on-disk Flints not in the toml without prompting), `--no-open` (skip Obsidian registration). `status`/`check` also accept `--json`; `heal` accepts `--dry-run` and `--yes`.
