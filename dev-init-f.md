@@ -38,7 +38,7 @@ Shards extend your capabilities. Each shard is a self-contained unit with its ow
 
 ### Loading a Shard
 
-Run `flint shard start <name>` to get the shard's manifest — it lists the init file, required reading, skills, workflows, templates, and knowledge files with descriptions. Read the init file and required reading files before using any capabilities. `start` loads the shard (the build). When the source changed after the build, `start` prints a notice with `flint shard build <alias>` and loads the build anyway.
+Run `flint shard start <ref>` (the alias or the shorthand) to get the shard's manifest — it lists the init file, required reading, skills, workflows, templates, and knowledge files with descriptions. Read the init file and required reading files before using any capabilities. `start` loads the shard (the build). When the source changed after the build, `start` prints a notice with `flint shard build <alias>` and loads the build anyway.
 
 ```
 @Shards/[Name]/init-[sh].md                        # Load context (ALWAYS first)
@@ -48,9 +48,9 @@ Run `flint shard start <name>` to get the shard's manifest — it lists the init
 @Shards/[Name]/knowledge/knw-[sh]-[name].md        # Read knowledge
 ```
 
-**Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <name>` only when you edit it. See Source and Shard below.
+**Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <ref>` only when you edit it. See Source and Shard below.
 
-**Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse` shows what exists — public shards (registry + GitHub) and local dev shards on this machine — with install status. See Choosing Shards below.
+**Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse` shows what exists — public shards (registry + GitHub) and the sources in other Flints of this machine — with install status. See Choosing Shards below.
 
 ### Source and Shard
 
@@ -58,11 +58,11 @@ Every shard has two entities. The folder name says which one a folder holds:
 
 | Entity | Folder | Editable? | Loaded by |
 |--------|--------|-----------|-----------|
-| The shard (the build) | `Shards/<Name>/` | No — overwritten by the next build or install | `flint shard start` |
+| The shard (the build) | `Shards/<Name>/` (the alias as a Title when the alias is not the slug of the name) | No — overwritten by the next build or install | `flint shard start` |
 | A remote source | `Shards/(Source Remote) <Name>/` | Yes — a clone of a repository; changes are pushed to origin | `flint shard start-dev` |
 | A local source | `Shards/(Source Local) <Name>/` | Yes — no repository | `flint shard start-dev` |
 
-The shard id is `shard.yaml#id`; the source id is `shard.yaml#source.id`. The package address is `@org/shard/<name>`, and `@org/name` is its short form. `flint shard build <alias>` makes the shard from its source and strips the `dev-` prefix. The one exception is the `install/` folder — its contents are literal payloads (dashboards, type definitions, Obsidian templates) and carry no `dev-` prefix.
+The shard id is `shard.yaml#id`; the source id is `shard.yaml#source.id`. The address is `@org/shard/<slug>` (the slug is the fold of the name), and `@org/<slug>` is its short form. The words are in the glossary of the spec ([[(Spec) Flint Shards#Glossary]]). `flint shard build <alias>` makes the shard from its source and strips the `dev-` prefix. The one exception is the `install/` folder — its contents are literal payloads (dashboards, type definitions, Obsidian templates) and carry no `dev-` prefix.
 
 The Flint keeps the shard state in three places: `flint.toml` holds the intent (`<alias> = "<spec>"`, or `{ source = "<spec>", git?, from = "source"?, use? }`); `flint.json#shards[<shard id>]` is the lock (the state: `published`, `snapshot`, or `edited`, with its proof); `.flint/shards.json` holds the facts of this machine. A reference to a shard is a package spec: `@org/name[@version][#place]`.
 
@@ -94,7 +94,7 @@ Every Flint is created with the **core shards** (`NUU-Cognition/shard-flint`, `N
 
 1. **Browse before you build.** Run `flint shard browse` (or `flint shard browse <keyword>`) before you install a shard and before you create one. If a shard already provides the capability, install it. Do not create a duplicate shard.
 2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards from the catalog and install the operator's picks with `flint shard install <SOURCE> --with-deps`.
-3. **On demand later.** When the operator asks for a capability, browse first and install the matching shard. Prefer a public shard over a local dev shard (`flint://…`); a dev shard is a working version from another Flint on this machine.
+3. **On demand later.** When the operator asks for a capability, browse first and install the matching shard. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine (install it as `@org/<slug>#<flint>`).
 4. **Core missing?** `flint shard browse` reports it. Run `flint shard install --core`.
 5. **Load after install.** Run `flint shard start <name>` and read the init file before you use a new shard.
 
@@ -215,12 +215,11 @@ flint helper delete "<name>"          # Delete artifact + strip every frontmatte
 # Identity
 flint whoami                          # Show operator Name + machine-name (and account status)
 
-# Shard discovery and loading (<ref> = alias, shorthand, id, or address)
-flint shard list                      # One row per shard: alias, shorthand, state, version, address, id
+# Shard discovery and loading (<ref> = alias, shorthand, address, or id; a former name resolves with a moved note)
+flint shard list                      # One row per shard: id, address, alias, shorthand, version, state
 flint shard browse [keyword]          # Browse installable shards: public (registry + GitHub) + local sources, with status
 flint shard browse --available        # Only shards this Flint does not have yet
-flint shard info <ref>                # Detailed shard info
-flint shard status <ref>              # Record, state, dependencies, Git state of the source, pending migrations
+flint shard status <ref>              # The row, the Git state of the source, dependencies, pending migrations (info is an alias)
 flint shard start <ref>               # Dynamic manifest of the shard (interactive)
 flint shard start-dev <ref>           # Dynamic manifest of the source (interactive)
 flint shard hstart <ref>              # Dynamic manifest of the shard (headless)
@@ -239,6 +238,5 @@ flint shard uninstall <ref>           # Remove the shard and clean files
 
 Authoring commands (create, build, dev, clone, release, fork, rename, id, push, pull, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
 
-> Old words: the "Dev Local" and "Dev Remote" folders are now the local source `(Source Local)` and the remote source `(Source Remote)`; a "dev shard" is a source; the "installed copy" is the shard (the build).
 
 If this Flint lives inside a **Tinderbox** (a multi-Flint orchestration box with a `tinderbox.toml`), `flint tinderbox <subcommand>` manages the box from any member. See the Tinderbox section of [[dev-knw-f-cli]] before running it — `sync`/`import`/`heal` can move or delete Flints on disk.

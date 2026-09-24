@@ -51,8 +51,8 @@ Mesh/Metadata/Types/(Type) <Name> . <Subname> (<Shard Display Name> Shard).md
 ```
 
 - `(Type)` is a literal marker — all type definition files carry this type prefix
-- `<Name>` is the human-readable type name in Title Case
-- `<Shard Display Name>` is the shard's `name` field from `shard.yaml` (the Title, also when the shard has another alias in `flint.toml`)
+- `<Name>` is the human-readable type name, each word with a capital letter
+- `<Shard Display Name>` is the name of the shard (the lock `name`), also when the shard has another alias in `flint.toml`
 - ` Shard` is a literal suffix — part of the context qualifier
 - Subtypes use `. <Subname>` (dot-space separator) per MKD untyped subfile convention
 
@@ -65,7 +65,7 @@ Mesh/Metadata/Types/(Type) <Name> . <Subname> (<Shard Display Name> Shard).md
 | `Learning Report` | Learn | `(Type) Learning Report (Learn Shard).md` |
 | `Note.Concept` | Flint | `(Type) Note . Concept (Flint Shard).md` |
 
-The shard context qualifier prevents collisions — two shards with different Titles that declare the same type name produce distinct files. Two shards with one Title (under two aliases) share the destination; the second install keeps the first file.
+The shard context qualifier prevents collisions — two shards with different names that declare the same type name produce distinct files. Two shards with one name (under two aliases) share the destination; the second install keeps the first file.
 
 ## shard.yaml Declaration
 
@@ -78,7 +78,7 @@ types:
 ```
 
 **Rules:**
-- Title Case only, letters and numbers (no spaces in single words, spaces between words)
+- Each word with a capital letter; letters and numbers only (no spaces in single words, spaces between words)
 - Format: `Type`, `Multi Word Type`, or `Type.Subtype`
 - Pattern: `/^[A-Z][A-Za-z0-9]*(?: [A-Z][A-Za-z0-9]*)*(?:\.[A-Z][A-Za-z0-9]*(?: [A-Z][A-Za-z0-9]*)*)?$/`
 
@@ -153,11 +153,11 @@ The manifest parser normalizes this to the string format automatically. The `sou
 
 ## Install Semantics
 
-- **Mode:** `once` — the install copies the file only if the destination does not exist. Users may change the file in the Mesh.
+- **Install mode:** `once` — the install copies the file only if the destination does not exist. Users may change the file in the Mesh.
 - **Template processing:** `{{uuid}}` and `{{date}}` placeholders are resolved at install time.
 - **ID preservation:** If the destination file already exists (on reinstall with force), the existing `id` is preserved.
 - **Readonly tag:** Every installed type file receives `#readonly` in its tags (also when the shard is a build of a local or a remote source).
 - **Record:** The install lists each type file in `flint.json#shards[<id>].payloads[]` with `kind: type`, `sha256`, `mode`, and the Mesh `id`. Health reads the type files from this lock record, not from the `shard.yaml` of the build.
-- **Rename:** `flint shard rename <alias> --title` (and the `moved` heal of `flint sync` in a consumer Flint) moves the type file to the new qualifier. The file keeps its `id`, and the `[[wikilinks]]` to it follow.
+- **Rename:** `flint shard rename <alias> --name` (and the `moved` heal of `flint sync` in a consumer Flint) moves the type file to the new qualifier. The file keeps its `id`, and the `[[wikilinks]]` to it follow. See [[(Spec) Flint Shards . Rename]].
 - **Reference:** A shard bound with `use = "reference"` (no build here) still installs its type files into the Mesh.
 - **Uninstall:** When a shard is removed, its unchanged type definition files are deleted. A changed file stays.

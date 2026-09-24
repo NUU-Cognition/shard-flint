@@ -13,15 +13,15 @@ Execute an agent-type shard migration — read the migration file, apply its tra
 # Input
 
 - Path to the migration file (e.g. `Shards/Flint/migrations/mig-f-0.1.3-to-0.1.4-s1.md`)
-- The shard's folder name (e.g. `Flint`, `Claude Code`) — the CLI accepts folder name, shorthand, or kebab name
+- The alias of the shard (e.g. `flint`) — the CLI takes a `<ref>`: the alias, the shorthand, the address, or the id. A folder name is not a ref.
 
 # Actions
 
-1. Read the migration file at the given path. Its body is a self-contained instruction set.
+1. Read the migration file at the given path. Its body is a self-contained instruction set. When the file has a `rewrite` block (a shorthand rename), `flint shard migrate run <alias>` already rewrote the tags, the links, and the command texts in the Mesh, and it listed each file that it changed. Check those files; the file tells you what stays for you (the prose, a bare tag, a Markdown link, a code block).
 2. Apply every transformation described. Migration files describe file renames, frontmatter edits, content rewrites, or structural moves — do them all, in order.
 3. If the file has a `## Verification` section, run those checks. If anything fails, stop and report — do not finish.
-4. Run `flint shard migrate finish "<shard folder name>"` to mark the step complete. The CLI will advance the version (if this was the last step of a transition), delete the migration file, and surface the next pending step.
-5. If `flint shard migrate show "<shard folder name>"` reports more pending steps, the user can invoke this skill again with the next file path.
+4. Run `flint shard migrate finish <alias>` to mark the step complete. The CLI advances the version (if this was the last step of a transition) and surfaces the next pending step. The migration file stays in the build; the lock ledger records the step.
+5. If `flint shard migrate show <alias>` reports more pending steps, the user can invoke this skill again with the next file path.
 
 # Output
 
