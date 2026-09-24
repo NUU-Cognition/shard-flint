@@ -22,8 +22,8 @@ Shards/(Dev) Flint/
     knw-f-artifacts.md          # Artifact conventions reference
     knw-f-cli.md                # CLI commands reference
   install/
-    (System) Flint Init.md      # Default Flint Init for new workspaces
-    otemp-f-default.md          # Obsidian template: bare note (UUID only)
+    inst-f-flint_init.md        # Default Flint Init for new workspaces (installs as Mesh/(System) Flint Init.md)
+    otmp-f-default.md           # Obsidian template: bare note (UUID only)
 ```
 
 ## What This Shard Covers

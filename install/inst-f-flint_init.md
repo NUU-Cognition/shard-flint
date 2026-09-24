@@ -6,7 +6,7 @@ tags:
 
 # My Flint
 
-This is a new Flint. The shards of its preset are installed (`flint shard list`). The purpose of this Flint is not set.
+This is a new Flint. The shards of its preset are installed (`flint shard list`). The preset `blank` (the default of `flint create`) gives Flint and Orbh. The preset `default` gives Flint, Invironments, Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code, and no Orbh. The purpose of this Flint is not set.
 
 ## First Session
 
