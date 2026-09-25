@@ -65,7 +65,7 @@ Use this to bundle source code alongside Mesh artifacts in a single stitched con
    orbh-sessions:
      - "[[your-session-id]]"
    authors:
-     - "[[@Person Name]]"  /* from the global operator Name (flint whoami); omit if no name set */
+     - "[[@Person Name]]"  /* from the Name of this machine (flint whoami); omit if no Name is set */
    ---
 
    # [Stitch Title]

@@ -86,7 +86,7 @@ The record has the keys of `flint.json` that have the same meaning, in this orde
 | `id` | The id of the box. The first command that records the box mints it. It never changes. |
 | `type` | Always `"tinderbox"`. |
 | `created` | The time of the mint. |
-| `org` | `{ id, slug }`. Absent in the local tier. Only `flint tinderbox org set <org> --apply` writes it. |
+| `org` | `{ id, slug }`. Absent for a local box (no org). Only `flint tinderbox org set <org> --apply` writes it. |
 | `migrations` | The steps that ran on the box files: the step id and the time. `{}` until a step runs. |
 | `members` | `{ id, name }` for each member with a known id, in the order of `tinderbox.toml`. A reference member gets its id from `flint.json` at its roster path. |
 
@@ -295,12 +295,12 @@ Every command runs from the box root or from any folder in a member (see "Where 
 - **Know which box you are in.** A command walks up to the nearest `tinderbox.toml`. A command in any folder under a box acts on that box, also in a repo under `Repos/`. Never run a write command in a box that you do not own. Scripts and checks run in a scratch box with an isolated home.
 - **Use the commands, not the file system.** Do not move, rename, or delete a member folder by hand. Use `remove`, `rename`, or `dissolve`.
 
-## The local tier
+## A local box (no org)
 
-- A box with no org is in the local tier. It reads clean: no command asks for an org or an account. Its address is `@/tinderbox/<slug>`.
+- A box with no org is local. It reads clean: no command asks for an org or an account. Its address is `@/tinderbox/<slug>`.
 - `flint tinderbox org set <org> --apply` gives the box and each owned member the org. `--id <uuid>` gives the id when this machine does not know the org yet. Without `--apply` the command prints the plan and changes nothing. A reference member keeps its own org.
 - In a box with an org, an owned member with no org or another org is a notice. `sync`, `sync --dry-run`, and `check` give it, with the next command `flint tinderbox org set <org> --id <uuid> --apply`. No command heals it: the local sync never writes the org of a member.
-- `status` shows the org of the box in its title, or `no org (local tier)`. A `tinderbox.json` that this CLI cannot read is not the local tier: the title says `org not known (tinderbox.json cannot be read)`.
+- `status` shows the org of the box in its title, or `no org (local tier)`. A `tinderbox.json` that this CLI cannot read is not local: the title says `org not known (tinderbox.json cannot be read)`.
 - A `registry:` source resolves from the roster with every reference spelling, the `@/` address included.
 - No Tinderbox command checks the account.
 

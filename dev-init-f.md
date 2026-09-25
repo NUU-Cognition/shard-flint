@@ -13,17 +13,17 @@ You are a terminal-based AI agent operating inside a Flint.
 
 # Flint
 
-A Flint is a workspace — a directory managed by the Flint CLI that organizes human knowledge and agent capabilities together. It contains a `Mesh/` & `Media/` content layer and a `Shards/` capabilities layer. A Flint can reference external codebases and resources via `flint.toml`. Everything you read, write, and create lives inside the Flint.
+A Flint is one folder of notes and shards, with its own id, that the `flint` CLI manages. It organizes human knowledge and agent capabilities together. It contains a `Mesh/` & `Media/` content layer and a `Shards/` capabilities layer. A Flint can reference external codebases and resources via `flint.toml`. Everything you read, write, and create lives inside the Flint.
 
 # Mesh
 
-The Mesh is a data structure which is a list of markdown files that reference each other and media. It is the content layer of a Flint — everything under `Mesh/` and `Media/`. It holds typed artifacts (`(Task)`, `(Plan)`, `(Notepad)`, etc.), notes, dashboards, system files, and archives. `Mesh/Types/` organizes artifacts by type into subfolders. `Mesh/Notes/` holds free-form notes. `Mesh/Archive/` stores completed work. Dashboards (`(Dashboard) *.md`) are live DataviewJS views that aggregate artifacts. `Media/` holds non-markdown files (images, PDFs, etc.). All workspace content goes into the Mesh — never write outside of it.
+The Mesh is a data structure which is a list of markdown files that reference each other and media. It is the content layer of a Flint — everything under `Mesh/` and `Media/`. It holds typed artifacts (`(Task)`, `(Plan)`, `(Notepad)`, etc.), notes, dashboards, system files, and archives. `Mesh/Types/` organizes artifacts by type into subfolders. `Mesh/Notes/` holds free-form notes. `Mesh/Archive/` stores completed work. Dashboards (`(Dashboard) *.md`) are live DataviewJS views that aggregate artifacts. `Media/` holds non-markdown files (images, PDFs, etc.). All the content of the Flint goes into the Mesh — never write outside of it.
 
-The Mesh is **flat** — folders are display only; structure lives in frontmatter tags. The structure layer comes from the **Invironments shard** (`ie`), a dependency of Flint: `#ie/sections/<name>` says where a node lives (exactly one mesh section), `#ie/groups/<name>` says what collections it's part of, and a bare `#ie` marks a `(Section)` header. Flint owns the workspace conventions built on it: `Mesh/Main/` holds the staging sections (**New → Working → Consolidated**; dumped notes land in New), `Mesh/Sections/` holds other sections at arbitrary display depth, `Mesh/Groups/` holds group definitions. Load the `ie` shard for the full grammar and tooling.
+The Mesh is **flat** — folders are display only; structure lives in frontmatter tags. The structure layer comes from the **Invironments shard** (`ie`), a dependency of Flint: `#ie/sections/<name>` says where a node lives (exactly one mesh section), `#ie/groups/<name>` says what collections it's part of, and a bare `#ie` marks a `(Section)` header. The Flint shard owns the conventions built on it: `Mesh/Main/` holds the staging sections (**New → Working → Consolidated**; dumped notes land in New), `Mesh/Sections/` holds other sections at arbitrary display depth, `Mesh/Groups/` holds group definitions. Load the `ie` shard for the full grammar and tooling.
 
 # Shards
 
-Shards are cognitive programs — self-contained packages that extend what an agent can do inside a Flint. A shard has a **source** (the files a person edits) and a **shard** (the built package that agents load). Each shard ships its own init file, skills, workflows, templates, knowledge files, and install files. Shards define artifact types (tasks, notepads, increments), their lifecycles, and the operations that create and manage them. Without shards, a Flint is just an empty workspace. With shards, it becomes a structured environment for planning, building, and tracking work.
+Shards are cognitive programs — self-contained packages that extend what an agent can do inside a Flint. A shard has a **source** (the files a person edits) and a **shard** (the built package that agents load). Each shard ships its own init file, skills, workflows, templates, knowledge files, and install files. Shards define artifact types (tasks, notepads, increments), their lifecycles, and the operations that create and manage them. Without shards, a Flint is just an empty folder. With shards, it becomes a structured environment for planning, building, and tracking work.
 
 ## Shard Rules
 
@@ -50,7 +50,7 @@ Run `flint shard start <ref>` (the alias or the shorthand) to get the shard's ma
 
 **Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <ref>` only when you edit it. See Source and Shard below.
 
-**Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse [query]` shows what this Flint can install: the shards of the registry and the shard sources of the Flints of this machine, each with its state here and the spec that installs it. `flint resolve <spec>` says where one package is. See Choosing Shards below.
+**Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse [query]` shows what this Flint can install: the shards of the shard registry and the shard sources of the Flints of this machine, each with its state here and the spec that installs it. `flint resolve <spec>` says where one package is. See Choosing Shards below.
 
 ### Source and Shard
 
@@ -90,9 +90,9 @@ Source files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything unde
 
 ### Choosing Shards
 
-The **core shards** are Flint (`@nuu-cognition/shard/flint`) and Orbh (`@nuu-cognition/shard/orbh`). Everything else is chosen for what the Flint is for. Every new Flint gets the core shards, whatever its preset declares, and then the shards of its preset. The preset `blank` (the default of `flint create`) gives only the core shards. The preset `default` adds Invironments, Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code. A clone (`flint create --from`) keeps the shard list of its files. An install from a path or a Git location needs no NUU account and no org. Only `flint shard publish` needs an org (Task 1035, WP4). The rules:
+The **core shards** are Flint (`@nuu-cognition/shard/flint`) and Orbh (`@nuu-cognition/shard/orbh`). Everything else is chosen for what the Flint is for. `flint create` gives every new Flint the core shards, whatever its preset declares, and Invironments (Flint needs it). Then it installs the shards of the preset. The preset `blank` (the default of `flint create`) adds no shards. The preset `default` adds Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code. `flint create --help` lists the other presets. A clone (`flint create --from <url>`) keeps the shard list of its files. An install from a path or a Git location needs no NUU account and no org. Only a publish to the shard registry (`flint shard release`) needs an org. The rules:
 
-1. **Look before you build.** Before you install a shard and before you create one, run `flint shard browse <word>` (what exists: the registry and the sources of this machine) and `flint shard list` (what this Flint has). If a shard already provides the capability, install it with the spec in its row. Do not create a duplicate shard. When the registry does not answer, `browse` lists only the local sources and prints one warning; then also search the registry site `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the registry.
+1. **Look before you build.** Before you install a shard and before you create one, run `flint shard browse <word>` (what exists: the shard registry and the shard sources of this machine) and `flint shard list` (what this Flint has). If a shard already provides the capability, install it with the spec in its row. Do not create a duplicate shard. When the shard registry does not answer, `browse` lists only the shard sources of this machine and prints one warning; then also search the site of the shard registry, `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the shard registry.
 2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards and install the operator's picks with `flint shard install <spec>` (the missing dependencies come too).
 3. **On demand later.** When the operator asks for a capability, look first and install the matching shard. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine (install it as `@org/<slug>#<flint>`).
 4. **Core missing?** When `flint shard list` has no row for `flint` or `orbh`, run `flint shard install --core`. It installs each core shard that this Flint does not have and leaves the present ones alone.
@@ -108,7 +108,7 @@ Each shard has a `shard.yaml` at its root declaring identity, dependencies, and 
 - `setup:` — `full | flint | local` when the shard needs one-time setup
 - `types:` — artifact types the shard manages (installs `(Type) ...` files to `Mesh/Metadata/Types/`)
 - `folders:` — artifact storage folders to create under `Mesh/`
-- `install:` — files copied verbatim from `install/` into the workspace (dashboards, system files, Obsidian templates)
+- `install:` — files copied verbatim from `install/` into the Flint (dashboards, system files, Obsidian templates)
 
 Read `shard.yaml` when you need to understand what a shard installs or depends on.
 
@@ -132,29 +132,33 @@ Templates define how to create artifacts. When you encounter an artifact with a 
 
 ### First Action
 
-Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is about, how to navigate it, what shards are installed, and workspace-specific instructions.
+Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is about, how to navigate it, what shards are installed, and the instructions of this Flint.
 
 ### Identity
 
-A Flint has a **person identity** — the operator's Name, bound to a `Mesh/People/@<Name>.md` file. The Name is **machine-global**, owned by the nuu CLI and stored in the shared `~/.nuucognition/config.toml` (the same value for every Flint on this machine). Set it once via first-run `flint setup`.
+The person who works in a Flint has one **Name** ("your Name" in the screens of the CLI). Your Name is how the person appears as the author of notes on this machine. It is bound to a `Mesh/People/@<Name>.md` file. Your Name is the same for every Flint on this machine: it is stored in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`).
 
-The Name and the machine names (`machine-name` and the machine proper name) come from `flint setup`, which calls `nuu setup` (Task 1035, WP2 and WP3). Login (`nuu login`) and an org are optional: Flint works with no NUU account and no org, and no local command checks them. A Flint with no org has the address `@/flint/<slug>`; `flint org set <org> --id <uuid>` gives it an org later and keeps its id.
+`flint setup` sets the identity of this machine once: your Name and the machine display name (the name that people read, such as "Ada Laptop"). The machine name (the short word after `#` in an address) and the branch prefix (`machine-name`) take their defaults. `flint config name "<Name>"` changes your Name only. A NUU account (`flint login`) and an org are optional: Flint works with no NUU account and no org, and no local command checks them.
+
+A Flint with no org is local. Its address starts with `@/` (for example `@/flint/my-notes`). An address that starts with `@/` names no org. It works only on this machine. To share the Flint, give it an org: `flint org set <org>`. The Flint keeps its id.
 
 ```bash
-flint whoami                     # Show the operator Name + machine-name (and account status)
-flint config name "Your Name"    # Set the operator Name (routes to nuu)
+flint setup                      # Set your Name and the machine names (once per machine)
+flint whoami                     # Show your Name, this machine, your org, and the NUU account
+flint config name "Your Name"    # Change your Name only
+flint create "<name>"            # Create a Flint (init is an alias)
 ```
 
-**When creating or editing artifacts**, resolve the operator Name (run `flint whoami`, or read `name` from `~/.nuucognition/config.toml`) and populate the `authors` frontmatter field with the person as a wikilink:
+**When creating or editing artifacts**, resolve the Name (run `flint whoami`, or read `name` from the NUU config) and populate the `authors` frontmatter field with the person as a wikilink:
 
 ```yaml
 authors:
   - "[[@Nathan Luo]]"
 ```
 
-- The `@Person` is `@<Name>`; `flint create` writes the `Mesh/People/@<Name>.md` marker (Task 1035, WP3), and it is auto-created on first use.
+- The `@Person` is `@<Name>`; `flint create` writes the `Mesh/People/@<Name>.md` marker, and it is auto-created on first use.
 - `authors` is a list (supports multiple people collaborating on one artifact)
-- If no Name is set, omit the `authors` field (run `flint setup` to set it)
+- If no Name is set, omit the `authors` field (the operator runs `flint setup` to set it)
 - Person files live in `Mesh/People/` with the `@` prefix convention
 
 ### Session Tracking
@@ -200,7 +204,7 @@ See [[dev-knw-f-cli]] for the full CLI reference.
 1. **Read before writing** — understand existing patterns before making changes
 2. **Follow naming conventions** — use existing patterns for file names, tags, and structure
 3. **Tag documents appropriately** — every artifact gets proper tags
-4. **Write outputs to Mesh/** — all workspace content lives under Mesh/
+4. **Write outputs to Mesh/** — all the content of the Flint lives under Mesh/
 5. **Search, don't browse** — find files by name/tag, not by walking directories
 6. **Load shards on demand** — don't load what you don't need
 
@@ -214,22 +218,26 @@ flint helper type newnumber <Type>    # Next artifact number (zero-padded, 3 dig
 flint helper rename "<old>" "<new>"   # Rename a Mesh artifact + rewrite every [[Old]] wikilink under Mesh/
 flint helper delete "<name>"          # Delete artifact + strip every frontmatter wikilink to it (use --archive to soft-delete)
 
-# Identity
-flint whoami                          # Show operator Name + machine-name (and account status)
+# This machine and new Flints
+flint setup                           # Set your Name and the machine names (once per machine)
+flint whoami                          # Show your Name, this machine, your org, and the NUU account
+flint config name "<Name>"            # Change your Name only
+flint create "<name>"                 # Create a Flint (init is an alias); --preset <name> adds shards
+flint org set <org>                   # Give this Flint an org (a local Flint has none: @/)
 
 # Shard discovery and loading (<ref> = alias, shorthand, address, or id; a former address or a former shorthand resolves with a moved note)
 flint shard list                      # One row per shard: id, address, alias, shorthand, version, state
-flint shard browse [query]            # What this Flint can install: the registry and the sources of this machine
+flint shard browse [query]            # What this Flint can install: the shard registry and the shard sources of this machine
 flint shard status <ref>              # The row, the Git state of the source, dependencies, pending migrations (info is an alias)
 flint shard start <ref>               # Dynamic manifest of the shard (interactive)
 flint shard start-dev <ref>           # Dynamic manifest of the source (interactive)
 flint shard hstart <ref>              # Dynamic manifest of the shard (headless)
 flint shard hstart-dev <ref>          # Dynamic manifest of the source (headless)
-flint resolve <spec>                  # Where a package is: this Flint, this machine, or the registry
+flint resolve <spec>                  # Where a package is: this Flint, this machine, or the shard registry
 
 # Shard lifecycle
 flint shard install                   # Make the lock match the specs of flint.toml (pnpm install)
-flint shard install @org/name[@range][#place]   # Install a package (the registry, or a place)
+flint shard install @org/name[@range][#place]   # Install a package (the shard registry, or a place)
 flint shard install --from-git <owner/repo[#ref]>   # Install from a Git location
 flint shard install --from-path <dir>           # Install from a folder on this machine
 flint shard install --core            # Install each missing core shard (Flint, Orbh)
@@ -243,7 +251,7 @@ flint sync                            # Make the files match the lock and the de
 flint git sync                        # Exchange history with origin; the local sync runs before the push
 ```
 
-Three commands, one job each. `flint sync` makes the files of this Flint match its lock and its declarations. `flint shard install` makes the lock match the specs. `flint git sync` exchanges history with origin. `flint sync` never asks the registry, never moves the lock, and never touches origin.
+Three commands, one job each. `flint sync` makes the files of this Flint match its lock and its declarations. `flint shard install` makes the lock match the specs. `flint git sync` exchanges history with origin. `flint sync` never asks the shard registry, never moves the lock, and never touches origin.
 
 Authoring commands (create, build, dev, clone, release, fork, rename, id, push, pull, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
 

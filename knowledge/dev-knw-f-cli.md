@@ -1,6 +1,7 @@
 ---
 description: "Flint CLI commands for agent workflows"
 orbh-sessions:
+  - "[[bd0b60bc-bca8-4b9c-8c66-ee82ccbfb5bb]]"
   - "[[87347e6b-2363-4434-9a98-f1d641049fa7]]"
   - "[[97c9f9ca-46fb-41d8-a7c1-c1a1e099f8b9]]"
   - "[[2ed34533-a12f-4692-a0b1-e88495548403]]"
@@ -95,15 +96,26 @@ Behavior:
 
 Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=true|false`.
 
-## Identity
+## Identity and New Flints
+
+`flint setup` sets the identity of this machine once: your Name and the machine display name. The machine name (the short word after `#` in an address) and the branch prefix (`machine-name`) take their defaults. Your Name and the machine names are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them. A NUU account and an org are optional.
 
 ```bash
-flint whoami                             # Show current person identity
+flint setup                              # Set your Name and the machine names (once per machine)
+flint whoami                             # Show your Name, this machine, your org, and the NUU account
+flint config name "<Name>"               # Change your Name only
+flint create "<name>"                    # Create a Flint (init is an alias)
+flint create "<name>" --preset default   # Create a Flint with the shards of a preset
+flint create --from <url>                # Clone a Flint from a Git repository
+flint org show                           # The org and the address of this Flint
+flint org set <org>                      # Give this Flint an org; its id does not change
 ```
+
+A Flint with no org is local. Its address starts with `@/` (for example `@/flint/my-notes`). An address that starts with `@/` names no org. It works only on this machine. To share the Flint, give it an org: `flint org set <org>`.
 
 ## Shard Discovery
 
-A shard is a package with two entities: the **source** (the files a person edits, in `Shards/(Source Local) <Name>/` or `Shards/(Source Remote) <Name>/`) and the **shard** (the build in `Shards/<Name>/`, or the alias as a Title when the alias is not the slug of the name). `flint.toml` is the intent, `flint.json#shards[<shard id>]` is the lock, and the NUU Shard Registry gives the versions of each package. The words are in the glossary of the spec ([[(Spec) Flint Shards#Glossary]]).
+A shard is a package with two entities: the **source** (the files a person edits, in `Shards/(Source Local) <Name>/` or `Shards/(Source Remote) <Name>/`) and the **shard** (the build in `Shards/<Name>/`, or the alias as a Title when the alias is not the slug of the name). `flint.toml` is the intent, `flint.json#shards[<shard id>]` is the lock, and the shard registry gives the versions of each package. The words are in the glossary of the spec ([[(Spec) Flint Shards#Glossary]]).
 
 A `<ref>` names one shard of this Flint. One resolver reads it in this order: the alias (its key in `flint.toml`), the shorthand, the address (`@org/<slug>` or `@org/shard/<slug>`), the id (`<uuid>`, `@<uuid>`, or a prefix of eight or more characters), then a former address (`@org/<former slug>` or `@org/shard/<former slug>`) or a former shorthand. A former form prints `moved: <old> is now <new>` and goes on. A bare word is an alias or a shorthand; a name is an address. The name, a former name, a bare former slug, and a folder name are not a ref: use the alias, or the address for a former name. A ref that names two shards is refused as `ambiguous`, with one next command per shard that names its alias.
 
@@ -112,7 +124,7 @@ flint shard list [--json]             # One row per shard: ID ADDRESS ALIAS SHOR
 flint shard status <ref> [--json]     # The row, the Git state of the source, dependencies, pending migrations
 flint shard status <ref> --health     # Also run the health check
 flint shard info <ref>                # An alias of status
-flint resolve <spec>                  # The answer of the walk: this Flint, this machine, or the registry
+flint resolve <spec>                  # The answer of the walk: this Flint, this machine, or the shard registry
 ```
 
 ```
@@ -134,19 +146,19 @@ Shards
 
 ```bash
 flint shard browse [query]            # The catalog; the query matches the name, slug, shorthand, address, or description
-flint shard search <query>            # The same command (aliases: search, available)
+flint shard search <query>            # The same command (search is an alias of browse)
 flint shard browse --available        # Only the shards that this Flint does not have
 flint shard browse --installed        # Only the shards that this Flint has
 flint shard browse --json             # One value: { query, entries, warnings }
 ```
 
-The catalog has two kinds of entries. A **public** entry comes from the NUU Shard Registry; its spec is `@org/<slug>`. A **local** entry is a shard source (`Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/`) in a Flint of this machine; its spec is `@org/<slug>#<flint slug>`. One shard can have several rows: one for the registry and one for each Flint that holds its source. The columns are `ADDRESS VERSION FROM STATE SPEC NEXT`:
+The catalog has two kinds of entries. A **public** entry comes from the shard registry; its spec is `@org/<slug>`. A **local** entry is a shard source (`Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/`) in a Flint of this machine; its spec is `@org/<slug>#<flint slug>`. One shard can have several rows: one for the registry and one for each Flint that holds its source. The columns are `ADDRESS VERSION FROM STATE SPEC NEXT`:
 
 - `FROM` is `registry`, `<Flint> (remote source)`, `<Flint> (local source)`, or `here (…)` for a source in this Flint.
 - `STATE` is `installed <version> (<state>)`, `not installed`, or `source here`. The state comes from the lock of this Flint, matched by the shard id, then the address.
 - `NEXT` is `flint shard install <spec>` for a shard that is not installed, and `flint shard build <alias>` for a source here with no build.
 
-When the registry does not answer, `browse` lists the local sources and prints one warning with the reason. Then also search the registry site `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the registry. If a shard already provides the capability, install it instead of writing a duplicate. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine.
+When the shard registry does not answer, `browse` lists the shard sources of this machine and prints one warning with the reason. Then also search the site of the shard registry, `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the shard registry. If a shard already provides the capability, install it instead of writing a duplicate. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine.
 
 **Core shards** are Flint (`@nuu-cognition/shard/flint`) and Orbh (`@nuu-cognition/shard/orbh`). Every new Flint gets them, whatever its preset declares; a clone keeps the shard list of its files. When `flint shard list` has no row for one of them, install it:
 
@@ -154,7 +166,7 @@ When the registry does not answer, `browse` lists the local sources and prints o
 flint shard install --core            # Install each missing core shard; leave the present ones alone
 ```
 
-`--core` installs a missing core shard through the normal install path (its dependencies first, then the lock). It reads the lock by shard id, address, or Git location, never by folder. It takes no other source: with a spec, `--from-git`, `--from-path`, or `--all-dev` it refuses and names the two commands to run. `--json` gives `{ ok, shards, present }`. The core shards install from their Git locations (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`), because the registry does not serve them as `@nuu-cognition/<slug>` yet.
+`--core` installs a missing core shard through the normal install path (its dependencies first, then the lock). It reads the lock by shard id, address, or Git location, never by folder. It takes no other source: with a spec, `--from-git`, `--from-path`, or `--all-dev` it refuses and names the two commands to run. `--json` gives `{ ok, shards, present }`. The core shards install from their Git locations (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`), because the shard registry does not serve them as `@nuu-cognition/<slug>` yet.
 
 ## Shard Manifests (loading shards)
 
@@ -173,12 +185,12 @@ The start refuses and exits 1 when setup is required (it prints `FORCE SETUP`, t
 
 ## Shard Install / Update
 
-A package spec is `@org/name[@version][#place]`: `@version` is an exact version, a caret range (`^1.1`), or a tilde range (`~1.1.3`); `#place` is a machine name or the slug of a Flint on this machine. Without `#place`, the install asks this Flint, this machine, then the registry.
+A package spec is `@org/name[@version][#place]`: `@version` is an exact version, a caret range (`^1.1`), or a tilde range (`~1.1.3`); `#place` is a machine name or the slug of a Flint on this machine. Without `#place`, the install asks this Flint, this machine, then the shard registry.
 
 ```bash
 flint shard install                              # No argument: make the lock match the specs of flint.toml
-flint shard install @org/name[@range][#place]    # From the registry (published), or from a place
-flint shard install --from-git <owner/repo[#ref]>  # From a Git location; the registry names the state
+flint shard install @org/name[@range][#place]    # From the shard registry (published), or from a place
+flint shard install --from-git <owner/repo[#ref]>  # From a Git location; the shard registry names the state
 flint shard install --from-path <dir>            # From a folder on this machine
 flint shard install --core                       # Each missing core shard (Flint, Orbh)
 flint shard install <input> --alias <alias>      # Install under another key (a second shard with the same slug)
@@ -233,9 +245,6 @@ flint shard migrate finish <ref>      # Mark the current agent or manual step do
 
 A step with a `rewrite` block (a shorthand rename) rewrites the tags, the links, and the command texts of the Mesh as code, prints one line per file, and then stops at the agent step: follow [[dev-sk-f-migrate]].
 
-```bash
-```
-
 ## Shard Scripts
 
 Shards can ship Node.js scripts under `scripts/`, auto-discovered and invoked via the alias or the shorthand of the shard:
@@ -276,7 +285,7 @@ For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`)
 ## Workspace
 
 ```bash
-flint workspace                       # Manage workspace references (codebases, URLs)
+flint workspace                       # The repositories of this Flint (codebases, URLs)
 ```
 
 ## Tinderbox
@@ -340,5 +349,5 @@ Files land in the target Flint's `Inbox/(Bundle) Title/` directory. Use [[dev-sk
 ## Other Useful Commands
 
 ```bash
-flint open                            # Open flint in configured applications
+flint open                            # Open a Flint in Obsidian
 ```
