@@ -3,13 +3,13 @@ id: 1e540354-13a8-40b9-b9d7-70c24b663095
 org: nuu-cognition
 source:
   id: 0e657579-aef5-43a3-aee2-91010e900afb
-version: "0.3.1"
+version: "0.3.2"
 name: Flint
 shorthand: f
 description: Core agent environment of a Flint. Defines shard rules, template rules, the conventions of a Flint, and note types.
 
 dependencies:
-  "@nuu-cognition/invironments": ""
+  - source: NUU-Cognition/shard-invironments
 
 folders:
   - Mesh/Main

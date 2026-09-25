@@ -1,5 +1,11 @@
 # Flint Releases
 
+## Release 0.3.2
+
+- `shard.yaml`: the dependency on Invironments has its Git source again (`dependencies: - source: NUU-Cognition/shard-invironments`), as in 0.3.0 and in Orbh. 0.3.1 declared the package spec `"@nuu-cognition/invironments": ""`. A fresh machine does not have that package, and the shard registry does not serve it. Thus the install of 0.3.1 failed on every fresh machine (`dependency @nuu-cognition/shard/invironments of Flint cannot be resolved`), and Orbh then installed Flint 0.3.0 from the default branch (NUU Flint Task 1048, ruling 36). The Git source resolves with no shard registry.
+- `init-f`, `knw-f-cli`, `knw-f-tinderbox`: the behaviour of `flint git`, `flint tinderbox`, `flint sync`, and `flint shard` of NUU Flint Task 1049. `flint sync` writes no shard version and no pin; its one lock write removes a stale lock line.
+- The pin of the flint CLI moves to `@nuu-cognition/flint@0.3.2` (Task 1048, ruling 36). A CLI with the pin 0.3.1 installs 0.3.1 and gets the defect above.
+
 ## Release 0.3.1
 
 - `inst-f-flint_init` (the starter `Mesh/(System) Flint Init.md` of a new Flint): the title is `# {{name}}`, the name of the Flint. The file names the shards of each preset (`blank`, `default`, `factory`, `garden`, `lab`, `observatory`, `quarry`) and only commands that `flint --help` lists. It says that Invironments comes with Flint. The source has no `#readonly` tag, and a CLI of NUU Flint Task 1048 adds none to a payload of `mode: once` (UX7, ruling 32).
