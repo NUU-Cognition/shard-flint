@@ -98,7 +98,7 @@ Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=
 
 ## Identity and New Flints
 
-`flint setup` sets the identity of this machine once: your Name and the machine display name. The machine name (the short word after `#` in an address) and the branch prefix (`machine-name`) take their defaults. Your Name and the machine names are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them. A NUU account and an org are optional.
+`flint setup` sets the identity of this machine once: your Name and the machine display name. The machine name (the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. Your Name and the machine names are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them. A NUU account and an org are optional.
 
 ```bash
 flint setup                              # Set your Name and the machine names (once per machine)
