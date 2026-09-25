@@ -50,7 +50,7 @@ Run `flint shard start <ref>` (the alias or the shorthand) to get the shard's ma
 
 **Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <ref>` only when you edit it. See Source and Shard below.
 
-**Discovering shards**: `flint shard list` shows what this Flint has. The registry site (`https://shards.nuucognition.com/registry`) shows the public shards, and `flint resolve <spec>` says where one package is. `flint shard browse` is not in this build of the CLI (planned). See Choosing Shards below.
+**Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse [query]` shows what this Flint can install: the shards of the registry and the shard sources of the Flints of this machine, each with its state here and the spec that installs it. `flint resolve <spec>` says where one package is. See Choosing Shards below.
 
 ### Source and Shard
 
@@ -90,12 +90,12 @@ Source files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything unde
 
 ### Choosing Shards
 
-The **core shards** are Flint (`@nuu-cognition/flint`) and Orbh (`@nuu-cognition/orbh`). Everything else is chosen for what the Flint is for. A new Flint gets the shards of its preset. The preset `blank` (the default of `flint create`) gives Flint and Orbh. The preset `default` gives Flint, Invironments, Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code, and no Orbh. An install from a path or a Git location needs no NUU account and no org. Only `flint shard publish` needs an org (Task 1035, WP4). `flint shard browse` and `flint shard install --core` are not in this build of the CLI (planned). Until they exist, the rules use `flint shard list` and the registry site. The rules:
+The **core shards** are Flint (`@nuu-cognition/shard/flint`) and Orbh (`@nuu-cognition/shard/orbh`). Everything else is chosen for what the Flint is for. Every new Flint gets the core shards, whatever its preset declares, and then the shards of its preset. The preset `blank` (the default of `flint create`) gives only the core shards. The preset `default` adds Invironments, Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code. A clone (`flint create --from`) keeps the shard list of its files. An install from a path or a Git location needs no NUU account and no org. Only `flint shard publish` needs an org (Task 1035, WP4). The rules:
 
-1. **Look before you build.** Before you install a shard and before you create one, run `flint shard list` (what this Flint has) and search the registry site `https://shards.nuucognition.com/registry` (what exists). `flint resolve @org/shard/<slug>` says whether a package is in this Flint, on this machine, or in the registry. If a shard already provides the capability, install it. Do not create a duplicate shard.
+1. **Look before you build.** Before you install a shard and before you create one, run `flint shard browse <word>` (what exists: the registry and the sources of this machine) and `flint shard list` (what this Flint has). If a shard already provides the capability, install it with the spec in its row. Do not create a duplicate shard. When the registry does not answer, `browse` lists only the local sources and prints one warning; then also search the registry site `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the registry.
 2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards and install the operator's picks with `flint shard install <spec>` (the missing dependencies come too).
 3. **On demand later.** When the operator asks for a capability, look first and install the matching shard. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine (install it as `@org/<slug>#<flint>`).
-4. **Core missing?** `flint init` installs the shards of its preset. When `flint shard list` has no row for `flint` or `orbh`, install the missing one: `flint shard install @nuu-cognition/flint` or `flint shard install @nuu-cognition/orbh`.
+4. **Core missing?** When `flint shard list` has no row for `flint` or `orbh`, run `flint shard install --core`. It installs each core shard that this Flint does not have and leaves the present ones alone.
 5. **Load after install.** Run `flint shard start <alias>` and read the init file before you use a new shard.
 
 ### Shard Manifest
@@ -219,7 +219,7 @@ flint whoami                          # Show operator Name + machine-name (and a
 
 # Shard discovery and loading (<ref> = alias, shorthand, address, or id; a former address or a former shorthand resolves with a moved note)
 flint shard list                      # One row per shard: id, address, alias, shorthand, version, state
-# flint shard browse, flint shard install --core: not in this build of the CLI (planned)
+flint shard browse [query]            # What this Flint can install: the registry and the sources of this machine
 flint shard status <ref>              # The row, the Git state of the source, dependencies, pending migrations (info is an alias)
 flint shard start <ref>               # Dynamic manifest of the shard (interactive)
 flint shard start-dev <ref>           # Dynamic manifest of the source (interactive)
@@ -232,6 +232,7 @@ flint shard install                   # Make the lock match the specs of flint.t
 flint shard install @org/name[@range][#place]   # Install a package (the registry, or a place)
 flint shard install --from-git <owner/repo[#ref]>   # Install from a Git location
 flint shard install --from-path <dir>           # Install from a folder on this machine
+flint shard install --core            # Install each missing core shard (Flint, Orbh)
 flint shard build <ref>               # Build the shard from its source in this Flint
 flint shard install --all-dev         # Build the shard of every source
 flint shard update [<ref>]            # Move the lock of each shard to the highest version inside its range (pnpm update)

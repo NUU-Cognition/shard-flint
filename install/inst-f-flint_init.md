@@ -6,14 +6,14 @@ tags:
 
 # My Flint
 
-This is a new Flint. The shards of its preset are installed (`flint shard list`). The preset `blank` (the default of `flint create`) gives Flint and Orbh. The preset `default` gives Flint, Invironments, Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code, and no Orbh. The purpose of this Flint is not set.
+This is a new Flint. The core shards (Flint and Orbh) and the shards of its preset are installed (`flint shard list`). The preset `blank` (the default of `flint create`) gives only the core shards. The preset `default` adds Invironments, Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code. The purpose of this Flint is not set.
 
 ## First Session
 
 Agent: do these steps in the first session, in this order.
 
 1. Ask the operator one question: "What is this Flint for?" Do not guess.
-2. Run `flint shard list` (what this Flint has) and search the registry site `https://shards.nuucognition.com/registry` (what exists). `flint shard browse` is not in this build of the CLI (planned).
+2. Run `flint shard list` (what this Flint has) and `flint shard browse` (what exists: the registry and the shard sources of this machine).
 3. Follow [[sk-f-shard_browse]]: suggest the shards that fit the purpose, and install the operator's picks with `flint shard install <spec>`.
 4. Rewrite this file with [[tmp-f-flint_init-v0.1]]: the purpose of the Flint, the Shards table, and the navigation.
 

@@ -23,17 +23,17 @@ Find the shards that exist before you build anything. Show the operator the cata
 
 # Actions
 
-`flint shard browse` and `flint shard install --core` are not in this build of the CLI (planned). Use the commands below until they exist.
-
 1. Confirm the core shards are present. `flint shard list` must have a row for `flint` and for `orbh`. Install a missing one:
    ```bash
    flint shard list                         # what this Flint has
-   flint shard install @nuu-cognition/orbh  # only if the row is missing (the same for @nuu-cognition/flint)
+   flint shard install --core               # installs each missing core shard; leaves the present ones alone
    ```
-2. Read the catalog. Search the registry site `https://shards.nuucognition.com/registry` by name or description. It shows the public shards. Check one package from the CLI:
+2. Read the catalog. It lists the shards of the registry and the shard sources of the Flints of this machine, each with its state in this Flint, its spec, and its next command:
    ```bash
-   flint resolve @nuu-cognition/shard/<slug>  # the rung (this Flint, this machine, or the registry), the address, the tag
+   flint shard browse                       # the whole catalog
+   flint shard browse <word> --available    # the shards that match a word and that this Flint does not have
    ```
+   If `browse` prints a registry warning, it lists only the local sources. Then also search the registry site `https://shards.nuucognition.com/registry` by name or description. `flint resolve @nuu-cognition/shard/<slug>` checks one package: the rung (this Flint, this machine, or the registry), the address, and the tag.
 3. Match shards to the purpose. Use this table as the starting point, then add matches from the catalog descriptions:
 
    | Purpose of the Flint | Suggest |

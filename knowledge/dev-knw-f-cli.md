@@ -128,23 +128,33 @@ Shards
 
 `--json`: `list` gives `{ rows: <row>[] }`; `status` gives `{ ...<row>, details, moved?, health? }`. A row is `{ id, held, alias, shorthand, name, address, request, state, version, from, registry, use, folders: { shard?, source? }, setup, pending, stale }`.
 
-## Shard Browsing (not in this build of the CLI)
+## Shard Browsing
 
-`flint shard browse` and `flint shard install --core` are not in this build of the CLI (planned). `flint shard browse` answers `not-found` (the CLI reads `browse` as a ref), and `flint shard install --core` answers `unknown option '--core'`. Until they exist, use these commands before you install a shard and before you create one:
-
-```bash
-flint shard list                      # What this Flint has
-flint resolve @org/shard/<slug>       # Where one package is: this Flint, this machine, or the registry
-flint shard install @org/<slug>       # Install a package and its missing dependencies
-```
-
-The public shards are on the registry site: `https://shards.nuucognition.com/registry` (search by name or description). If a shard already provides the capability, install it instead of writing a duplicate. A local source in another Flint of this machine is a working version; install it as `@org/<slug>#<flint slug>`.
-
-**Core shards** are Flint (`@nuu-cognition/flint`) and Orbh (`@nuu-cognition/orbh`). `flint init` installs the shards of its preset. When `flint shard list` has no row for one of them, install it:
+`flint shard browse` shows what this Flint can install. Run it before you install a shard and before you create one. It reads only; it writes nothing.
 
 ```bash
-flint shard install @nuu-cognition/orbh
+flint shard browse [query]            # The catalog; the query matches the name, slug, shorthand, address, or description
+flint shard search <query>            # The same command (aliases: search, available)
+flint shard browse --available        # Only the shards that this Flint does not have
+flint shard browse --installed        # Only the shards that this Flint has
+flint shard browse --json             # One value: { query, entries, warnings }
 ```
+
+The catalog has two kinds of entries. A **public** entry comes from the NUU Shard Registry; its spec is `@org/<slug>`. A **local** entry is a shard source (`Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/`) in a Flint of this machine; its spec is `@org/<slug>#<flint slug>`. One shard can have several rows: one for the registry and one for each Flint that holds its source. The columns are `ADDRESS VERSION FROM STATE SPEC NEXT`:
+
+- `FROM` is `registry`, `<Flint> (remote source)`, `<Flint> (local source)`, or `here (…)` for a source in this Flint.
+- `STATE` is `installed <version> (<state>)`, `not installed`, or `source here`. The state comes from the lock of this Flint, matched by the shard id, then the address.
+- `NEXT` is `flint shard install <spec>` for a shard that is not installed, and `flint shard build <alias>` for a source here with no build.
+
+When the registry does not answer, `browse` lists the local sources and prints one warning with the reason. Then also search the registry site `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the registry. If a shard already provides the capability, install it instead of writing a duplicate. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine.
+
+**Core shards** are Flint (`@nuu-cognition/shard/flint`) and Orbh (`@nuu-cognition/shard/orbh`). Every new Flint gets them, whatever its preset declares; a clone keeps the shard list of its files. When `flint shard list` has no row for one of them, install it:
+
+```bash
+flint shard install --core            # Install each missing core shard; leave the present ones alone
+```
+
+`--core` installs a missing core shard through the normal install path (its dependencies first, then the lock). It reads the lock by shard id, address, or Git location, never by folder. It takes no other source: with a spec, `--from-git`, `--from-path`, or `--all-dev` it refuses and names the two commands to run. `--json` gives `{ ok, shards, present }`. The core shards install from their Git locations (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`), because the registry does not serve them as `@nuu-cognition/<slug>` yet.
 
 ## Shard Manifests (loading shards)
 
@@ -170,6 +180,7 @@ flint shard install                              # No argument: make the lock ma
 flint shard install @org/name[@range][#place]    # From the registry (published), or from a place
 flint shard install --from-git <owner/repo[#ref]>  # From a Git location; the registry names the state
 flint shard install --from-path <dir>            # From a folder on this machine
+flint shard install --core                       # Each missing core shard (Flint, Orbh)
 flint shard install <input> --alias <alias>      # Install under another key (a second shard with the same slug)
 flint shard install <input> --reference          # No build under Shards/; the loader reads the folder in its place
 flint shard install <input> --no-deps            # Do not install the missing dependencies first
