@@ -4,7 +4,7 @@ tags:
   - "#f/init"
 ---
 
-# New Flint
+# {{name}}
 
 This is a new Flint. Its purpose is not set yet.
 
@@ -29,7 +29,7 @@ Agent: do these steps in the first session, in this order.
 1. Ask the operator one question: "What is this Flint for?" Do not guess.
 2. Run `flint shard list` (the shards of this Flint) and `flint shard browse` (the shards that this Flint can install: the shard registry and the shard sources of this machine).
 3. Follow [[sk-f-shard_browse]]: suggest the shards that fit the purpose. Install the operator's picks with `flint shard install <spec>`.
-4. Rewrite this file with [[tmp-f-flint_init-v0.1]]. The title is the name of this Flint (`name` in `flint.toml`). Write the purpose, the Shards table, and the navigation. Remove the tag `#readonly` if the install added it: this file belongs to the Flint.
+4. Rewrite this file with [[tmp-f-flint_init-v0.1]]. The title is the name of this Flint (`name` in `flint.toml`). Write the purpose, the Shards table, and the navigation.
 
 ## Navigation
 

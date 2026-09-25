@@ -98,12 +98,13 @@ Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=
 
 ## Identity and New Flints
 
-`flint setup` sets the identity of this machine once: your Name and the machine display name. The machine name (the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. Your Name and the machine names are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them. A NUU account and an org are optional.
+`flint setup` sets the identity of this machine once: your Name and the machine display name. The machine name (the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. Your Name and the machine names are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them. `flint config org set <slug>` sets the org of this machine: each new Flint gets it. The id comes from `--id <uuid>`, from the enrollment of this machine, or from a Flint of that org on this machine. `flint config org unset` makes new Flints local again. A NUU account and an org are optional.
 
 ```bash
 flint setup                              # Set your Name and the machine names (once per machine)
 flint whoami                             # Show your Name, this machine, your org, and the NUU account
 flint config name "<Name>"               # Change your Name only
+flint config org set <slug> [--id <uuid>]   # The org of this machine: new Flints get it
 flint create "<name>"                    # Create a Flint (init is an alias)
 flint create "<name>" --preset default   # Create a Flint with the shards of a preset
 flint create --from <url>                # Clone a Flint from a Git repository

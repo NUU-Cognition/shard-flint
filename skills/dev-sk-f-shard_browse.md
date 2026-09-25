@@ -12,7 +12,7 @@ Find the shards that exist before you build anything. Show the operator the cata
 
 # When to Use
 
-- A new Flint: the operator has just told you what the Flint is for (the first session after `flint init`).
+- A new Flint: the operator has just told you what the Flint is for (the first session after `flint create`).
 - The operator asks for a capability (tasks, notes, reports, meetings, a codebase map, ...).
 - You are about to create a shard. Browse first. A duplicate shard splits the ecosystem.
 

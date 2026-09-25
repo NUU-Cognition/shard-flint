@@ -18,7 +18,7 @@ tags:
   - "#note"
 [agent]-sessions:
 template: "[[dev-tmp-f-note-v0.1]]"
-authors: /* from the global operator Name (flint whoami); omit if no name set */
+authors: /* from your Name (flint whoami); omit if no Name is set */
   - "[[@Person Name]]"
 ---
 

@@ -4,14 +4,14 @@ description: "Flint-level migration system — types, authoring, CLI"
 
 # Knowledge: Flint-Level Migrations
 
-Complete reference for workspace-wide migrations managed by the `flint-migrations` package. These are distinct from shard-level migrations — flint migrations transform the workspace structure itself as the Flint CLI evolves.
+Complete reference for the Flint-wide migrations of the `flint-migrations` package. These are distinct from shard-level migrations — Flint migrations transform the structure of the Flint itself as the Flint CLI evolves.
 
 ## Overview
 
-Flint-level migrations run against the workspace (flint.toml, Shards/, Mesh/, flint.json) to bring it into conformance with newer CLI versions. They are compiled into the CLI binary and executed via `flint migrate`.
+Flint-level migrations run against the Flint (flint.toml, Shards/, Mesh/, flint.json) to bring it into conformance with newer CLI versions. They are compiled into the CLI binary and executed via `flint migrate`.
 
 **Key properties:**
-- Workspace-wide scope (not per-shard)
+- Flint-wide scope (not per-shard)
 - Tracked in `flint.json.migrations` with timestamps
 - Grouped into version transitions (0.2.0 → 0.3.0)
 - Support three execution types: script, agent, manual

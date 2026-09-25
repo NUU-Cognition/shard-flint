@@ -1,8 +1,8 @@
 # Flint (Core Shard)
 
-The foundational shard for all Flint workspaces. Defines the rules agents must follow — how to load and use shards, how to read templates, workspace conventions, and note types.
+The foundational shard of every Flint. Defines the rules agents must follow — how to load and use shards, how to read templates, the conventions of a Flint, and note types.
 
-Every Flint workspace requires this shard. It provides the base conventions that all other shards build upon.
+Every Flint requires this shard. It provides the base conventions that all other shards build upon.
 
 ## Structure
 
@@ -17,7 +17,6 @@ Shards/(Dev) Flint/
   templates/
     tmp-f-flint_init-v0.1.md    # (System) Flint Init template
   knowledge/
-    knw-f-workspace.md          # Workspace structure reference
     knw-f-templates.md          # Template syntax reference
     knw-f-artifacts.md          # Artifact conventions reference
     knw-f-cli.md                # CLI commands reference

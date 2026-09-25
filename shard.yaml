@@ -6,7 +6,7 @@ source:
 version: "0.3.1"
 name: Flint
 shorthand: f
-description: Core agent environment for Flint workspaces. Defines shard rules, template rules, workspace conventions, and note types.
+description: Core agent environment of a Flint. Defines shard rules, template rules, the conventions of a Flint, and note types.
 
 dependencies:
   "@nuu-cognition/invironments": ""

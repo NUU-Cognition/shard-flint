@@ -138,7 +138,7 @@ Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is 
 
 The person who works in a Flint has one **Name** ("your Name" in the screens of the CLI). Your Name is how the person appears as the author of notes on this machine. It is bound to a `Mesh/People/@<Name>.md` file. Your Name is the same for every Flint on this machine: it is stored in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`).
 
-`flint setup` sets the identity of this machine once: your Name and the machine display name (the name that people read, such as "Ada Laptop"). The machine name (the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. `flint config name "<Name>"` changes your Name only. A NUU account (`flint login`) and an org are optional: Flint works with no NUU account and no org, and no local command checks them.
+`flint setup` sets the identity of this machine once: your Name and the machine display name (the name that people read, such as "Ada Laptop"). The machine name (the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. `flint config name "<Name>"` changes your Name only. `flint config org set <slug>` sets the org of this machine: each new Flint gets it. The id comes from `--id <uuid>`, from the enrollment of this machine, or from a Flint of that org on this machine. `flint config org unset` makes new Flints local again. A NUU account (`flint login`) and an org are optional: Flint works with no NUU account and no org, and no local command checks them.
 
 A Flint with no org is local. Its address starts with `@/` (for example `@/flint/my-notes`). An address that starts with `@/` names no org. It works only on this machine. To share the Flint, give it an org: `flint org set <org>`. The Flint keeps its id.
 
@@ -222,6 +222,7 @@ flint helper delete "<name>"          # Delete artifact + strip every frontmatte
 flint setup                           # Set your Name and the machine names (once per machine)
 flint whoami                          # Show your Name, this machine, your org, and the NUU account
 flint config name "<Name>"            # Change your Name only
+flint config org set <slug> [--id <uuid>]   # The org of this machine: new Flints get it
 flint create "<name>"                 # Create a Flint (init is an alias); --preset <name> adds shards
 flint org set <org>                   # Give this Flint an org (a local Flint has none: @/)
 
