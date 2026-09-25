@@ -190,7 +190,7 @@ flint helper delete "<name>" --archive    # Soft delete: move to Mesh/Archive/ i
 
 Rules:
 - Looks up by Mesh title (Mesh names are globally unique).
-- Scope is `Mesh/` only — `Shards/`, `Inbox/`, `Exports/`, `Archive/` are untouched.
+- Scope is `Mesh/` only — `Shards/`, `Inbox/`, `Archive/` are untouched.
 - Errors if the name is not found — verify the title before retrying.
 
 See [[dev-knw-f-cli]] for the full CLI reference.
