@@ -252,7 +252,7 @@ flint sync                            # Make the files match the lock and the de
 flint git sync                        # Exchange history with origin; the local sync runs before the push
 ```
 
-Three commands, one job each. `flint sync` makes the files of this Flint match its lock and its declarations. `flint shard install` makes the lock match the specs. `flint git sync` exchanges history with origin. `flint sync` never asks the shard registry, never moves the lock, and never touches origin.
+Three commands, one job each. `flint sync` makes the files of this Flint match its lock and its declarations. `flint shard install` makes the lock match the specs. `flint git sync` exchanges history with origin. `flint sync` never asks the shard registry and never touches origin. It writes no shard version and no pin; its one lock write removes a stale lock line.
 
 Authoring commands (create, build, dev, clone, release, fork, rename, id, push, pull, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
 
