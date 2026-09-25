@@ -218,7 +218,7 @@ $ flint shard install @nuu-cognition/meeting-notes@^0.1
 
 An install writes the record `<alias> = "<spec>"` in `flint.toml` (no id), the lock record `flint.json#shards[<id>]` with the state, and the local entry in `.flint/shards.json`. From the registry it checks the shard id and the package hash of the version before any write. It installs the missing dependencies first, with one plan line each. It runs every refusal of the root shard before the first write, also before the dependency installs: the alias or the shorthand is taken, the shard is already present, a present dependency is outside its range, or the id or the hash differs from the registry. When the registry does not answer, an install from Git or from a path goes on and the lock says `registry: unchecked`.
 
-The package hash has two rules: the current rule, and the rule of the builds before commit `5d606f91`, which included the root documents. Every compare accepts either rule, and every write uses the current rule. `flint shard uninstall` also removes the old root documents of a build from before `5d606f91`.
+The package hash has two rules: the current rule, and the rule of the builds before commit `5d606f91`, which included the root documents (`README.md`, `RELEASE.md`, `MIGRATIONS.md`). Every compare accepts either rule, and every write uses the current rule. `flint shard uninstall` also removes the old root documents of a build from before `5d606f91`.
 
 ## Shard Versioning
 
