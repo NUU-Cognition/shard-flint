@@ -319,5 +319,4 @@ Files land in the target Flint's `Inbox/(Bundle) Title/` directory. Use [[dev-sk
 
 ```bash
 flint open                            # Open flint in configured applications
-flint export                          # Manage exports
 ```
