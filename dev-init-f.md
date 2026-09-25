@@ -247,4 +247,4 @@ Three commands, one job each. `flint sync` makes the files of this Flint match i
 Authoring commands (create, build, dev, clone, release, fork, rename, id, push, pull, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
 
 
-If this Flint lives inside a **Tinderbox** (a multi-Flint orchestration box with a `tinderbox.toml`), `flint tinderbox <subcommand>` manages the box from any member. See the Tinderbox section of [[dev-knw-f-cli]] before running it — `sync`/`import`/`heal` can move or delete Flints on disk.
+If this Flint is a member of a **Tinderbox** (a folder that holds many Flints as one box, with the intent `tinderbox.toml`, the record `tinderbox.json`, and the local folder `.tinderbox/`), `flint tinderbox <command>` manages the box from any member. Read [[dev-knw-f-tinderbox]] before you run a write command.
