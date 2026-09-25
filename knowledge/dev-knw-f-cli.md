@@ -5,6 +5,7 @@ orbh-sessions:
   - "[[97c9f9ca-46fb-41d8-a7c1-c1a1e099f8b9]]"
   - "[[2ed34533-a12f-4692-a0b1-e88495548403]]"
   - "[[c08435a9-8e1d-4833-adf5-99a2928c5669]]"
+  - "[[96f34e4f-b89e-4f22-b801-38f3ad1668fe]]"
 ---
 
 # Knowledge: CLI Reference
@@ -268,28 +269,36 @@ flint workspace                       # Manage workspace references (codebases, 
 
 ## Tinderbox
 
-A Tinderbox (the box) holds many Flints as one unit. `tinderbox.toml` is its intent, `tinderbox.json` is its record, and `.tinderbox/` holds the facts of this machine. No fact lives in two files. Read [[dev-knw-f-tinderbox]] for the model, the exit codes, and the safety rules before you run a write command.
+A Tinderbox (the box) holds many Flints as one unit. Each Flint of the box is a member.
+
+`tinderbox.toml` is the intent of the box: the name, the members, the repos, the connections. `tinderbox.json` is the record of the box: its id, its type, its version, its org, and its members with their ids. `.tinderbox/` holds the facts of this machine: the local version, the last sync, the Git journal, the lock, and the backups. No fact lives in two files.
+
+`flint tinderbox sync` is the local sync of the box. It makes the box match its intent on this machine. It clones a missing owned member, references a roster member, registers the members, wires the connections and the repos, and records the box. The clone is the one fetch: bytes that the intent names and that are absent, the same exception that `flint sync` has. Then it runs the local `flint sync` in each selected member. It never asks the registry, never moves a lock, and never touches the origin of a member. `--dry-run` shows the plan and writes nothing.
+
+`flint tinderbox git sync` is the transport of the box. It exchanges the history of the box repo and of each member with origin, with the local sync in the middle. The order is the order of `flint git sync`: checkpoint, fetch, integrate, local sync, checkpoint, push. `--no-sync` is transport only. The Git journal and the lock of a run live in `.tinderbox/`. A reference member is `skipped (reference)`: its own Flint moves its history.
+
+Read [[dev-knw-f-tinderbox]] for the model, the write gate, the exit codes, and the safety rules before you run a write command.
 
 ```bash
 # The box and its members
 flint tinderbox init <name>                   # Make (Tinderbox) <name> here with the three files and a first commit
-flint tinderbox init --from <url>             # Clone a box from Git, then run the local sync [--no-open]
+flint tinderbox init --from <url>             # Clone a box from Git, then run the local sync; exit 2 when a member is blocked [--no-open]
 flint tinderbox start <name> [path]           # Make a new box and move the current Flint into it as an owned member
 flint tinderbox import <name> [source]        # Move a Flint of the roster into the box, or declare it from [source] [--no-open --yes]
-flint tinderbox add <name> <source>           # Declare a member with no change on disk: a Git URL (owned) or registry:<name> (reference)
-flint tinderbox remove <name>                 # Remove a member and keep its folder; the roster row stays [--move-out <dir>]
-flint tinderbox rename <from> <to>            # Rename a member: declaration, record, flint.toml name, folder
-flint tinderbox rename --tinderbox <name>     # Rename the box, its folder, and its roster row
-flint tinderbox dissolve                      # Remove the box and keep the member folders; backs up both box files first [--dry-run --move-to <dir> --force --yes]
+flint tinderbox add <name> <source>           # Declare a member without cloning or moving it: a Git source (owned) or registry:<name> (reference)
+flint tinderbox remove <name>                 # Remove a member and keep its folder, unless --move-out moves it [--move-out <dir>]
+flint tinderbox rename <from> <to>            # Rename a member: declaration, record, flint.toml name, folder, roster row; backs up both box files first
+flint tinderbox rename --tinderbox <name>     # Rename the box, its folder, and its roster row; backs up both box files first
+flint tinderbox dissolve                      # Remove the box and keep the member folders; backs up both box files first [--dry-run --move-to <dir> --force --yes --json]
 
 # The local sync and the health of the box
 flint tinderbox sync                          # Make the box match its intent, then run flint sync in each selected member [--dry-run --json --only <names...> --skip <names...> --no-open]
 flint tinderbox status                        # The box (name, org, last sync) and each member and connection [--json --wide]
 flint tinderbox check                         # Compare the intent with this machine; one next command per finding [--json]
-flint tinderbox heal                          # Repair what check finds (with a backup of tinderbox.toml), then run the local sync of the box; exit 1 when a finding stays [--dry-run --yes --json]
+flint tinderbox heal                          # Repair what check finds (with a backup of the box files), then run the local sync of the box; exit 1 when a finding stays [--dry-run --yes --json --no-open]
 
 # Repos and connections
-flint tinderbox repo add <name> <source>      # Declare a repo: clone a Git URL into Repos/, or reference path:<dir> [--exposed-to <all|names> --mode <own|reference>]
+flint tinderbox repo add <name> <source>      # Declare a repo: clone a Git source into Repos/, or reference path:<dir> [--exposed-to <all|names> --mode <own|reference>]
 flint tinderbox repo remove <name>            # Remove a repo and strip its codebase references [--purge --yes]
 flint tinderbox repo list                     # The repos and whether each is on this machine [--wide]
 flint tinderbox connection add [from] [to]    # Declare a connection: one direction, or a group [--group <names...> --kind <slug>]
