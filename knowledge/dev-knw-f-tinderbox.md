@@ -15,7 +15,7 @@ The model of the Tinderbox and the `flint tinderbox` commands. Read this file be
 
 A Tinderbox (the box) is a folder that holds many Flints as one unit. Each Flint of the box is a member. The box is not a Flint, and a Flint is a member of at most one box. Most Flints are in no box.
 
-The folder of a box is `(Tinderbox) <name>`. It is a Git repository: the box repo. The box repo tracks `tinderbox.toml`, `tinderbox.json`, and `.gitignore`. It does not track the members, `Repos/`, or `.tinderbox/`. Each member and each repo is its own Git repository, and `.gitignore` of the box lists their folders.
+The folder of a box is `(Tinderbox) <name>`. It is a Git repository: the box repo. The box repo tracks `tinderbox.toml`, `tinderbox.json`, and `.gitignore`. It does not track the members, `Repos/`, or `.tinderbox/`. Each member and each repo is its own Git repository. `.gitignore` of the box lists the folder of each owned member, `Repos/*/`, `.tinderbox/`, and `/.tinderbox-*/` (the staging folders of a clone or an import). It does not list a reference member, because a reference member is outside the box.
 
 A member is a normal Flint. `flint sync` and `flint git sync` work in a member as in any Flint. The box adds three things: one intent for many Flints, one local sync for all of them, and one transport for all of them.
 
@@ -23,7 +23,7 @@ A member is a normal Flint. `flint sync` and `flint git sync` work in a member a
 
 The box has three files, as a Flint has `flint.toml`, `flint.json`, and `.flint/`.
 
-`tinderbox.toml` is the intent of the box: the name, the members, the repos, the connections. `tinderbox.json` is the record of the box: its id, its type, its version, its org, and its members with their ids. `.tinderbox/` holds the facts of this machine: the local version, the last sync, the Git journal, the lock, and the backups. No fact lives in two files.
+`tinderbox.toml` is the intent of the box: the name, the members, the repos, the connections. `tinderbox.json` is the record of the box: its id, its type, its version, its org, its members with their ids, and the references that the box wired. `.tinderbox/` holds the facts of this machine: the local version, the last sync, the Git journal, the lock, and the backups. No fact lives in two files. One name is in two files on purpose: the member name is in `tinderbox.toml` and in `members[]` of `tinderbox.json`, because it joins a member to its id.
 
 | File | In the box repo | Same job in a Flint |
 |---|---|---|
@@ -31,7 +31,7 @@ The box has three files, as a Flint has `flint.toml`, `flint.json`, and `.flint/
 | `tinderbox.json` | Yes | `flint.json` |
 | `.tinderbox/` | No | `.flint/` |
 
-The operator edits `tinderbox.toml`, or a command writes it. Only the commands write `tinderbox.json` and `.tinderbox/`. Do not edit them by hand.
+The operator edits `tinderbox.toml`, or a command writes it. A command write changes only the declarations that it edits: the comments and the layout of the file stay. A section that the write empties goes. Only the commands write `tinderbox.json` and `.tinderbox/`. Do not edit them by hand.
 
 ### `tinderbox.toml`
 
@@ -89,6 +89,7 @@ The record has the keys of `flint.json` that have the same meaning, in this orde
 | `org` | `{ id, slug }`. Absent for a local box (no org). Only `flint tinderbox org set <org> --apply` writes it. |
 | `migrations` | The steps that ran on the box files: the step id and the time. `{}` until a step runs. |
 | `members` | `{ id, name }` for each member with a known id, in the order of `tinderbox.toml`. A reference member gets its id from `flint.json` at its roster path. |
+| `wired` | `{ from, to }` for each reference from one member to another that the local sync wired. The box removes only these references. A write keeps an edge only when both of its ends are declared, and a rename moves it. |
 
 The record has no `source`, no `mode`, and no repos: they are intent, and they live in `tinderbox.toml`. A write keeps an unknown top-level key. `remove` and `rename` update the record at once, and a member that is not on this machine keeps its id across a rename.
 
@@ -107,7 +108,7 @@ A record of the old shape (`"spec": "0.1"`, with `source` and `mode` for each me
     └── tinderbox.json.<UTC time>
 ```
 
-The first write command makes the folder: `init`, `start`, `sync`, `import`, `add`, or `org set`.
+Each command that writes the record makes the folder when it is absent: `init`, `start`, `sync`, `import`, `add`, `remove`, `rename`, `rename --tinderbox`, `heal`, `org set --apply`, and `git sync`.
 
 The box phase of the local sync stamps `sync.json`. It stamps it only when it has no error, it changed something, and every selected required member is on this machine. The box phase inside `git sync` stamps it too. A dry run never stamps it.
 
@@ -149,7 +150,7 @@ A relative path is refused, because `tinderbox.toml` goes to other machines. `im
 
 A **repo** is a codebase that is not a Flint and that the box shares with its members. `[repos].required` declares it.
 
-- An owned repo has a Git source. The local sync clones it into `Repos/<slug>/`.
+- An owned repo has a Git source. The local sync clones it into `Repos/<slug>/`. The slug is the last path segment of the source, without `.git`, and it must be one folder name. A source that gives `.`, `..`, `.git`, a path separator, or a folder outside `Repos/` is refused before any write.
 - A reference repo has `path:<dir>` as its source. It stays at its path.
 - `exposed-to` is `"all"` (the default) or a list of member names. Each of these members gets a codebase reference to the repo in its `flint.toml`.
 
@@ -159,7 +160,7 @@ A **connection** is a Flint reference that the local sync wires from one member 
 - `{ interconnected = ["A", "B", "C"] }` gives each member of the group a reference to each other member.
 - `kind` (optional, a lowercase slug) names the relation.
 
-The local sync writes each reference into `[references]` of `flint.toml` of the member and fulfils it in `.flint/references.json`. `repo remove` and `connection remove` strip the references that they wired. A strip that fails is reported as a failure, and no line says "stripped" for it. A strip that empties a list removes the key.
+The local sync writes each reference into `[references]` of `flint.toml` of the member and fulfils it in `.flint/references.json`. The box records each reference from one member to another that it wired in `wired` of `tinderbox.json`. `sync`, `heal`, `check`, `git sync`, `connection remove`, `remove`, and `rename` act only on these wired references. The local sync removes a wired reference when no connection declares it now. A reference that a person added (for example with `flint reference flint <name>`) stays. `repo remove` and `connection remove` strip the references that they wired. A strip that fails is reported as a failure, and no line says "stripped" for it. A strip that empties a list removes the key.
 
 ## Local sync
 
@@ -172,15 +173,15 @@ The box phase, in order:
 3. Clone each missing owned repo and each missing owned member.
 4. Find each reference member in the roster.
 5. Register the members in the roster, and as Obsidian vaults unless `--no-open` is set.
-6. Wire the repos and the connections into the members.
+6. Wire the repos and the connections into the members, and remove each wired reference that no connection declares now.
 7. Record the box in `tinderbox.json`.
 
-Then the member runner runs `flint sync` in each selected member, in this process, 5 at a time.
+Then the member runner runs `flint sync` in each selected member, in this process, 5 at a time. The box phase does not make the standard folders of a member: the `flint sync` of the member makes them.
 
 Rules:
 
 - The one fetch is `git clone` of an owned member or an owned repo that the intent names and that is absent.
-- The local sync never moves or deletes a folder. Undeclared folders stay. `check` and a run with no `--only` and no `--skip` report them.
+- The box phase never moves or deletes a folder. Undeclared folders stay. `check` and a run with no `--only` and no `--skip` report them. The `flint sync` of a member can move or remove folders that Flint owns in that member: a repository snapshot folder, a marker folder, or a shard build that a rename moves.
 - The plan of `--dry-run` names the box repo, `.gitignore`, `.tinderbox/`, the roster rows, the clones, the wiring, and `tinderbox.json` (made, upgraded, or written). It names each Obsidian vault that the run registers; with `--no-open` it names none. Then it gives the plan of each selected member.
 - In a dry run, an absent owned member has the plan state `planned`. Its row says `would clone, then sync`, and its JSON has `"status": "planned"` and `"plan": "clone"`.
 - A newer or malformed record does not stop the local sync. The run reports it as an issue, does not write `tinderbox.json`, and is `partial`. This is the one exception to the write gate.
@@ -209,13 +210,15 @@ Rules:
 - A conflict in the box repo aborts the rebase of the box, because no command resolves the box repo. The run is `blocked`. The next step is Git in the box repo: `git pull --rebase`, resolve, `git rebase --continue`, then `flint tinderbox git sync`.
 - A required member that is still not on this machine after the local sync of the box is a failed row. It keeps the reason and the next command of that local sync. When the roster lists the Flint at another path, the member is `blocked` with `flint tinderbox import <name>`. With `--no-sync`, an absent member is `failed` with the next command `flint tinderbox sync`. An optional member that is not on this machine is `skipped (optional, not on this machine)`.
 - A conflict in a member holds the rebase. The member is `blocked` with one next command: `flint tinderbox git resolve <member>`. The text "the rebase was aborted" prints only when a rebase was aborted.
+- A merge, a cherry-pick, or a revert that holds a member blocks the member (exit 2). The run changes nothing in it. The next command is `git <kind> --continue` in the member. Then run `flint tinderbox git resolve <member>`. The same halt in the box repo stops the run before the members, with the next command `git <kind> --continue` in the box repo.
+- Each member run holds the Git run lock of the member (`<git dir>/flint-git-sync.lock`), as `flint git sync` does. When another Git run holds it and the wait times out (60 seconds), the member row is `blocked` (exit 2) with the issue `member-locked`.
 - The journal `.tinderbox/git-sync-state.json` records the box, each member of a run, and the member filter of the run (`--only`). The lock `.tinderbox/git-sync.lock` stops a second `git sync` of the same box on this machine.
 - The run keeps the lock until every started member ends. When a checkpoint of the journal fails, no new member starts, the box does not push, and the journal stays. The run exits 1 with the next command `flint tinderbox git sync`.
 - `git status` shows the journal and the Git state of each member. It writes nothing. A reference member is never `pending`. `git status` reads no journal through a `.tinderbox` link: it names the link as a failure.
 - `git resume` continues the last run after an interruption. It does the box first: checkpoint, fetch, integrate, and the local sync of the box. Then it selects the members again. It takes each member with an open entry and each member that holds a rebase. When the box did not finish, it also takes each member of the filter of the run with no entry. So a member that the pull declared is transported in the same run.
 - In `git resume`, an absent member is a failed row with its next command. The journal stays until every required member is settled. A journal entry of a member that `tinderbox.toml` no longer declares is settled as skipped, so the journal can end. `Nothing to resume` prints only when no entry is open and no member holds a rebase. `git resume` never advises `resume` again.
-- `git resolve <member>` fixes one member. It continues the held rebase, or it syncs the member again with `--local` or `--remote`. Use `--replay` after a remote history rewrite.
-- `git publish <url>` sets origin of the box repo, names the branch `main`, commits pending changes, and pushes. It compares the configured URL of origin (`git config --get remote.origin.url`), so an `insteadOf` rule is not a change of origin. It asks unless `--yes`. A declined prompt exits 1, and the next command adds `--yes`.
+- `git resolve <member>` fixes one member. It continues the held rebase, or it syncs the member again with `--local` or `--remote`. Use `--replay` after a remote history rewrite. It takes the Git run lock of the member before it reads or aborts the held rebase.
+- `git publish <url>` sets origin of the box repo, names the branch `main`, commits pending changes, and pushes. It compares the configured URL of origin (`git config --get remote.origin.url`), so an `insteadOf` rule is not a change of origin. It asks unless `--yes`. A declined prompt exits 1, and the next command adds `--yes`. With `--json` or with no terminal, it refuses unless `--yes` (exit 1), and nothing is written.
 - Each Git command takes `--json`: one JSON value on every path. The block of members is `Members` and the row of the box is `Box` in each Git command.
 
 ## Status, exit codes, and next commands
@@ -229,19 +232,20 @@ Each Tinderbox command renders as `flint sync` and `flint git sync` do. It print
 | `ok` | Each member is done, current, or skipped | 0 |
 | `partial` | Some members failed, and other members succeeded | 1 |
 | `failed` | Every member failed, or the command was refused | 1 |
-| `blocked` | A block and no failure. Examples: a held rebase, an absent reference member, a roster collision, a halt of the box repo | 2 |
+| `blocked` | A block and no failure. Examples: a held rebase, a held merge, cherry-pick, or revert, a lock wait that timed out, an absent reference member, a roster collision, a halt of the box repo | 2 |
 
 - A step of the box counts only when it changed something, failed, or is blocked. A required member that is still not on this machine is a failed row, not a fatal issue.
 - A halt of the box repo is `blocked` and stops the run before the members.
 - A skipped row gives its reason in brackets in both verbs, for example `skipped (reference)`.
 - `tinderbox sync` exits as `flint sync` does. `tinderbox git sync`, `git resume`, and `git resolve` exit as `flint git sync` does.
 - A refusal (no box, an invalid `tinderbox.toml`, a refusal of the write gate, a bad argument) exits 1 with the reason and one next command on a `Next` line. The reason does not repeat the next command.
-- `check` counts each finding as failed and exits 1 when it has a finding. A warning and a notice do not count. A required reference member that the roster does not have is a finding. A malformed or newer `tinderbox.json` is a finding.
+- `check` counts each finding as failed and exits 1 when it has a finding. A warning and a notice do not count. A required reference member that the roster does not have is a finding. A malformed or newer `tinderbox.json` is a finding. A member with its declared name in a folder with another type prefix is the finding `folder`. `heal` moves that folder and does not write `tinderbox.toml`.
 - `status` exits 0 also when this CLI cannot read `tinderbox.json`. Its title then says `org not known (tinderbox.json cannot be read)`, and a warning gives the next step.
 - A dry run marks nothing `synced` and counts nothing `done`. A blocked member in a dry run is `blocked`, not `failed`. An absent owned member in a dry run is `planned`.
 - Each issue gives at most one next command, and the report prints each next command once.
 - `--json` prints one JSON value on every path, with `status` and `next`. `status --json` adds `org`, `synced`, `members`, and `repos`.
 - In `--json`, a refusal is a report with `status: "failed"` and one fatal issue with `code: "refused"`. `issues[].target` names what the refusal is about: a file, a member, or a folder. `issues[].next` is the next command, as in the top-level `next`. `issues[].data.key` is the key of `tinderbox.toml` for a validation failure, for example `flints.required[0].source`. After a failed operation, `issues[].data.restore` says whether every completed step was undone.
+- A wait for a lock that timed out is a report with `status: "blocked"` and one issue with `code: "lock-timeout"` (exit 2).
 
 ## The commands
 
@@ -249,14 +253,14 @@ Every command runs from the box root or from any folder in a member (see "Where 
 
 | Command | What it does | Flags | Exit |
 |---|---|---|---|
-| `init <name>` | Makes `(Tinderbox) <name>` in the current folder with the three files and a first commit. | — | 0, 1 |
+| `init <name>` | Makes `(Tinderbox) <name>` in the current folder with the three files and a first commit. | `--no-open` (it has an effect only with `--from`) | 0, 1 |
 | `init --from <url>` | Clones the box from its Git URL into the current folder, then runs the local sync. It prints one report. A blocked member exits 2. | `--no-open` | 0, 1, 2 |
 | `start <name> [path]` | Makes a new box and moves the current Flint into it as its first owned member. | — | 0, 1 |
 | `import <name> [source]` | Moves a Flint of the roster into this box as an owned member, or declares it from `[source]` when the roster does not have it. One operation with one restore. | `--no-open`, `--yes` | 0, 1 |
 | `add <name> <source>` | Declares a member without cloning or moving it: an owned member from a Git source, or a reference member from `registry:<name>`. It writes `tinderbox.toml` and `.gitignore`, and it records a member with a known id in `tinderbox.json`. It makes `.tinderbox/` and the roster row of the box when they are absent. | `--json` | 0, 1 |
-| `remove <name>` | Removes a member from `tinderbox.toml` and the record, and strips the references that the box wired. The folder and its roster row stay, except with `--move-out`: the folder then moves into `<dir>`, and the roster row follows it. One operation with one restore. | `--move-out <dir>`, `--json` | 0, 1 |
-| `rename <from> <to>` | Renames a member: its declaration, its record entry, its `flint.toml` name, its folder, and its roster row. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
-| `rename --tinderbox <name>` | Renames the box, its folder, and its roster row. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
+| `remove <name>` | Removes a member from `tinderbox.toml` and the record, and strips the wired references of the member. A reference that a person added stays. The folder and its roster row stay, except with `--move-out`: the folder then moves into `<dir>`, and the roster row follows it. One operation with one restore. | `--move-out <dir>`, `--json` | 0, 1 |
+| `rename <from> <to>` | Renames a member: its declaration, its record entry, its `flint.toml` name, its folder, its roster row, and its Obsidian vault. It rewrites the wired references to the new name. A reference that a person added keeps every byte. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
+| `rename --tinderbox <name>` | Renames the box, its folder, and its roster row, and points the Obsidian vault of each member at the new folder. When only the folder has another name, it moves the folder. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
 | `dissolve` | Backs up and removes `tinderbox.toml` and `tinderbox.json`, removes the roster row, and strips the wiring. `.git`, the member folders, and `.tinderbox/` stay. One operation with one restore. A member with unsaved work blocks it (exit 2) unless `--force`. | `--dry-run`, `--move-to <dir>`, `--force`, `--yes`, `--json` | 0, 1, 2 |
 | `sync` | Makes the box match its intent on this machine, then runs `flint sync` in each selected member. | `--dry-run`, `--json`, `--only <names...>`, `--skip <names...>`, `--no-open` | 0, 1, 2 |
 | `status` | Reads: the box (its name, its org, its last sync) and the state of each member and connection. | `--json`, `--wide` | 0, 1 |
@@ -267,12 +271,12 @@ Every command runs from the box root or from any folder in a member (see "Where 
 | `repo list` | Reads: the repos, their mode, source, path, members, and whether each is on this machine. | `--wide` | 0, 1 |
 | `connection add [from] [to]` | Declares a connection: one direction, or an interconnected group. | `--group <names...>`, `--kind <slug>`, `--json` | 0, 1 |
 | `connection remove [from] [to]` | Removes a connection and strips the references that it wired. | `--group <names...>`, `--json` | 0, 1 |
-| `connection list` | Reads: the connections and whether the local sync wired each one. | `--wide` | 0, 1 |
+| `connection list` | Reads: the connections and whether the local sync wired each one. The alias of `connection` is `connections`. | `--wide` | 0, 1 |
 | `git sync` | Exchanges the history of the box repo and of each member with origin, with the local sync in the middle. | `--no-sync`, `--only <names...>`, `--force-local`, `--force-remote`, `--json` | 0, 1, 2 |
 | `git status` | Reads: the Git journal of the last or interrupted run and the Git state of each member. | `--json` | 0, 1 |
 | `git resume` | Continues each member that the last `git sync` did not finish. | `--no-sync`, `--json` | 0, 1, 2 |
 | `git resolve <member>` | Fixes one blocked member: continues its held rebase, or syncs it again with a strategy. | `--local`, `--remote`, `--replay`, `--no-sync`, `--json` | 0, 1, 2 |
-| `git publish <url>` | Sets origin of the box repo, names the branch `main`, commits pending changes, and pushes. | `--yes`, `--json` | 0, 1 |
+| `git publish <url>` | Sets origin of the box repo, names the branch `main`, commits pending changes, and pushes. With `--json` or with no terminal, it needs `--yes`. | `--yes`, `--json` | 0, 1 |
 | `org set <org>` | Prints the plan to set the org of the box and of each owned member, and writes it with `--apply`. | `--id <uuid>`, `--apply`, `--json` | 0, 1 |
 
 ## Safety rules
@@ -281,15 +285,15 @@ Every command runs from the box root or from any folder in a member (see "Where 
   - `start` moves the current Flint into the new box.
   - `import` moves a Flint of the roster into the box. It asks unless `--yes`.
   - `remove --move-out <dir>` and `dissolve --move-to <dir>` move member folders out of the box.
-  - `rename` moves the member folder. `rename --tinderbox` moves the box folder.
-  - `heal` gives a member folder its canonical name. It moves a broken member folder aside as `<folder>.broken-<time>`.
+  - `rename` moves the member folder and points its Obsidian vault at the new folder. `rename --tinderbox` moves the box folder and points the vault of each member at the new folder.
+  - `heal` gives a member folder its canonical name. It moves a broken member folder aside as `<folder>.broken-<epoch milliseconds>`.
   - `flint move` of a member asks unless `--yes`. It removes the member from `tinderbox.toml`, then moves the folder.
 - **The one command that deletes:** `repo remove --purge` deletes the clone under `Repos/`. It asks unless `--yes`.
-- **`flint tinderbox sync` never moves or deletes a folder.** It clones what is absent and keeps undeclared folders.
+- **The box phase of `flint tinderbox sync` never moves or deletes a folder.** It clones what is absent and keeps undeclared folders. The `flint sync` of each member can move or remove folders that Flint owns in that member.
 - **The commands that write `tinderbox.toml`:** `init`, `start`, `import`, `add`, `remove`, `rename`, and `heal`. Also `repo add`, `repo remove`, `connection add`, `connection remove`, and `flint move` of a member. `rename` and `heal` back up `tinderbox.toml` and `tinderbox.json` to `.tinderbox/backups/` first. `dissolve` backs up both files first.
 - **The write gate comes first.** A write command refuses a newer or malformed record before its first effect, and nothing is written. See "The write gate".
 - **One operation, one restore.** `import`, `add`, `remove`, `rename`, `rename --tinderbox`, and `dissolve` plan every effect first. They keep the old bytes and roster rows. Then they do the effects, and the change of `tinderbox.toml` comes after the moves and the strips. When a step fails, the command undoes every completed step and exits 1. When an undo fails, the message names it, and the next command is `flint tinderbox check`. `dissolve` reports the box as dissolved only after both files and the roster row are removed.
-- **Preview first.** Run `--dry-run` first where it exists: `sync`, `heal`, `dissolve`. `org set` without `--apply` is a plan. `heal --dry-run` names each repair and each effect of its local sync: the record upgrade, `.tinderbox/`, the roster rows, and the Obsidian vaults. For a member that `heal` renames, it also names the folder move, the roster row, the vault that `heal` points at the new folder, and each reference to the old name that `heal` removes. `heal --no-open` registers no new vault. It still points the vault of a moved member at the new folder, so no vault names a folder that is gone.
+- **Preview first.** Run `--dry-run` first where it exists: `sync`, `heal`, `dissolve`. `org set` without `--apply` is a plan. `heal --dry-run` names each repair and each effect of its local sync: the record upgrade, `.tinderbox/`, the roster rows, and the Obsidian vaults. For a member that `heal` renames, it also names the folder move, the roster row, the vault that `heal` points at the new folder, and each wired reference to the old name that `heal` removes. `heal --no-open` registers no new vault. It still points the vault of a moved member at the new folder, so no vault names a folder that is gone.
 - **The commands that write nothing:** `status`, `check`, `git status`, `repo list`, `connection list`, each `--dry-run`, and `org set` without `--apply`.
 - **`dissolve` protects work.** It refuses when a member has uncommitted or unpushed work, unless `--force`. With no terminal to ask, it refuses unless `--yes`.
 - **Know which box you are in.** A command walks up to the nearest `tinderbox.toml`. A command in any folder under a box acts on that box, also in a repo under `Repos/`. Never run a write command in a box that you do not own. Scripts and checks run in a scratch box with an isolated home.
@@ -299,6 +303,7 @@ Every command runs from the box root or from any folder in a member (see "Where 
 
 - A box with no org is local. It reads clean: no command asks for an org or an account. Its address is `@/tinderbox/<slug>`.
 - `flint tinderbox org set <org> --apply` gives the box and each owned member the org. `--id <uuid>` gives the id when this machine does not know the org yet. Without `--apply` the command prints the plan and changes nothing. A reference member keeps its own org.
+- `flint tinderbox org set none --apply` removes the org of the box and of each owned member. `none` takes no `--id`.
 - In a box with an org, an owned member with no org or another org is a notice. `sync`, `sync --dry-run`, and `check` give it, with the next command `flint tinderbox org set <org> --id <uuid> --apply`. No command heals it: the local sync never writes the org of a member.
 - `status` shows the org of the box in its title, or `no org (local tier)`. A `tinderbox.json` that this CLI cannot read is not local: the title says `org not known (tinderbox.json cannot be read)`.
 - A `registry:` source resolves from the roster with every reference spelling, the `@/` address included.
@@ -306,10 +311,10 @@ Every command runs from the box root or from any folder in a member (see "Where 
 
 ## Where to run
 
-- Each command except `init` and `start` walks up from the current folder to the nearest `tinderbox.toml`. So it runs from the box root or from any folder in a member.
+- Each command except `init` and `start` walks up from the current folder to the nearest `tinderbox.toml`. So it runs from the box root or from any folder in a member. The walk stops at the home folder and at a file-system boundary.
 - With no `tinderbox.toml` above the current folder, a command refuses with one text and the next command.
 - A folder that holds both `tinderbox.toml` and `flint.toml` is refused. The refusal names `flint.toml`.
-- `init` makes the box in the current folder. It refuses in a Flint (the next command is `flint tinderbox start`) and in a box.
+- `init <name>` makes the box in the current folder, and `init --from <url>` clones it there. Both refuse in a Flint or in a folder of a Flint (the next command is `flint tinderbox start`), and in a box.
 - `start` runs in the Flint that becomes the first member. The Flint must have a Git origin that is a Git source. A relative local origin is resolved to its absolute path.
 
 ## See also

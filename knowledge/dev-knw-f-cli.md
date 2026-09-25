@@ -123,7 +123,7 @@ A `<ref>` names one shard of this Flint. One resolver reads it in this order: th
 ```bash
 flint shard list [--json]             # One row per shard: ID ADDRESS ALIAS SHORTHAND VERSION STATE
 flint shard status <ref> [--json]     # The row, the Git state of the source, dependencies, pending migrations
-flint shard status <ref> --health     # Also run the health check
+flint shard status <ref> --health     # Also run the health check (it writes nothing)
 flint shard info <ref>                # An alias of status
 flint resolve <spec>                  # The answer of the walk: this Flint, this machine, or the shard registry
 ```
@@ -204,7 +204,7 @@ flint shard update [<ref>]            # Move the lock of each shard to the highe
 flint shard uninstall <ref>           # Remove the build, its lock record, and its unchanged payload files
 ```
 
-`flint shard install` with no argument reads every record of `flint.toml`. A record that the lock does not satisfy (no lock line, or the range, the place, or the Git location changed) is installed or built, after its missing dependencies. A record that the lock satisfies is not moved: only `flint shard update` moves a version inside its range. Then one registry read per record with a hash records the registry answer and follows a rename that the registry reports. When the registry does not answer, the notice is `The registry did not answer. The answers were not recorded.` `--dry-run` shows the plan and the answers and writes nothing.
+`flint shard install` with no argument reads every record of `flint.toml`. A record that the lock does not satisfy (no lock line, or the range, the place, or the Git location changed) is installed or built, after its missing dependencies. A record that the lock satisfies is not moved: only `flint shard update` moves a version inside its range. `flint shard update` installs the missing dependencies of the new version first. The pins of the shard repositories (`flint.json#repos`) are lock data: only `flint shard install` with no argument and `flint shard update` write them. Then one registry read per record with a hash records the registry answer and follows a rename that the registry reports. When the registry does not answer, the notice is `The registry did not answer. The answers were not recorded.` `--dry-run` shows the plan and the answers and writes nothing.
 
 ```
 $ flint shard install @nuu-cognition/meeting-notes@^0.1
@@ -216,7 +216,9 @@ $ flint shard install @nuu-cognition/meeting-notes@^0.1
   Registry: published
 ```
 
-An install writes the record `<alias> = "<spec>"` in `flint.toml` (no id), the lock record `flint.json#shards[<id>]` with the state, and the local entry in `.flint/shards.json`. From the registry it checks the shard id and the package hash of the version before any write. It installs the missing dependencies first, with one plan line each. It refuses before any write when the alias or the shorthand is taken, when a present dependency is outside its range, or when the id or the hash differs from the registry. When the registry does not answer, an install from Git or from a path goes on and the lock says `registry: unchecked`.
+An install writes the record `<alias> = "<spec>"` in `flint.toml` (no id), the lock record `flint.json#shards[<id>]` with the state, and the local entry in `.flint/shards.json`. From the registry it checks the shard id and the package hash of the version before any write. It installs the missing dependencies first, with one plan line each. It runs every refusal of the root shard before the first write, also before the dependency installs: the alias or the shorthand is taken, the shard is already present, a present dependency is outside its range, or the id or the hash differs from the registry. When the registry does not answer, an install from Git or from a path goes on and the lock says `registry: unchecked`.
+
+The package hash has two rules: the current rule, and the rule of the builds before commit `5d606f91`, which included the root documents. Every compare accepts either rule, and every write uses the current rule. `flint shard uninstall` also removes the old root documents of a build from before `5d606f91`.
 
 ## Shard Versioning
 
@@ -235,6 +237,8 @@ flint shard setup <ref> --complete    # Mark setup complete
 flint shard setup <ref> --reset       # Back to required
 ```
 
+`setup` reads the setup scope that the start gate reads. So `--complete` also completes a manifest with the legacy key `state: true`.
+
 ## Shard Migrations
 
 ```bash
@@ -244,7 +248,7 @@ flint shard migrate run <ref> --dry-run   # Print the steps and the rewrite plan
 flint shard migrate finish <ref>      # Mark the current agent or manual step done
 ```
 
-A step with a `rewrite` block (a shorthand rename) rewrites the tags, the links, and the command texts of the Mesh as code, prints one line per file, and then stops at the agent step: follow [[dev-sk-f-migrate]].
+A step with a `rewrite` block (a shorthand rename) rewrites the tags, the links, and the command texts of the Mesh as code, prints one line per file, and then stops at the agent step: follow [[dev-sk-f-migrate]]. `run`, `finish`, and `rerun` hold the lock of the shard while they run, as an install does.
 
 ## Shard Scripts
 
@@ -255,7 +259,7 @@ flint shard scripts <ref>             # List executable scripts for a shard
 flint shard <ref> <script> [args...]  # Run a declared script
 ```
 
-> Authoring commands (`create`, `build`, `type add`, `id`, `rename`, `fork`, `clone`, `dev`, `push`, `pull`, `release`, `unpublish`, `published`) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring shards. `publish` is a deprecated alias of `release`.
+> Authoring commands (`create`, `build`, `type add`, `id`, `rename`, `fork`, `clone`, `dev`, `push`, `pull`, `release`, `unpublish`, `published`) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring shards. `publish` is a deprecated alias of `release`: it prints one line and runs the release path, with the same arguments and the same result.
 
 ## Sync
 
@@ -274,13 +278,27 @@ flint shard install                   # Make the lock match the specs; record th
 flint shard install --dry-run         # Show the plan and the registry answers; write nothing
 flint git sync                        # Exchange history with origin; the local sync runs before the push
 flint git sync --no-sync              # Transport only: no local sync
+flint git sync --continue             # Continue a sync halted on a conflict (a bare re-run also continues)
+flint git sync --abort                # Stop the held rebase and restore the branch
+flint git sync --replay               # After a remote history rewrite: replay the local-only commits
+flint git sync --force-remote         # Overlapping changes take the remote side; a backup ref keeps the old tip
+flint git sync --force-local          # Overlapping changes take the local side
+flint git merge                       # The flow of git sync with no push [--replay --force-remote --force-local --no-sync --json]
+flint git resolve --local|--remote [paths...]   # During a conflict halt, take one side of each file whole
+flint git init                        # Make the repository, or refresh the full policy: .gitignore, .gitattributes, rerere
+flint git publish <url>               # Set origin, commit, and push to main (the Flint must be a repository root)
+flint git <git args...>               # Passthrough to git at the Flint root
 ```
 
-`flint sync` has two steps: `Resolve Flint` and `Reconcile content`. It never asks the registry, never moves the lock, and never touches origin. It fetches only bytes that the lock or a declaration names and that are absent or differ: a locked build, the Obsidian payload pin, a declared source that is not cloned, a repository clone, a source repository snapshot. `flint sync --dry-run` and `flint plan` open no socket. A halted rebase blocks the run (exit 2) with the next command `flint git sync --continue`. When the branch has commits that origin does not have, sync gives the notice `Local history is N commits ahead of origin. Run flint git sync.` The flags `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs.
+`flint sync` has two steps: `Resolve Flint` and `Reconcile content`. It never asks the registry, and it never touches origin. It writes no shard version and no pin: it checks out the pin of each shard repository, and it fetches only a pinned commit that is absent. Its one write to the lock removes a stale lock line: a line that `flint.toml` does not declare and that has no folder under `Shards/`. It fetches only bytes that the lock or a declaration names and that are absent or differ: a locked build, the Obsidian payload pin, a declared source that is not cloned, a repository clone, a source repository snapshot. `flint sync --dry-run` and `flint plan` open no socket. A halted rebase blocks the run (exit 2) with the next command `flint git sync --continue`. A held merge, cherry-pick, or revert blocks it too: finish it with `git <kind> --continue` or stop it with `git <kind> --abort`, then run `flint sync`. A `flint.toml` that does not parse blocks the run (exit 2): correct the file, then run `flint sync`. When the branch has commits that the cached ref `origin/<branch>` does not have, sync gives the notice `Local history is N commits ahead of origin. Run flint git sync.` A branch with no `origin/<branch>` ref (never pushed) gives no notice. The flags `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs.
 
-For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`) makes each build match the lock: it installs a missing locked build from the lock, builds a stale build of a source again, fetches the locked version when the build differs from the lock, follows a rename that the source, the place, or the build shows (`moved: <Old> is now <New> (<address>); the folder, the key, and the type files followed`; the id stays), and refreshes the path of a reference. A record with no lock line is not current (`not-locked`), with the next command `flint shard install`. **The source reconcile** (feature `shard-sources`) records the Git state of each source and gives a notice for a source that is a draft, behind, or dirty; it never changes a source. A missing dependency or a dependency outside its range is not current, with the next command. The rename process is in [[(Spec) Flint Shards . Rename]]. On a Flint with the 0.6.0 shard records, `list`, `status`, and `start` read them with a notice, and every shard write is refused with the next command `flint migrate run`.
+A declared repository, a workspace repository, and a bundle each have a name that is one folder name. Sync checks that each folder is inside its parent folder before it writes. A reference to a Flint that is not on this machine is one report row, not a failure. The next command for a broken codebase reference is `flint fulfill codebase <name> <path>`. `flint reference codebase`, `flint reference flint`, and `flint reference remove` write the declaration only and print `Next: flint sync`: the sync fulfils the reference.
 
-`flint git sync` checkpoints the local work, fetches, integrates, runs the local sync, checkpoints the writes of the sync, and pushes. A conflict halts before the local sync: resolve it, then run `flint git sync --continue`. `flint git merge` does the same with no push; after its halt, run `flint git merge` again. When the local sync fails, the push still sends the integrated history as it is, with no second fetch; when origin moved during that sync, the push is rejected, and the next `flint git sync` sends it. A Git halt prints under `Failed` and exits 2. `--json` prints the report as one JSON value.
+For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`) makes each build match the lock: it installs a missing locked build from the lock, builds a stale build of a source again, fetches the locked version when the build differs from the lock, follows a rename that the source, the place, or the build shows (`moved: <Old> is now <New> (<address>); the folder, the key, and the type files followed`; the id stays), and refreshes the path of a reference. A record with no lock line is not current (`not-locked`), with the next command `flint shard install`. A shard repository with no pin is `not-locked` too. A lock from a place heals from that place only. When that place holds a changed source, the record is `not-locked`, with the next command `flint shard update <alias>`. **The source reconcile** (feature `shard-sources`) records the Git state of each source and gives a notice for a source that is a draft, behind, or dirty; it never changes a source. A missing dependency or a dependency outside its range is not current, with the next command. The rename process is in [[(Spec) Flint Shards . Rename]]. On a Flint with the 0.6.0 shard records, `list`, `status`, and `start` read them with a notice, and every shard write is refused with the next command `flint migrate run`.
+
+`flint git sync` checkpoints the local work, fetches, integrates, runs the local sync, checkpoints the writes of the sync, and pushes. A conflict halts before the local sync: resolve it, then run `flint git sync --continue`. `flint git merge` does the same with no push. Each next command of a merge uses the verb `merge`: after a conflict, run `flint git merge` again; after a remote history rewrite, run `flint git merge --replay`. `--continue` with `--replay`, `--force-remote`, or `--force-local` is refused. `flint git resolve` takes paths relative to the working directory. A held merge, cherry-pick, or revert refuses `sync` and `merge` with exit 2, and the run changes nothing. The next command is `git <kind> --continue`; then run the command again. One Git run at a time holds the run lock of the repository, `<git dir>/flint-git-sync.lock`: `sync`, `merge`, `--continue`, `--abort`, and `resolve` take it. When the wait for the lock times out (60 seconds), the report is `blocked` with exit 2. When the local sync fails, the push still sends the integrated history as it is, with no second fetch; when origin moved during that sync, the push is rejected, and the next `flint git sync` sends it. A Git halt prints under `Failed` and exits 2. `--json` prints the report as one JSON value.
+
+`flint git init` in an existing repository refreshes the full policy: `.gitignore`, `.gitattributes`, and `rerere.enabled`. `flint git publish <url>` refuses a folder that is not the root of a repository, with the next command `flint git init`. The passthrough (`flint git <git args...>`) gives the terminal to git, so an editor and `add -p` work. A network command of the passthrough keeps the network timer of the other Git commands.
 
 
 ## Workspace
@@ -293,9 +311,9 @@ flint workspace                       # The repositories of this Flint (codebase
 
 A Tinderbox (the box) holds many Flints as one unit. Each Flint of the box is a member.
 
-`tinderbox.toml` is the intent of the box: the name, the members, the repos, the connections. `tinderbox.json` is the record of the box: its id, its type, its version, its org, and its members with their ids. `.tinderbox/` holds the facts of this machine: the local version, the last sync, the Git journal, the lock, and the backups. No fact lives in two files.
+`tinderbox.toml` is the intent of the box: the name, the members, the repos, the connections. `tinderbox.json` is the record of the box: its id, its type, its version, its org, its members with their ids, and the references that the box wired (`wired`). `.tinderbox/` holds the facts of this machine: the local version, the last sync, the Git journal, the lock, and the backups. No fact lives in two files.
 
-`flint tinderbox sync` is the local sync of the box. It makes the box match its intent on this machine. It clones a missing owned member, references a roster member, registers the members, wires the connections and the repos, and records the box. The clone is the one fetch: bytes that the intent names and that are absent, the same exception that `flint sync` has. Then it runs the local `flint sync` in each selected member. It never asks the registry, never moves a lock, and never touches the origin of a member. `--dry-run` shows the plan and writes nothing.
+`flint tinderbox sync` is the local sync of the box. It makes the box match its intent on this machine. It clones a missing owned member, references a roster member, registers the members, wires the connections and the repos, and records the box. The clone is the one fetch: bytes that the intent names and that are absent, the same exception that `flint sync` has. Then it runs the local `flint sync` in each selected member. It never asks the registry, never moves a lock, and never touches the origin of a member. `--dry-run` shows the plan and writes nothing. The box removes only the references that it wired, so a reference that a person added stays.
 
 `flint tinderbox git sync` is the transport of the box. It exchanges the history of the box repo and of each member with origin, with the local sync in the middle. The order is the order of `flint git sync`: checkpoint, fetch, integrate, local sync, checkpoint, push. `--no-sync` is transport only. The Git journal and the lock of a run live in `.tinderbox/`. A reference member is `skipped (reference)`: its own Flint moves its history.
 
@@ -303,14 +321,14 @@ Read [[dev-knw-f-tinderbox]] for the model, the write gate, the exit codes, and 
 
 ```bash
 # The box and its members
-flint tinderbox init <name>                   # Make (Tinderbox) <name> here with the three files and a first commit
+flint tinderbox init <name>                   # Make (Tinderbox) <name> here with the three files and a first commit [--no-open: only with --from]
 flint tinderbox init --from <url>             # Clone a box from Git, then run the local sync; exit 2 when a member is blocked [--no-open]
 flint tinderbox start <name> [path]           # Make a new box and move the current Flint into it as an owned member
 flint tinderbox import <name> [source]        # Move a Flint of the roster into the box, or declare it from [source] [--no-open --yes]
 flint tinderbox add <name> <source>           # Declare a member without cloning or moving it: a Git source (owned) or registry:<name> (reference) [--json]
 flint tinderbox remove <name>                 # Remove a member and keep its folder, unless --move-out moves it [--move-out <dir> --json]
-flint tinderbox rename <from> <to>            # Rename a member: declaration, record, flint.toml name, folder, roster row; backs up both box files first [--json]
-flint tinderbox rename --tinderbox <name>     # Rename the box, its folder, and its roster row; backs up both box files first [--json]
+flint tinderbox rename <from> <to>            # Rename a member: declaration, record, flint.toml name, folder, roster row, vault, wired references; backs up both box files first [--json]
+flint tinderbox rename --tinderbox <name>     # Rename the box, its folder, its roster row, and the member vaults; backs up both box files first [--json]
 flint tinderbox dissolve                      # Remove the box and keep the member folders; backs up both box files first [--dry-run --move-to <dir> --force --yes --json]
 
 # The local sync and the health of the box
@@ -325,17 +343,17 @@ flint tinderbox repo remove <name>            # Remove a repo and strip its code
 flint tinderbox repo list                     # The repos and whether each is on this machine [--wide]
 flint tinderbox connection add [from] [to]    # Declare a connection: one direction, or a group [--group <names...> --kind <slug> --json]
 flint tinderbox connection remove [from] [to] # Remove a connection and strip the references that it wired [--group <names...> --json]
-flint tinderbox connection list               # The connections and whether each is wired [--wide]
+flint tinderbox connection list               # The connections and whether each is wired (alias: connections) [--wide]
 
 # The transport
 flint tinderbox git sync                      # Exchange the box and member histories with origin, with the local sync in the middle [--no-sync --only <names...> --force-local --force-remote --json]
 flint tinderbox git status                    # The Git journal and the Git state of each member; writes nothing [--json]
 flint tinderbox git resume                    # Continue each member that the last git sync did not finish [--no-sync --json]
-flint tinderbox git resolve <member>          # Fix one blocked member: continue its rebase, or sync it again [--local --remote --replay --no-sync --json]
-flint tinderbox git publish <url>             # Set origin of the box repo (the configured URL is compared), name the branch main, commit, and push [--yes --json]
+flint tinderbox git resolve <member>          # Fix one blocked member: continue its rebase, or sync it again; finish a held merge with git first [--local --remote --replay --no-sync --json]
+flint tinderbox git publish <url>             # Set origin of the box repo (the configured URL is compared), name the branch main, commit, and push; with --json or no terminal it needs --yes [--yes --json]
 
 # The org
-flint tinderbox org set <org>                 # The plan for the org of the box and of each owned member; --apply writes it [--id <uuid> --apply --json]
+flint tinderbox org set <org>                 # The plan for the org of the box and of each owned member; --apply writes it; none removes the org [--id <uuid> --apply --json]
 ```
 
 ## Send / Inbox
