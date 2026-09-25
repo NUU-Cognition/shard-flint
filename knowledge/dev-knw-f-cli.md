@@ -285,10 +285,10 @@ flint tinderbox init <name>                   # Make (Tinderbox) <name> here wit
 flint tinderbox init --from <url>             # Clone a box from Git, then run the local sync; exit 2 when a member is blocked [--no-open]
 flint tinderbox start <name> [path]           # Make a new box and move the current Flint into it as an owned member
 flint tinderbox import <name> [source]        # Move a Flint of the roster into the box, or declare it from [source] [--no-open --yes]
-flint tinderbox add <name> <source>           # Declare a member without cloning or moving it: a Git source (owned) or registry:<name> (reference)
-flint tinderbox remove <name>                 # Remove a member and keep its folder, unless --move-out moves it [--move-out <dir>]
-flint tinderbox rename <from> <to>            # Rename a member: declaration, record, flint.toml name, folder, roster row; backs up both box files first
-flint tinderbox rename --tinderbox <name>     # Rename the box, its folder, and its roster row; backs up both box files first
+flint tinderbox add <name> <source>           # Declare a member without cloning or moving it: a Git source (owned) or registry:<name> (reference) [--json]
+flint tinderbox remove <name>                 # Remove a member and keep its folder, unless --move-out moves it [--move-out <dir> --json]
+flint tinderbox rename <from> <to>            # Rename a member: declaration, record, flint.toml name, folder, roster row; backs up both box files first [--json]
+flint tinderbox rename --tinderbox <name>     # Rename the box, its folder, and its roster row; backs up both box files first [--json]
 flint tinderbox dissolve                      # Remove the box and keep the member folders; backs up both box files first [--dry-run --move-to <dir> --force --yes --json]
 
 # The local sync and the health of the box
@@ -298,11 +298,11 @@ flint tinderbox check                         # Compare the intent with this mac
 flint tinderbox heal                          # Repair what check finds (with a backup of the box files), then run the local sync of the box; exit 1 when a finding stays [--dry-run --yes --json --no-open]
 
 # Repos and connections
-flint tinderbox repo add <name> <source>      # Declare a repo: clone a Git source into Repos/, or reference path:<dir> [--exposed-to <all|names> --mode <own|reference>]
-flint tinderbox repo remove <name>            # Remove a repo and strip its codebase references [--purge --yes]
+flint tinderbox repo add <name> <source>      # Declare a repo: clone a Git source into Repos/, or reference path:<dir> [--exposed-to <all|names> --mode <own|reference> --json]
+flint tinderbox repo remove <name>            # Remove a repo and strip its codebase references [--purge --yes --json]
 flint tinderbox repo list                     # The repos and whether each is on this machine [--wide]
-flint tinderbox connection add [from] [to]    # Declare a connection: one direction, or a group [--group <names...> --kind <slug>]
-flint tinderbox connection remove [from] [to] # Remove a connection and strip the references that it wired [--group <names...>]
+flint tinderbox connection add [from] [to]    # Declare a connection: one direction, or a group [--group <names...> --kind <slug> --json]
+flint tinderbox connection remove [from] [to] # Remove a connection and strip the references that it wired [--group <names...> --json]
 flint tinderbox connection list               # The connections and whether each is wired [--wide]
 
 # The transport

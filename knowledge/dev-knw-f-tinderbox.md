@@ -4,6 +4,7 @@ orbh-sessions:
   - "[[2ed34533-a12f-4692-a0b1-e88495548403]]"
   - "[[c08435a9-8e1d-4833-adf5-99a2928c5669]]"
   - "[[96f34e4f-b89e-4f22-b801-38f3ad1668fe]]"
+  - "[[6ca3f8d9-0148-433a-b327-1d355a60a895]]"
 ---
 
 # Knowledge: Tinderbox
@@ -123,7 +124,7 @@ Every command that writes a box file runs one write gate before its first effect
 - A `.tinderbox` that is a link, or a `local.json` that is newer or that cannot be read, refuses the command.
 - A refusal exits 1 with the reason. Nothing is written.
 
-These commands run the gate: `add`, `import`, `remove`, `rename`, `rename --tinderbox`, `dissolve`, `connection add`, `connection remove`, `repo add`, `repo remove`, `heal`, `org set`, `git sync`, `git resume`, `git resolve`, and `git publish`. `flint tinderbox sync` alone does not refuse. It reports the refusal of the record as an issue, does not write `tinderbox.json`, and is `partial`.
+These commands run the gate: `add`, `import`, `remove`, `rename`, `rename --tinderbox`, `dissolve`, `connection add`, `connection remove`, `repo add`, `repo remove`, `heal`, `org set`, `git sync`, `git resume`, `git resolve`, and `git publish`. `heal --dry-run` gives the same refusal as `heal`. `flint tinderbox sync` alone does not refuse. It reports the refusal of the record as an issue, does not write `tinderbox.json`, and is `partial`. `sync --dry-run` asks the same gate: it gives the same issue and proposes no write of `tinderbox.json`.
 
 ## Members
 
@@ -185,7 +186,7 @@ Rules:
 - A newer or malformed record does not stop the local sync. The run reports it as an issue, does not write `tinderbox.json`, and is `partial`. This is the one exception to the write gate.
 - `--only <names...>` and `--skip <names...>` select members. The repos are synced only in a run with no `--only` and no `--skip`. A run with `--only` or `--skip` reports no undeclared folder.
 - In a box with an org, an owned member with no org or another org is a notice. Its next command is `flint tinderbox org set <org> --id <uuid> --apply`. The local sync never writes the org of a member.
-- `--json` prints one operation report for the box, with `members[]` (one report for each member). A refusal is one JSON value too.
+- `--json` prints one operation report for the box, with `members[]` (one report for each member). A refusal is one JSON value too (see "Status, exit codes, and next commands").
 - `--no-git` and `--no-update` are retired. Each prints one line that names the right command, and the sync runs.
 
 ## Transport
@@ -234,12 +235,13 @@ Each Tinderbox command renders as `flint sync` and `flint git sync` do. It print
 - A halt of the box repo is `blocked` and stops the run before the members.
 - A skipped row gives its reason in brackets in both verbs, for example `skipped (reference)`.
 - `tinderbox sync` exits as `flint sync` does. `tinderbox git sync`, `git resume`, and `git resolve` exit as `flint git sync` does.
-- A refusal (no box, an invalid `tinderbox.toml`, a refusal of the write gate, a bad argument) exits 1 with the reason. Most refusals give the next command on a `Next` line. Some refusals of the domain give it inside the message.
+- A refusal (no box, an invalid `tinderbox.toml`, a refusal of the write gate, a bad argument) exits 1 with the reason and one next command on a `Next` line. The reason does not repeat the next command.
 - `check` counts each finding as failed and exits 1 when it has a finding. A warning and a notice do not count. A required reference member that the roster does not have is a finding. A malformed or newer `tinderbox.json` is a finding.
 - `status` exits 0 also when this CLI cannot read `tinderbox.json`. Its title then says `org not known (tinderbox.json cannot be read)`, and a warning gives the next step.
 - A dry run marks nothing `synced` and counts nothing `done`. A blocked member in a dry run is `blocked`, not `failed`. An absent owned member in a dry run is `planned`.
 - Each issue gives at most one next command, and the report prints each next command once.
 - `--json` prints one JSON value on every path, with `status` and `next`. `status --json` adds `org`, `synced`, `members`, and `repos`.
+- In `--json`, a refusal is a report with `status: "failed"` and one fatal issue with `code: "refused"`. `issues[].target` names what the refusal is about: a file, a member, or a folder. `issues[].next` is the next command, as in the top-level `next`. `issues[].data.key` is the key of `tinderbox.toml` for a validation failure, for example `flints.required[0].source`. After a failed operation, `issues[].data.restore` says whether every completed step was undone.
 
 ## The commands
 
@@ -262,10 +264,10 @@ Every command runs from the box root or from any folder in a member (see "Where 
 | `heal` | Repairs the drift that `check` finds (with a backup of both box files), then runs the local sync of the box. It exits 1 when a finding stays. | `--dry-run`, `--yes`, `--json`, `--no-open` | 0, 1 |
 | `repo add <name> <source>` | Declares a repo and clones it from a Git source into `Repos/`, or references it at `path:<dir>`. | `--exposed-to <all\|names>`, `--mode <own\|reference>`, `--json` | 0, 1 |
 | `repo remove <name>` | Removes a repo and strips its codebase reference from each member. | `--purge`, `--yes`, `--json` | 0, 1 |
-| `repo list` | Reads: the repos, their mode, source, path, members, and whether each is on this machine. | `--wide`, `--json` | 0, 1 |
+| `repo list` | Reads: the repos, their mode, source, path, members, and whether each is on this machine. | `--wide` | 0, 1 |
 | `connection add [from] [to]` | Declares a connection: one direction, or an interconnected group. | `--group <names...>`, `--kind <slug>`, `--json` | 0, 1 |
 | `connection remove [from] [to]` | Removes a connection and strips the references that it wired. | `--group <names...>`, `--json` | 0, 1 |
-| `connection list` | Reads: the connections and whether the local sync wired each one. | `--wide`, `--json` | 0, 1 |
+| `connection list` | Reads: the connections and whether the local sync wired each one. | `--wide` | 0, 1 |
 | `git sync` | Exchanges the history of the box repo and of each member with origin, with the local sync in the middle. | `--no-sync`, `--only <names...>`, `--force-local`, `--force-remote`, `--json` | 0, 1, 2 |
 | `git status` | Reads: the Git journal of the last or interrupted run and the Git state of each member. | `--json` | 0, 1 |
 | `git resume` | Continues each member that the last `git sync` did not finish. | `--no-sync`, `--json` | 0, 1, 2 |
@@ -287,7 +289,7 @@ Every command runs from the box root or from any folder in a member (see "Where 
 - **The commands that write `tinderbox.toml`:** `init`, `start`, `import`, `add`, `remove`, `rename`, and `heal`. Also `repo add`, `repo remove`, `connection add`, `connection remove`, and `flint move` of a member. `rename` and `heal` back up `tinderbox.toml` and `tinderbox.json` to `.tinderbox/backups/` first. `dissolve` backs up both files first.
 - **The write gate comes first.** A write command refuses a newer or malformed record before its first effect, and nothing is written. See "The write gate".
 - **One operation, one restore.** `import`, `add`, `remove`, `rename`, `rename --tinderbox`, and `dissolve` plan every effect first. They keep the old bytes and roster rows. Then they do the effects, and the change of `tinderbox.toml` comes after the moves and the strips. When a step fails, the command undoes every completed step and exits 1. When an undo fails, the message names it, and the next command is `flint tinderbox check`. `dissolve` reports the box as dissolved only after both files and the roster row are removed.
-- **Preview first.** Run `--dry-run` first where it exists: `sync`, `heal`, `dissolve`. `org set` without `--apply` is a plan. `heal --dry-run` names each repair and each effect of its local sync: the record upgrade, `.tinderbox/`, the roster rows, and the Obsidian vaults. `heal --no-open` registers no vault. One limit: for a member that `heal` renames, the preview checks the vault at the old folder.
+- **Preview first.** Run `--dry-run` first where it exists: `sync`, `heal`, `dissolve`. `org set` without `--apply` is a plan. `heal --dry-run` names each repair and each effect of its local sync: the record upgrade, `.tinderbox/`, the roster rows, and the Obsidian vaults. For a member that `heal` renames, it also names the folder move, the roster row, the vault that `heal` points at the new folder, and each reference to the old name that `heal` removes. `heal --no-open` registers no new vault. It still points the vault of a moved member at the new folder, so no vault names a folder that is gone.
 - **The commands that write nothing:** `status`, `check`, `git status`, `repo list`, `connection list`, each `--dry-run`, and `org set` without `--apply`.
 - **`dissolve` protects work.** It refuses when a member has uncommitted or unpushed work, unless `--force`. With no terminal to ask, it refuses unless `--yes`.
 - **Know which box you are in.** A command walks up to the nearest `tinderbox.toml`. A command in any folder under a box acts on that box, also in a repo under `Repos/`. Never run a write command in a box that you do not own. Scripts and checks run in a scratch box with an isolated home.
