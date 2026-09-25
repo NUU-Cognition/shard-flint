@@ -219,7 +219,7 @@ Rules:
 
 ## Status, exit codes, and next commands
 
-Each Tinderbox command renders as `flint sync` and `flint git sync` do. It prints one title line with the status, sections with glyphs, and each block once. `dissolve` and `org set` use the same report. One exception stays: `init --from` prints a plain message when its clone fails or when the clone is not a box.
+Each Tinderbox command renders as `flint sync` and `flint git sync` do. It prints one title line with the status, sections with glyphs, and each block once. `dissolve` and `org set` use the same report.
 
 `tinderbox sync` and `tinderbox git sync` use one status rule. The rows of the members and the steps of the box give the counts, and the counts give the status:
 
@@ -251,21 +251,21 @@ Every command runs from the box root or from any folder in a member (see "Where 
 | `init --from <url>` | Clones the box from its Git URL into the current folder, then runs the local sync. It prints one report. A blocked member exits 2. | `--no-open` | 0, 1, 2 |
 | `start <name> [path]` | Makes a new box and moves the current Flint into it as its first owned member. | — | 0, 1 |
 | `import <name> [source]` | Moves a Flint of the roster into this box as an owned member, or declares it from `[source]` when the roster does not have it. One operation with one restore. | `--no-open`, `--yes` | 0, 1 |
-| `add <name> <source>` | Declares a member without cloning or moving it: an owned member from a Git source, or a reference member from `registry:<name>`. It writes `tinderbox.toml` and `.gitignore`, and it records a member with a known id in `tinderbox.json`. It makes `.tinderbox/` and the roster row of the box when they are absent. | — | 0, 1 |
-| `remove <name>` | Removes a member from `tinderbox.toml` and the record, and strips the references that the box wired. The folder and its roster row stay, except with `--move-out`: the folder then moves into `<dir>`, and the roster row follows it. One operation with one restore. | `--move-out <dir>` | 0, 1 |
-| `rename <from> <to>` | Renames a member: its declaration, its record entry, its `flint.toml` name, its folder, and its roster row. It backs up both box files first. One operation with one restore. | — | 0, 1 |
-| `rename --tinderbox <name>` | Renames the box, its folder, and its roster row. It backs up both box files first. One operation with one restore. | — | 0, 1 |
+| `add <name> <source>` | Declares a member without cloning or moving it: an owned member from a Git source, or a reference member from `registry:<name>`. It writes `tinderbox.toml` and `.gitignore`, and it records a member with a known id in `tinderbox.json`. It makes `.tinderbox/` and the roster row of the box when they are absent. | `--json` | 0, 1 |
+| `remove <name>` | Removes a member from `tinderbox.toml` and the record, and strips the references that the box wired. The folder and its roster row stay, except with `--move-out`: the folder then moves into `<dir>`, and the roster row follows it. One operation with one restore. | `--move-out <dir>`, `--json` | 0, 1 |
+| `rename <from> <to>` | Renames a member: its declaration, its record entry, its `flint.toml` name, its folder, and its roster row. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
+| `rename --tinderbox <name>` | Renames the box, its folder, and its roster row. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
 | `dissolve` | Backs up and removes `tinderbox.toml` and `tinderbox.json`, removes the roster row, and strips the wiring. `.git`, the member folders, and `.tinderbox/` stay. One operation with one restore. A member with unsaved work blocks it (exit 2) unless `--force`. | `--dry-run`, `--move-to <dir>`, `--force`, `--yes`, `--json` | 0, 1, 2 |
 | `sync` | Makes the box match its intent on this machine, then runs `flint sync` in each selected member. | `--dry-run`, `--json`, `--only <names...>`, `--skip <names...>`, `--no-open` | 0, 1, 2 |
 | `status` | Reads: the box (its name, its org, its last sync) and the state of each member and connection. | `--json`, `--wide` | 0, 1 |
 | `check` | Reads: compares the intent with this machine and gives one next command for each finding. | `--json` | 0, 1 |
 | `heal` | Repairs the drift that `check` finds (with a backup of both box files), then runs the local sync of the box. It exits 1 when a finding stays. | `--dry-run`, `--yes`, `--json`, `--no-open` | 0, 1 |
-| `repo add <name> <source>` | Declares a repo and clones it from a Git source into `Repos/`, or references it at `path:<dir>`. | `--exposed-to <all\|names>`, `--mode <own\|reference>` | 0, 1 |
-| `repo remove <name>` | Removes a repo and strips its codebase reference from each member. | `--purge`, `--yes` | 0, 1 |
-| `repo list` | Reads: the repos, their mode, source, path, members, and whether each is on this machine. | `--wide` | 0, 1 |
-| `connection add [from] [to]` | Declares a connection: one direction, or an interconnected group. | `--group <names...>`, `--kind <slug>` | 0, 1 |
-| `connection remove [from] [to]` | Removes a connection and strips the references that it wired. | `--group <names...>` | 0, 1 |
-| `connection list` | Reads: the connections and whether the local sync wired each one. | `--wide` | 0, 1 |
+| `repo add <name> <source>` | Declares a repo and clones it from a Git source into `Repos/`, or references it at `path:<dir>`. | `--exposed-to <all\|names>`, `--mode <own\|reference>`, `--json` | 0, 1 |
+| `repo remove <name>` | Removes a repo and strips its codebase reference from each member. | `--purge`, `--yes`, `--json` | 0, 1 |
+| `repo list` | Reads: the repos, their mode, source, path, members, and whether each is on this machine. | `--wide`, `--json` | 0, 1 |
+| `connection add [from] [to]` | Declares a connection: one direction, or an interconnected group. | `--group <names...>`, `--kind <slug>`, `--json` | 0, 1 |
+| `connection remove [from] [to]` | Removes a connection and strips the references that it wired. | `--group <names...>`, `--json` | 0, 1 |
+| `connection list` | Reads: the connections and whether the local sync wired each one. | `--wide`, `--json` | 0, 1 |
 | `git sync` | Exchanges the history of the box repo and of each member with origin, with the local sync in the middle. | `--no-sync`, `--only <names...>`, `--force-local`, `--force-remote`, `--json` | 0, 1, 2 |
 | `git status` | Reads: the Git journal of the last or interrupted run and the Git state of each member. | `--json` | 0, 1 |
 | `git resume` | Continues each member that the last `git sync` did not finish. | `--no-sync`, `--json` | 0, 1, 2 |
