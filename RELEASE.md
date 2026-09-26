@@ -1,5 +1,10 @@
 # Flint Releases
 
+## Release 0.3.6
+
+- `init-f`: the word for an `otmp-` file is **note template** (Report 083, the glossary of the Flint Obsidian model). A note template is a Templater template. A CLI of NUU Flint Task 1055 installs it with `force` semantics and a conflict check, byte for byte: no `#readonly`, no install-time placeholders, and no `id` in the lock. The install replaces an unchanged note template. It keeps a changed copy and names the next command `flint shard reinstall <alias> --replace-note-templates`.
+- `otmp-f-default.md` is unchanged. It is valid Templater (`<%* tR += crypto.randomUUID() %>`). The new CLI removes the `#readonly` tag that older CLIs added to the installed copy (NUU Flint Task 1055).
+
 ## Release 0.3.5
 
 - `shard.yaml`: the dependency on Invironments has the floor `version: "0.1.1"`, the first release of Invironments with `org: nuucognition`. The install takes the highest tag at or above the floor; a Flint with Invironments 0.1.0 updates it first (NUU Flint Task 1052).

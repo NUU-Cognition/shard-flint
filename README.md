@@ -22,7 +22,7 @@ Shards/(Dev) Flint/
     knw-f-cli.md                # CLI commands reference
   install/
     inst-f-flint_init.md        # Default Flint Init for a new Flint (installs as Mesh/(System) Flint Init.md)
-    otmp-f-default.md           # Obsidian template: bare note (UUID only)
+    otmp-f-default.md           # Note template (Templater): bare note (UUID only)
 ```
 
 ## What This Shard Covers

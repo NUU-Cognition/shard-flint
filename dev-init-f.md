@@ -62,7 +62,7 @@ Every shard has two entities. The folder name says which one a folder holds:
 | A remote source | `Shards/(Source Remote) <Name>/` | Yes — a clone of a repository; changes are pushed to origin | `flint shard start-dev` |
 | A local source | `Shards/(Source Local) <Name>/` | Yes — no repository | `flint shard start-dev` |
 
-The shard id is `shard.yaml#id`; the source id is `shard.yaml#source.id`. The address is `@org/shard/<slug>` (the slug is the fold of the name), and `@org/<slug>` is its short form. The words are in the glossary of the spec ([[(Spec) Flint Shards#Glossary]]). `flint shard build <alias>` makes the shard from its source and strips the `dev-` prefix. The one exception is the `install/` folder — its contents are literal payloads (dashboards, type definitions, Obsidian templates) and carry no `dev-` prefix.
+The shard id is `shard.yaml#id`; the source id is `shard.yaml#source.id`. The address is `@org/shard/<slug>` (the slug is the fold of the name), and `@org/<slug>` is its short form. The words are in the glossary of the spec ([[(Spec) Flint Shards#Glossary]]). `flint shard build <alias>` makes the shard from its source and strips the `dev-` prefix. The one exception is the `install/` folder — its contents are literal payloads (dashboards, type definitions, note templates) and carry no `dev-` prefix.
 
 The Flint keeps the shard state in three places: `flint.toml` holds the intent (`<alias> = "<spec>"`, or `{ source = "<spec>", git?, from = "source"?, use? }`); `flint.json#shards[<shard id>]` is the lock (the state: `published`, `snapshot`, or `edited`, with its proof); `.flint/shards.json` holds the facts of this machine. A reference to a shard is a package spec: `@org/name[@version][#place]`.
 
@@ -82,7 +82,7 @@ The Flint keeps the shard state in three places: `flint.toml` holds the intent (
 | `ast-[sh]-[name].[ext]` | Asset — non-markdown files |
 | `mig-[sh]-<from>-to-<to>.md` | Migration — upgrade script when the version of the shard bumps |
 | `inst-[sh]-[name].md` | Install payload (under `install/`) — dashboards, system files, folder anchors; `dest` field in `shard.yaml` carries the literal target filename |
-| `otmp-[sh]-[name].md` | Obsidian template (under `install/`) — human-facing template for the Obsidian picker |
+| `otmp-[sh]-[name].md` | Note template (under `install/`) — a Templater template for the Obsidian template picker. It installs into `Shards/(Shards) Obsidian Templates/` with `force` semantics, byte for byte: no `#readonly`, no install-time placeholders. Use Templater syntax: `<% crypto.randomUUID() %>`, `<% tp.date.now("YYYY-MM-DD") %>` |
 | `type-[sh]-[type].md` | Type definition (under `install/`) — driven by `types:` field, installs to `Mesh/Metadata/Types/` |
 | `scripts/<name>.js` | Script — Node.js command, invoked via `flint shard <sh> <name>` |
 
@@ -108,7 +108,7 @@ Each shard has a `shard.yaml` at its root declaring identity, dependencies, and 
 - `setup:` — `full | flint | local` when the shard needs one-time setup
 - `types:` — artifact types the shard manages (installs `(Type) ...` files to `Mesh/Metadata/Types/`)
 - `folders:` — artifact storage folders to create under `Mesh/`
-- `install:` — files copied verbatim from `install/` into the Flint (dashboards, system files, Obsidian templates)
+- `install:` — files copied verbatim from `install/` into the Flint (dashboards, system files, note templates)
 
 Read `shard.yaml` when you need to understand what a shard installs or depends on.
 
