@@ -134,7 +134,7 @@ Agent-only instructions that should NOT appear in the generated output:
 
 ```markdown
 /* This section is added when archiving */
-/* Get numbered IDs with: flint helper type newnumber Task */
+/* Create the numbered file with: flint helper artifact create Task --title "<Title>" */
 /* If Increments shard is installed: */
 ```
 
@@ -207,19 +207,19 @@ Templates define available statuses as enum options. The initial status is typic
 
 ### Numbered Artifacts
 
-Most typed artifacts use zero-padded numbers:
+Most typed artifacts use zero-padded numbers. Create the file with the helper command. It reserves the number and writes the file:
 
 ```bash
-flint helper type newnumber Task    # Returns: 076
+flint helper artifact create Task --title "Task Name"   # → Mesh/Types/Tasks/(Task) 076 Task Name.md
 ```
 
-The template filename pattern shows how to use it:
+The template filename pattern shows the result:
 
 ```
 # Filename: Mesh/Types/Tasks/(Task) XXX [Task Name].md
 ```
 
-`XXX` = the 3-digit number from the helper command.
+`XXX` = the 3-digit number that `flint helper artifact create` reserved. Then write the content of the template into that file. `flint helper type newnumber Task` only reads the next number; it reserves nothing.
 
 ### Conditional Sections
 

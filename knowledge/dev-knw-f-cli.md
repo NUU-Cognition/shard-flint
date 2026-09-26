@@ -9,6 +9,7 @@ orbh-sessions:
   - "[[96f34e4f-b89e-4f22-b801-38f3ad1668fe]]"
   - "[[6ca3f8d9-0148-433a-b327-1d355a60a895]]"
   - "[[ec731b56-92e3-425a-9d01-bed0e4fc3365]]"
+  - "[[0e5e27b5-779f-4068-941e-a93a7a39d3c8]]"
 ---
 
 # Knowledge: CLI Reference
@@ -18,10 +19,15 @@ Quick reference for Flint CLI commands relevant to agent workflows.
 ## Artifact Helpers
 
 ```bash
-flint helper type newnumber <Type>    # Next number for a typed artifact (zero-padded, 3 digits)
-flint helper type newnumber Task      # → 119
-flint helper type newnumber Notepad   # → 034
+flint helper artifact create <Type> --title "<Title>"   # Reserve the next number and write the file
+flint helper artifact create Task --title "Fix login"   # → Created Mesh/Types/Tasks/(Task) 119 Fix login.md
+flint helper artifact create Task --title "Fix login" --content-file draft.md   # Write the full content
+flint helper type newnumber <Type>    # Read the next number (zero-padded, 3 digits); it reserves nothing
 ```
+
+To make a numbered artifact, use `flint helper artifact create`. It holds a lock on the type while it takes the number and writes the file, so two agents never get the same number. It writes `(<Type>) <NNN> <Title>.md` in the folder of the type (`--folder <path>` under `Mesh/` selects another folder). With no `--content-file`, the file has only the frontmatter `id`, `tags`, and `authors`; then edit the file. A `--content-file` can contain the tokens `{{number}}`, `{{id}}`, `{{name}}`, and `{{author}}`; the command replaces them. `--json` prints the result as one JSON value.
+
+`flint helper type newnumber` is a read. It shows the next number and reserves nothing. Do not write a file with the number that it gives: another agent can take the same number.
 
 ## Session Markdown Pins
 
@@ -293,7 +299,7 @@ flint git <git args...>               # Passthrough to git at the Flint root
 
 `flint sync` has two steps: `Resolve Flint` and `Reconcile content`. It never asks the registry, and it never touches origin. It writes no shard version and no pin: it checks out the pin of each shard repository, and it fetches only a pinned commit that is absent. Its one write to the lock removes a stale lock line: a line that `flint.toml` does not declare and that has no folder under `Shards/`. It fetches only bytes that the lock or a declaration names and that are absent or differ: a locked build, the Obsidian payload pin, a declared source that is not cloned, a repository clone, a source repository snapshot. `flint sync --dry-run` and `flint plan` open no socket. A halted rebase blocks the run (exit 2) with the next command `flint git sync --continue`. A held merge, cherry-pick, or revert blocks it too: finish it with `git <kind> --continue` or stop it with `git <kind> --abort`, then run `flint sync`. A `flint.toml` that does not parse blocks the run (exit 2): correct the file, then run `flint sync`. When the branch has commits that the cached ref `origin/<branch>` does not have, sync gives the notice `Local history is N commits ahead of origin. Run flint git sync.` A branch with no `origin/<branch>` ref (never pushed) gives no notice. The flags `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs.
 
-A declared repository, a workspace repository, and a bundle each have a name that is one folder name. Sync checks that each folder is inside its parent folder before it writes. A reference to a Flint that is not on this machine is one report row, not a failure. The next command for a broken codebase reference is `flint fulfill codebase <name> <path>`. `flint reference codebase`, `flint reference flint`, and `flint reference remove` write the declaration only and print `Next: flint sync`: the sync fulfils the reference.
+A declared repository, a workspace repository, and a bundle each have a name that is one folder name. Sync checks that each folder is inside its parent folder before it writes. A reference to a Flint that is not on this machine is one report row, not a failure. The next command for a broken codebase reference is `flint fulfill codebase <name> <path>`. `flint reference flint` and `flint reference remove` write the declaration only. `flint reference codebase` writes the declaration and records the path of this machine in `.flint/references.json`. All three print `Next: flint sync`: the sync fulfils the reference.
 
 For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`) makes each build match the lock: it installs a missing locked build from the lock, builds a stale build of a source again, fetches the locked version when the build differs from the lock, follows a rename that the source, the place, or the build shows (`moved: <Old> is now <New> (<address>); the folder, the key, and the type files followed`; the id stays), refreshes the path of a reference, and makes the missing folders of a shard: the spec folders of its build (`skills/`, `scripts/`, `assets/`, …) and the Mesh folders of `folders:` in the manifest. An install makes the spec folders of a build too. A record with no lock line is not current (`not-locked`), with the next command `flint shard install`. A shard repository with no pin is `not-locked` too. A lock from a place heals from that place only. When that place holds a changed source, the record is `not-locked`, with the next command `flint shard update <alias>`. **The source reconcile** (feature `shard-sources`) records the Git state of each source and gives a notice for a source that is a draft, behind, or dirty. It makes the missing spec folders of a source (`skills/`, `scripts/`, `migrations/`, …), because Git keeps no empty folder. It never writes a file into a source. `flint shard clone` makes the same folders after the clone. A missing dependency or a dependency outside its range is not current, with the next command. The rename process is in [[(Spec) Flint Shards . Rename]]. On a Flint with the 0.6.0 shard records, `list`, `status`, and `start` read them with a notice, and every shard write is refused with the next command `flint migrate run`.
 
@@ -305,7 +311,7 @@ For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`)
 ## Workspace
 
 ```bash
-flint workspace                       # The repositories of this Flint (codebases, URLs)
+flint workspace list                  # The repositories of this Flint (codebases, URLs)
 ```
 
 ## Tinderbox

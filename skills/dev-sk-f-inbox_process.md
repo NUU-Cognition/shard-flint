@@ -35,9 +35,9 @@ Process incoming bundles in the `Inbox/` folder — read instructions, renumber 
      - `(Spec)` → `Mesh/Specs/`
      - Notes (no type prefix) → `Mesh/Notes/`
      - If the instructions specify a different location, follow the instructions
-   - **Renumber the artifact.** Typed artifacts with numbers (e.g., `(Task) 042`, `(Notepad) 015`) must be renumbered to match the sequence of the target Flint. Run `flint helper type newnumber <Type>` to get the next available number, then rename the file accordingly. Update the heading inside the file to match the new number. Do NOT renumber specs, increments, or unnumbered artifacts.
+   - **Renumber the artifact.** Typed artifacts with numbers (e.g., `(Task) 042`, `(Notepad) 015`) must be renumbered to match the sequence of the target Flint. In the incoming file, replace the old number in the heading with the token `{{number}}`. Then run `flint helper artifact create <Type> --title "<Title>" --folder <destination> --content-file <incoming file>`. It reserves the next number of the target Flint, replaces the token, and writes the renumbered file at the destination. Do not name a file with the number of `flint helper type newnumber`: that read reserves nothing, and another agent can take the same number. Do NOT renumber specs, increments, or unnumbered artifacts.
    - **Check for duplicates.** Search `Mesh/` for a file with the same name as the (renumbered) target. If found, flag it to the user and ask how to proceed before moving.
-   - **Move the file.** Rename and move from the bundle directory to the destination, using the renumbered filename.
+   - **Move the file.** Rename and move from the bundle directory to the destination. A renumbered artifact is already at the destination: `flint helper artifact create` wrote it.
 
 4. **Clean up.** Once all files in a bundle have been moved:
    - Update the bundle note's `status` to `processed`

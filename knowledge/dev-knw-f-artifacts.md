@@ -30,12 +30,13 @@ Most artifacts use the typed naming pattern:
 | Number | 3-digit zero-padded | `001`, `042`, `103` |
 | Name | Descriptive title | `Implement auth`, `Q1 Roadmap` |
 
-**Getting the next number:**
+**Creating a numbered artifact:**
 ```bash
-flint helper type newnumber Task     # → 076
-flint helper type newnumber Plan     # → 004
-flint helper type newnumber Notepad  # → 028
+flint helper artifact create Task --title "Implement auth"   # → (Task) 076 Implement auth.md
+flint helper artifact create Plan --title "Q1 Roadmap"       # → (Plan) 004 Q1 Roadmap.md
 ```
+
+`flint helper artifact create` reserves the number and writes the file in one step, so two agents never get the same number. Then fill the file. `flint helper type newnumber <Type>` only reads the next number (a preview). Do not use that number to name a file yourself.
 
 **Special case — Increments:**
 ```

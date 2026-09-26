@@ -214,7 +214,8 @@ See [[dev-knw-f-cli]] for the full CLI reference. Most commonly used:
 
 ```bash
 # Artifact helpers
-flint helper type newnumber <Type>    # Next artifact number (zero-padded, 3 digits)
+flint helper artifact create <Type> --title "<Title>"   # Reserve the next number and write the artifact file
+flint helper type newnumber <Type>    # Read the next number (a preview: it reserves nothing)
 flint helper rename "<old>" "<new>"   # Rename a Mesh artifact + rewrite every [[Old]] wikilink under Mesh/
 flint helper delete "<name>"          # Delete artifact + strip every frontmatter wikilink to it (use --archive to soft-delete)
 
