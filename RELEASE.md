@@ -3,7 +3,7 @@
 ## Release 0.3.6
 
 - `init-f`: the word for an `otmp-` file is **note template** (Report 083, the glossary of the Flint Obsidian model). A note template is a Templater template. A CLI of NUU Flint Task 1055 installs it with `force` semantics and a conflict check, byte for byte: no `#readonly`, no install-time placeholders, and no `id` in the lock. The install replaces an unchanged note template. It keeps a changed copy and names the next command `flint shard reinstall <alias> --replace-note-templates`.
-- `otmp-f-default.md` is unchanged. It is valid Templater (`<%* tR += crypto.randomUUID() %>`). The new CLI removes the `#readonly` tag that older CLIs added to the installed copy (NUU Flint Task 1055).
+- `otmp-f-default.md` is unchanged. It is valid Templater (`<%* tR += crypto.randomUUID() %>`). The new CLI removes the `#readonly` tag that older CLIs added to the installed copy, when the lock records that copy and nobody changed it (NUU Flint Task 1055). Another copy stays; see `MIGRATIONS.md`.
 
 ## Release 0.3.5
 
