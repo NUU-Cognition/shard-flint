@@ -33,7 +33,7 @@ Find the shards that exist before you build anything. Show the operator the cata
    flint shard browse                       # the whole catalog
    flint shard browse <word> --available    # the shards that match a word and that this Flint does not have
    ```
-   If `browse` prints a registry warning, it lists only the local sources. Then also search the registry site `https://shards.nuucognition.com/registry` by name or description. `flint resolve @nuu-cognition/shard/<slug>` checks one package: the rung (this Flint, this machine, or the registry), the address, and the tag.
+   If `browse` prints a registry warning, it lists only the local sources. Then also search the registry site `https://shards.nuucognition.com/registry` by name or description. `flint resolve @nuucognition/shard/<slug>` checks one package: the rung (this Flint, this machine, or the registry), the address, and the tag.
 3. Match shards to the purpose. Use this table as the starting point, then add matches from the catalog descriptions:
 
    | Purpose of the Flint | Suggest |

@@ -133,7 +133,7 @@ flint resolve <spec>                  # The answer of the walk: this Flint, this
 $ flint shard list
 Shards
   ID                ADDRESS                             ALIAS          SHORTHAND   VERSION     STATE
-  4426ad5b          @nuu-cognition/shard/meeting-notes  meeting-notes  meet        0.1.0       edited
+  4426ad5b          @nuucognition/shard/meeting-notes  meeting-notes  meet        0.1.0       edited
 
   1 shard, 1 declared
 ```
@@ -162,13 +162,13 @@ The catalog has two kinds of entries. A **public** entry comes from the shard re
 
 When the shard registry does not answer, `browse` lists the shard sources of this machine and prints one warning with the reason. Then also search the site of the shard registry, `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the shard registry. If a shard already provides the capability, install it instead of writing a duplicate. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine.
 
-**Core shards** are Flint (`@nuu-cognition/shard/flint`) and Orbh (`@nuu-cognition/shard/orbh`). Every new Flint gets them, whatever its preset declares; a clone keeps the shard list of its files. When `flint shard list` has no row for one of them, install it:
+**Core shards** are Flint (`@nuucognition/shard/flint`) and Orbh (`@nuucognition/shard/orbh`). Every new Flint gets them, whatever its preset declares; a clone keeps the shard list of its files. When `flint shard list` has no row for one of them, install it:
 
 ```bash
 flint shard install --core            # Install each missing core shard; leave the present ones alone
 ```
 
-`--core` installs a missing core shard through the normal install path (its dependencies first, then the lock). It reads the lock by shard id, address, or Git location, never by folder. It takes no other source: with a spec, `--from-git`, `--from-path`, or `--all-dev` it refuses and names the two commands to run. `--json` gives `{ ok, shards, present }`. The core shards install from their Git locations (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`), because the shard registry does not serve them as `@nuu-cognition/<slug>` yet.
+`--core` installs a missing core shard through the normal install path (its dependencies first, then the lock). It reads the lock by shard id, address, or Git location, never by folder. It takes no other source: with a spec, `--from-git`, `--from-path`, or `--all-dev` it refuses and names the two commands to run. `--json` gives `{ ok, shards, present }`. The core shards install from their Git locations (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`), because the shard registry does not serve them as `@nuucognition/<slug>` yet.
 
 ## Shard Manifests (loading shards)
 
@@ -208,11 +208,11 @@ flint shard uninstall <ref>           # Remove the build, its lock record, and i
 `flint shard install` with no argument reads every record of `flint.toml`. A record that the lock does not satisfy (no lock line, or the range, the place, or the Git location changed) is installed or built, after its missing dependencies. A record that the lock satisfies is not moved: only `flint shard update` moves a version inside its range. `flint shard update` installs the missing dependencies of the new version first. The pins of the shard repositories (`flint.json#repos`) are lock data: only `flint shard install` with no argument and `flint shard update` write them. Then one registry read per record with a hash records the registry answer and follows a rename that the registry reports. When the registry does not answer, the notice is `The registry did not answer. The answers were not recorded.` `--dry-run` shows the plan and the answers and writes nothing.
 
 ```
-$ flint shard install @nuu-cognition/meeting-notes@^0.1
-✓ Resolved @nuu-cognition/shard/meeting-notes 0.1.0
+$ flint shard install @nuucognition/meeting-notes@^0.1
+✓ Resolved @nuucognition/shard/meeting-notes 0.1.0
 ✓ Installed Meeting Notes 0.1.0
-  Spec    : @nuu-cognition/meeting-notes@^0.1
-  Address : @nuu-cognition/shard/meeting-notes
+  Spec    : @nuucognition/meeting-notes@^0.1
+  Address : @nuucognition/shard/meeting-notes
   State   : published 0.1.0
   Registry: published
 ```
@@ -295,7 +295,7 @@ flint git <git args...>               # Passthrough to git at the Flint root
 
 A declared repository, a workspace repository, and a bundle each have a name that is one folder name. Sync checks that each folder is inside its parent folder before it writes. A reference to a Flint that is not on this machine is one report row, not a failure. The next command for a broken codebase reference is `flint fulfill codebase <name> <path>`. `flint reference codebase`, `flint reference flint`, and `flint reference remove` write the declaration only and print `Next: flint sync`: the sync fulfils the reference.
 
-For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`) makes each build match the lock: it installs a missing locked build from the lock, builds a stale build of a source again, fetches the locked version when the build differs from the lock, follows a rename that the source, the place, or the build shows (`moved: <Old> is now <New> (<address>); the folder, the key, and the type files followed`; the id stays), refreshes the path of a reference, and makes the missing Mesh folders of `folders:` in the manifest. A record with no lock line is not current (`not-locked`), with the next command `flint shard install`. A shard repository with no pin is `not-locked` too. A lock from a place heals from that place only. When that place holds a changed source, the record is `not-locked`, with the next command `flint shard update <alias>`. **The source reconcile** (feature `shard-sources`) records the Git state of each source and gives a notice for a source that is a draft, behind, or dirty. It makes the missing spec folders of a source (`skills/`, `scripts/`, `migrations/`, …), because Git keeps no empty folder. It never writes a file into a source. `flint shard clone` makes the same folders after the clone. A missing dependency or a dependency outside its range is not current, with the next command. The rename process is in [[(Spec) Flint Shards . Rename]]. On a Flint with the 0.6.0 shard records, `list`, `status`, and `start` read them with a notice, and every shard write is refused with the next command `flint migrate run`.
+For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`) makes each build match the lock: it installs a missing locked build from the lock, builds a stale build of a source again, fetches the locked version when the build differs from the lock, follows a rename that the source, the place, or the build shows (`moved: <Old> is now <New> (<address>); the folder, the key, and the type files followed`; the id stays), refreshes the path of a reference, and makes the missing folders of a shard: the spec folders of its build (`skills/`, `scripts/`, `assets/`, …) and the Mesh folders of `folders:` in the manifest. An install makes the spec folders of a build too. A record with no lock line is not current (`not-locked`), with the next command `flint shard install`. A shard repository with no pin is `not-locked` too. A lock from a place heals from that place only. When that place holds a changed source, the record is `not-locked`, with the next command `flint shard update <alias>`. **The source reconcile** (feature `shard-sources`) records the Git state of each source and gives a notice for a source that is a draft, behind, or dirty. It makes the missing spec folders of a source (`skills/`, `scripts/`, `migrations/`, …), because Git keeps no empty folder. It never writes a file into a source. `flint shard clone` makes the same folders after the clone. A missing dependency or a dependency outside its range is not current, with the next command. The rename process is in [[(Spec) Flint Shards . Rename]]. On a Flint with the 0.6.0 shard records, `list`, `status`, and `start` read them with a notice, and every shard write is refused with the next command `flint migrate run`.
 
 `flint git sync` checkpoints the local work, fetches, integrates, runs the local sync, checkpoints the writes of the sync, and pushes. A conflict halts before the local sync: resolve it, then run `flint git sync --continue`. `flint git merge` does the same with no push. Each next command of a merge uses the verb `merge`: after a conflict, run `flint git merge` again; after a remote history rewrite, run `flint git merge --replay`. `--continue` with `--replay`, `--force-remote`, or `--force-local` is refused. `flint git resolve` takes paths relative to the working directory. A held merge, cherry-pick, or revert refuses `sync` and `merge` with exit 2, and the run changes nothing. The next command is `git <kind> --continue`; then run the command again. One Git run at a time holds the run lock of the repository, `<git dir>/flint-git-sync.lock`: `sync`, `merge`, `--continue`, `--abort`, and `resolve` take it. When the wait for the lock times out (60 seconds), the report is `blocked` with exit 2. When the local sync fails, the push still sends the integrated history as it is, with no second fetch; when origin moved during that sync, the push is rejected, and the next `flint git sync` sends it. A Git halt prints under `Failed` and exits 2. `--json` prints the report as one JSON value.
 

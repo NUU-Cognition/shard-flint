@@ -90,7 +90,7 @@ Source files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything unde
 
 ### Choosing Shards
 
-The **core shards** are Flint (`@nuu-cognition/shard/flint`) and Orbh (`@nuu-cognition/shard/orbh`). Everything else is chosen for what the Flint is for. `flint create` gives every new Flint the core shards, whatever its preset declares, and Invironments (Flint needs it). Then it installs the shards of the preset. The preset `blank` (the default of `flint create`) adds no shards. The preset `default` adds Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code. `flint create --help` lists the other presets. A clone (`flint create --from <url>`) keeps the shard list of its files. An install from a path or a Git location needs no NUU account and no org. Only a publish to the shard registry (`flint shard release`) needs an org. The rules:
+The **core shards** are Flint (`@nuucognition/shard/flint`) and Orbh (`@nuucognition/shard/orbh`). Everything else is chosen for what the Flint is for. `flint create` gives every new Flint the core shards, whatever its preset declares, and Invironments (Flint needs it). Then it installs the shards of the preset. The preset `blank` (the default of `flint create`) adds no shards. The preset `default` adds Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code. `flint create --help` lists the other presets. A clone (`flint create --from <url>`) keeps the shard list of its files. An install from a path or a Git location needs no NUU account and no org. Only a publish to the shard registry (`flint shard release`) needs an org. The rules:
 
 1. **Look before you build.** Before you install a shard and before you create one, run `flint shard browse <word>` (what exists: the shard registry and the shard sources of this machine) and `flint shard list` (what this Flint has). If a shard already provides the capability, install it with the spec in its row. Do not create a duplicate shard. When the shard registry does not answer, `browse` lists only the shard sources of this machine and prints one warning; then also search the site of the shard registry, `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the shard registry.
 2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards and install the operator's picks with `flint shard install <spec>` (the missing dependencies come too).
@@ -104,7 +104,7 @@ Each shard has a `shard.yaml` at its root declaring identity, dependencies, and 
 
 - `shard-spec`, `id` (the shard id), `org` (the org slug of the package), `source: { id, of? }` (the source id), `version`, `name`, `shorthand`, `description`
 - `formerNames`, `formerShorthands`, `of` — the rename history and the fork origin, written by the CLI
-- `dependencies:` — a map from package name to range (e.g. `"@nuu-cognition/flint": "^0.2"`)
+- `dependencies:` — a map from package name to range (e.g. `"@nuucognition/flint": "^0.2"`)
 - `setup:` — `full | flint | local` when the shard needs one-time setup
 - `types:` — artifact types the shard manages (installs `(Type) ...` files to `Mesh/Metadata/Types/`)
 - `folders:` — artifact storage folders to create under `Mesh/`

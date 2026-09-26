@@ -72,7 +72,7 @@ The record has the keys of `flint.json` that have the same meaning, in this orde
   "id": "6c2682c9-9217-4bed-afc8-70a87d113ef3",
   "type": "tinderbox",
   "created": "2026-09-21T00:40:44.553Z",
-  "org": { "id": "e17b42dd-1726-463c-861b-49d2a833c73e", "slug": "nuu-cognition" },
+  "org": { "id": "e17b42dd-1726-463c-861b-49d2a833c73e", "slug": "nuucognition" },
   "migrations": { "tinderbox-0.1-to-0.7.0": "2026-09-26T00:00:00.000Z" },
   "members": [
     { "id": "591383f0-db03-410a-9e39-b3751ae371d6", "name": "NUU Flint" }

@@ -1,5 +1,14 @@
 # Flint Releases
 
+## Release 0.3.4
+
+- The docs name the org `nuucognition`, the slug of the account service: the package specs and addresses in `init-f`, `knw-f-cli`, `knw-f-tinderbox`, and `sk-f-shard_browse` (NUU Flint Task 1052).
+
+## Release 0.3.3
+
+- `shard.yaml`: `org: nuucognition`. The org slug of NUU Cognition is the slug of the account service; NUU Network was corrected from `nuu-cognition` (NUU Flint Task 1052). The address is `@nuucognition/shard/flint`.
+- The knowledge and init text of NUU Flint Task 1049, and `scripts/.gitkeep` removed (NUU Flint Task 1050: sync and clone make the missing spec folders).
+
 ## Release 0.3.2
 
 - `shard.yaml`: the dependency on Invironments has its Git source again (`dependencies: - source: NUU-Cognition/shard-invironments`), as in 0.3.0 and in Orbh. 0.3.1 declared the package spec `"@nuu-cognition/invironments": ""`. A fresh machine does not have that package, and the shard registry does not serve it. Thus the install of 0.3.1 failed on every fresh machine (`dependency @nuu-cognition/shard/invironments of Flint cannot be resolved`), and Orbh then installed Flint 0.3.0 from the default branch (NUU Flint Task 1048, ruling 36). The Git source resolves with no shard registry.
