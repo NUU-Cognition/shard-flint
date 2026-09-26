@@ -376,7 +376,8 @@ The Obsidian payload is the set of released files that Flint installs into `.obs
 - The machine choice turns Obsidian on or off on this machine: `flint config set obsidian off` (or `on`). When it is `off`, Flint does not install the payload and does not open Obsidian.
 - With `NUU_HOME` set (isolation), `flint sync` still installs the payload, and Flint does not contact a live Obsidian.
 - Obsidian asks once for each new vault. The person clicks "Trust author and enable plugins". Flint writes no trust key.
-- A 0.6.x Flint can hold a legacy Git payload in `.obsidian/`. `flint sync` blocks on it (exit 2), with the next command `flint migrate run`.
+- A 0.6.x Flint can hold a legacy Git payload in `.obsidian/`. Close its vault, then run `flint migrate run`: the step `l5` converts it and saves the old files in the backup store. `flint obsidian update` and `repair` convert it too. `flint sync` blocks on it (exit 2) and names the conversion command. `flint open` opens it and prints the same command.
+- When the vault is open or the fetch fails, the conversion waits (a pending conversion). `flint open` (after you close the vault) or the next `flint sync` completes it.
 
 ```bash
 flint obsidian status                 # The payload (pinned, installed, available, pending), the vault, the plugin, and the next command [--check --tinderbox --json]
