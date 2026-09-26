@@ -5,6 +5,7 @@ orbh-sessions:
   - "[[c08435a9-8e1d-4833-adf5-99a2928c5669]]"
   - "[[96f34e4f-b89e-4f22-b801-38f3ad1668fe]]"
   - "[[6ca3f8d9-0148-433a-b327-1d355a60a895]]"
+  - "[[0e5e27b5-779f-4068-941e-a93a7a39d3c8]]"
 ---
 
 # Knowledge: Tinderbox
@@ -144,7 +145,7 @@ A **Git source** is a source that `git clone` accepts. One classifier decides it
 - SCP syntax with any user or with no user, for example `alice@host:repo.git`.
 - `<helper>::<address>`, or an absolute local path.
 
-A relative path is refused, because `tinderbox.toml` goes to other machines. `import` and `start` resolve a relative origin to its absolute path before the move. `registry:<name>` is the source of a reference member. `path:<dir>` is the source of a reference repo.
+A relative path is refused, because `tinderbox.toml` goes to other machines. `import` and `start` resolve a relative origin to its absolute path before the move. `registry:<name>` is the source of a reference member: a lookup in the roster of this machine, not in the shard registry. `path:<dir>` is the source of a reference repo.
 
 ## Repos and connections
 
