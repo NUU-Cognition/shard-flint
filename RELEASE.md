@@ -1,5 +1,9 @@
 # Flint Releases
 
+## Release 0.3.5
+
+- `shard.yaml`: the dependency on Invironments has the floor `version: "0.1.1"`, the first release of Invironments with `org: nuucognition`. The install takes the highest tag at or above the floor; a Flint with Invironments 0.1.0 updates it first (NUU Flint Task 1052).
+
 ## Release 0.3.4
 
 - The docs name the org `nuucognition`, the slug of the account service: the package specs and addresses in `init-f`, `knw-f-cli`, `knw-f-tinderbox`, and `sk-f-shard_browse` (NUU Flint Task 1052).
