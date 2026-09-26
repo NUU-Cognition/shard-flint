@@ -102,7 +102,7 @@ The **core shards** are Flint (`@nuucognition/shard/flint`) and Orbh (`@nuucogni
 
 Each shard has a `shard.yaml` at its root declaring identity, dependencies, and installation behavior:
 
-- `shard-spec`, `id` (the shard id), `org` (the org slug of the package), `source: { id, of? }` (the source id), `version`, `name`, `shorthand`, `description`
+- `shard-spec`, `shard` (the package name, quoted: `shard: "@nuucognition/flint"`; its slug is the slug of `name`), `id` (the shard id), `source: { id, of? }` (the source id), `version`, `name`, `shorthand`, `description`. A manifest at `shard-spec: "0.3.0"` has `org` (the org slug) in place of `shard`
 - `formerNames`, `formerShorthands`, `of` — the rename history and the fork origin, written by the CLI
 - `dependencies:` — a map from package name to range (e.g. `"@nuucognition/flint": "^0.2"`)
 - `setup:` — `full | flint | local` when the shard needs one-time setup
