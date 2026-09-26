@@ -25,7 +25,7 @@ flint helper artifact create Task --title "Fix login" --content-file draft.md   
 flint helper type newnumber <Type>    # Read the next number (zero-padded, 3 digits); it reserves nothing
 ```
 
-To make a numbered artifact, use `flint helper artifact create`. It holds a lock on the type while it takes the number and writes the file, so two agents never get the same number. It writes `(<Type>) <NNN> <Title>.md` in the folder of the type (`--folder <path>` under `Mesh/` selects another folder). With no `--content-file`, the file has only the frontmatter `id`, `tags`, and `authors`; then edit the file. A `--content-file` can contain the tokens `{{number}}`, `{{id}}`, `{{name}}`, and `{{author}}`; the command replaces them. `--json` prints the result as one JSON value.
+To make a numbered artifact, use `flint helper artifact create`. It holds a lock on the type while it takes the number and writes the file, so two agents never get the same number. It writes `(<Type>) <NNN> <Title>.md` in the folder of the type: the folder of the artifacts of that type, else the location of the type definition. When more than one folder fits, it refuses; then set `--folder <path>` (a folder under `Mesh/`). With no `--content-file`, the file has only the frontmatter `id`, `tags`, and `authors`; then edit the file. A `--content-file` can contain the tokens `{{number}}`, `{{id}}`, `{{name}}`, and `{{author}}`; the command replaces them. `--json` prints the result as one JSON value.
 
 `flint helper type newnumber` is a read. It shows the next number and reserves nothing. Do not write a file with the number that it gives: another agent can take the same number.
 
