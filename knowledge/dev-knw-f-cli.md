@@ -10,6 +10,7 @@ orbh-sessions:
   - "[[6ca3f8d9-0148-433a-b327-1d355a60a895]]"
   - "[[ec731b56-92e3-425a-9d01-bed0e4fc3365]]"
   - "[[0e5e27b5-779f-4068-941e-a93a7a39d3c8]]"
+  - "[[1fe72314-c531-4439-81fd-b8f136b7e2cc]]"
 ---
 
 # Knowledge: CLI Reference
@@ -297,7 +298,7 @@ flint git publish <url>               # Set origin, commit, and push to main (th
 flint git <git args...>               # Passthrough to git at the Flint root
 ```
 
-`flint sync` has two steps: `Resolve Flint` and `Reconcile content`. It never asks the registry, and it never touches origin. It writes no shard version and no pin: it checks out the pin of each shard repository, and it fetches only a pinned commit that is absent. Its one write to the lock removes a stale lock line: a line that `flint.toml` does not declare and that has no folder under `Shards/`. It fetches only bytes that the lock or a declaration names and that are absent or differ: a locked build, the Obsidian payload pin, a declared source that is not cloned, a repository clone, a source repository snapshot. `flint sync --dry-run` and `flint plan` open no socket. A halted rebase blocks the run (exit 2) with the next command `flint git sync --continue`. A held merge, cherry-pick, or revert blocks it too: finish it with `git <kind> --continue` or stop it with `git <kind> --abort`, then run `flint sync`. A `flint.toml` that does not parse blocks the run (exit 2): correct the file, then run `flint sync`. When the branch has commits that the cached ref `origin/<branch>` does not have, sync gives the notice `Local history is N commits ahead of origin. Run flint git sync.` A branch with no `origin/<branch>` ref (never pushed) gives no notice. The flags `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs.
+`flint sync` has two steps: `Resolve Flint` and `Reconcile content`. It never asks the registry, and it never touches origin. It writes no shard version and no pin: it checks out the pin of each shard repository, and it fetches only a pinned commit that is absent. Its one write to the lock removes a stale lock line: a line that `flint.toml` does not declare and that has no folder under `Shards/`. It fetches only bytes that the lock or a declaration names and that are absent or differ: a locked build, the pinned Obsidian payload release when the machine cache does not hold it, a declared source that is not cloned, a repository clone, a source repository snapshot. The step `Reconcile content` installs the pinned Obsidian payload and never moves the pin (see § Obsidian). `flint sync --dry-run` and `flint plan` open no socket. A halted rebase blocks the run (exit 2) with the next command `flint git sync --continue`. A held merge, cherry-pick, or revert blocks it too: finish it with `git <kind> --continue` or stop it with `git <kind> --abort`, then run `flint sync`. A `flint.toml` that does not parse blocks the run (exit 2): correct the file, then run `flint sync`. When the branch has commits that the cached ref `origin/<branch>` does not have, sync gives the notice `Local history is N commits ahead of origin. Run flint git sync.` A branch with no `origin/<branch>` ref (never pushed) gives no notice. The flags `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs.
 
 A declared repository, a workspace repository, and a bundle each have a name that is one folder name. Sync checks that each folder is inside its parent folder before it writes. A reference to a Flint that is not on this machine is one report row, not a failure. The next command for a broken codebase reference is `flint fulfill codebase <name> <path>`. `flint reference flint` and `flint reference remove` write the declaration only. `flint reference codebase` writes the declaration and records the path of this machine in `.flint/references.json`. All three print `Next: flint sync`: the sync fulfils the reference.
 
@@ -328,21 +329,21 @@ Read [[dev-knw-f-tinderbox]] for the model, the write gate, the exit codes, and 
 
 ```bash
 # The box and its members
-flint tinderbox init <name>                   # Make (Tinderbox) <name> here with the three files and a first commit [--no-open: only with --from]
-flint tinderbox init --from <url>             # Clone a box from Git, then run the local sync; exit 2 when a member is blocked [--no-open]
+flint tinderbox init <name>                   # Make (Tinderbox) <name> here with the three files and a first commit
+flint tinderbox init --from <url>             # Clone a box from Git, then run the local sync; exit 2 when a member is blocked
 flint tinderbox start <name> [path]           # Make a new box and move the current Flint into it as an owned member
-flint tinderbox import <name> [source]        # Move a Flint of the roster into the box, or declare it from [source] [--no-open --yes]
+flint tinderbox import <name> [source]        # Move a Flint of the roster into the box, or declare it from [source]; --no-open: no Obsidian launch after the move [--no-open --yes]
 flint tinderbox add <name> <source>           # Declare a member without cloning or moving it: a Git source (owned) or registry:<name> (reference) [--json]
 flint tinderbox remove <name>                 # Remove a member and keep its folder, unless --move-out moves it [--move-out <dir> --json]
-flint tinderbox rename <from> <to>            # Rename a member: declaration, record, flint.toml name, folder, roster row, vault, wired references; backs up both box files first [--json]
-flint tinderbox rename --tinderbox <name>     # Rename the box, its folder, its roster row, and the member vaults; backs up both box files first [--json]
+flint tinderbox rename <from> <to>            # Rename a member: declaration, record, flint.toml name, folder, roster row, vault registry entry, wired references; backs up both box files first [--json]
+flint tinderbox rename --tinderbox <name>     # Rename the box, its folder, its roster row, and the vault registry entry of each member; backs up both box files first [--json]
 flint tinderbox dissolve                      # Remove the box and keep the member folders; backs up both box files first [--dry-run --move-to <dir> --force --yes --json]
 
 # The local sync and the health of the box
-flint tinderbox sync                          # Make the box match its intent, then run flint sync in each selected member [--dry-run --json --only <names...> --skip <names...> --no-open]
+flint tinderbox sync                          # Make the box match its intent, then run flint sync in each selected member [--dry-run --json --only <names...> --skip <names...>]
 flint tinderbox status                        # The box (name, org, last sync) and each member and connection [--json --wide]
 flint tinderbox check                         # Compare the intent with this machine; one next command per finding [--json]
-flint tinderbox heal                          # Repair what check finds (with a backup of the box files), then run the local sync of the box; exit 1 when a finding stays [--dry-run --yes --json --no-open]
+flint tinderbox heal                          # Repair what check finds (with a backup of the box files), then run the local sync of the box; exit 1 when a finding stays [--dry-run --yes --json]
 
 # Repos and connections
 flint tinderbox repo add <name> <source>      # Declare a repo: clone a Git source into Repos/, or reference path:<dir> [--exposed-to <all|names> --mode <own|reference> --json]
@@ -363,6 +364,36 @@ flint tinderbox git publish <url>             # Set origin of the box repo (the 
 flint tinderbox org set <org>                 # The plan for the org of the box and of each owned member; --apply writes it; none removes the org [--id <uuid> --apply --json]
 ```
 
+## Obsidian
+
+The Obsidian payload is the set of released files that Flint installs into `.obsidian/`. The payload source is the repository `NUU-Cognition/flint-dot-obsidian`. The pin (`flint.json#obsidian`) names the payload release of this Flint. The installed state is in `.flint/obsidian/state.json`. Flint owns the release files and verifies them by hash. The person owns the settings files (`app.json`, `hotkeys.json`, `appearance.json`, `plugins/<id>/data.json`).
+
+- `flint sync` installs the pinned payload. It never moves the pin. It fetches the release only when the machine cache does not hold it.
+- When the vault is open, `flint sync` does not install. The install waits (a pending install), and the exit code is 0. Close the Flint in Obsidian, then run `flint open "<name>"`: the pending install completes before the launch.
+- `flint obsidian update` moves the pin to the recommended release (or to `--to <release>`) and installs it. It keeps every personal setting.
+- A release file that changed outside Flint blocks the install (exit 2), and no file changes. Preview the fix with `flint obsidian repair --replace --dry-run`. Do not edit the release files in `.obsidian/`.
+- An applied setting is a key of `appearance.json` or `app.json` that the NUU Flint plugin applies at each load. To change one, use `flint obsidian applied set <file>.<key> <value>`, not an edit of the settings file.
+- The machine choice turns Obsidian on or off on this machine: `flint config set obsidian off` (or `on`). When it is `off`, Flint does not install the payload and does not open Obsidian.
+- With `NUU_HOME` set (isolation), `flint sync` still installs the payload, and Flint does not contact a live Obsidian.
+- Obsidian asks once for each new vault. The person clicks "Trust author and enable plugins". Flint writes no trust key.
+- A 0.6.x Flint can hold a legacy Git payload in `.obsidian/`. `flint sync` blocks on it (exit 2), with the next command `flint migrate run`.
+
+```bash
+flint obsidian status                 # The payload (pinned, installed, available, pending), the vault, the plugin, and the next command [--check --tinderbox --json]
+flint obsidian update                 # Pin the recommended release and install it; keep every personal setting [--to <release> --allow-downgrade --replace --tinderbox --only <names...> --dry-run --json]
+flint obsidian repair                 # Restore the release files of the pinned release [--replace --reset-settings --file <path> --dry-run --json]
+flint obsidian reload                 # Reload Obsidian for this Flint; list the terminal tabs that stop [--yes --json]
+flint obsidian backups list|show|restore|prune           # The backup store of the Obsidian payload
+flint obsidian profiles list|activate <id>|deactivate    # The appearance profiles of the installed release
+flint obsidian applied [set|unset|apply]                 # The applied settings: each key, its layer, and its last result [--machine for the machine layer]
+flint obsidian vaults repair          # Complete pending vault registry changes and remove stale entries; --yes writes [--yes --json]
+flint open ["<name>"]                 # Open or focus a Flint in Obsidian [--no-launch]
+flint obshn <orbh-profile> [prompt]   # Open a terminal tab in Obsidian and launch flint orbh i <orbh-profile> [--account <name> --at <scope> -p <flint>]
+flint config set obsidian on|off      # The machine choice: Obsidian on or off on this machine
+```
+
+Each `flint obsidian` command takes `-p <dir>` for another Flint. The commands `flint obsidian push`, `reset`, and `patches` are removed: each prints the new command. `profiles apply` is now `profiles activate <id>`.
+
 ## Send / Inbox
 
 ```bash
@@ -375,5 +406,5 @@ Files land in the target Flint's `Inbox/(Bundle) Title/` directory. Use [[dev-sk
 ## Other Useful Commands
 
 ```bash
-flint open                            # Open a Flint in Obsidian
+flint open                            # Open or focus a Flint in Obsidian (see § Obsidian)
 ```

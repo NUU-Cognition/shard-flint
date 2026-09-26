@@ -6,6 +6,7 @@ orbh-sessions:
   - "[[96f34e4f-b89e-4f22-b801-38f3ad1668fe]]"
   - "[[6ca3f8d9-0148-433a-b327-1d355a60a895]]"
   - "[[0e5e27b5-779f-4068-941e-a93a7a39d3c8]]"
+  - "[[1fe72314-c531-4439-81fd-b8f136b7e2cc]]"
 ---
 
 # Knowledge: Tinderbox
@@ -173,7 +174,7 @@ The box phase, in order:
 2. Make the box repo when it is absent, and refresh `.gitignore` of the box.
 3. Clone each missing owned repo and each missing owned member.
 4. Find each reference member in the roster.
-5. Register the members in the roster, and as Obsidian vaults unless `--no-open` is set.
+5. Register the members in the roster. The sync registers no Obsidian vault: a vault enters the vault registry when Obsidian opens it.
 6. Wire the repos and the connections into the members, and remove each wired reference that no connection declares now.
 7. Record the box in `tinderbox.json`.
 
@@ -183,7 +184,7 @@ Rules:
 
 - The one fetch is `git clone` of an owned member or an owned repo that the intent names and that is absent.
 - The box phase never moves or deletes a folder. Undeclared folders stay. `check` and a run with no `--only` and no `--skip` report them. The `flint sync` of a member can move or remove folders that Flint owns in that member: a repository snapshot folder, a marker folder, or a shard build that a rename moves.
-- The plan of `--dry-run` names the box repo, `.gitignore`, `.tinderbox/`, the roster rows, the clones, the wiring, and `tinderbox.json` (made, upgraded, or written). It names each Obsidian vault that the run registers; with `--no-open` it names none. Then it gives the plan of each selected member.
+- The plan of `--dry-run` names the box repo, `.gitignore`, `.tinderbox/`, the roster rows, the clones, the wiring, and `tinderbox.json` (made, upgraded, or written). Then it gives the plan of each selected member.
 - In a dry run, an absent owned member has the plan state `planned`. Its row says `would clone, then sync`, and its JSON has `"status": "planned"` and `"plan": "clone"`.
 - A newer or malformed record does not stop the local sync. The run reports it as an issue, does not write `tinderbox.json`, and is `partial`. This is the one exception to the write gate.
 - `--only <names...>` and `--skip <names...>` select members. The repos are synced only in a run with no `--only` and no `--skip`. A run with `--only` or `--skip` reports no undeclared folder.
@@ -254,19 +255,19 @@ Every command runs from the box root or from any folder in a member (see "Where 
 
 | Command | What it does | Flags | Exit |
 |---|---|---|---|
-| `init <name>` | Makes `(Tinderbox) <name>` in the current folder with the three files and a first commit. | `--no-open` (it has an effect only with `--from`) | 0, 1 |
-| `init --from <url>` | Clones the box from its Git URL into the current folder, then runs the local sync. It prints one report. A blocked member exits 2. | `--no-open` | 0, 1, 2 |
+| `init <name>` | Makes `(Tinderbox) <name>` in the current folder with the three files and a first commit. | — | 0, 1 |
+| `init --from <url>` | Clones the box from its Git URL into the current folder, then runs the local sync. It prints one report. A blocked member exits 2. | — | 0, 1, 2 |
 | `start <name> [path]` | Makes a new box and moves the current Flint into it as its first owned member. | — | 0, 1 |
-| `import <name> [source]` | Moves a Flint of the roster into this box as an owned member, or declares it from `[source]` when the roster does not have it. One operation with one restore. | `--no-open`, `--yes` | 0, 1 |
+| `import <name> [source]` | Moves a Flint of the roster into this box as an owned member, or declares it from `[source]` when the roster does not have it. One operation with one restore. After the move, it opens the Flint in Obsidian unless `--no-open`. | `--no-open`, `--yes` | 0, 1 |
 | `add <name> <source>` | Declares a member without cloning or moving it: an owned member from a Git source, or a reference member from `registry:<name>`. It writes `tinderbox.toml` and `.gitignore`, and it records a member with a known id in `tinderbox.json`. It makes `.tinderbox/` and the roster row of the box when they are absent. | `--json` | 0, 1 |
 | `remove <name>` | Removes a member from `tinderbox.toml` and the record, and strips the wired references of the member. A reference that a person added stays. The folder and its roster row stay, except with `--move-out`: the folder then moves into `<dir>`, and the roster row follows it. One operation with one restore. | `--move-out <dir>`, `--json` | 0, 1 |
-| `rename <from> <to>` | Renames a member: its declaration, its record entry, its `flint.toml` name, its folder, its roster row, and its Obsidian vault. It rewrites the wired references to the new name. A reference that a person added keeps every byte. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
-| `rename --tinderbox <name>` | Renames the box, its folder, and its roster row, and points the Obsidian vault of each member at the new folder. When only the folder has another name, it moves the folder. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
+| `rename <from> <to>` | Renames a member: its declaration, its record entry, its `flint.toml` name, its folder, its roster row, and its vault registry entry. It rewrites the wired references to the new name. A reference that a person added keeps every byte. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
+| `rename --tinderbox <name>` | Renames the box, its folder, and its roster row, and relocates the vault registry entry of each member to the new folder. When only the folder has another name, it moves the folder. It backs up both box files first. One operation with one restore. | `--json` | 0, 1 |
 | `dissolve` | Backs up and removes `tinderbox.toml` and `tinderbox.json`, removes the roster row, and strips the wiring. `.git`, the member folders, and `.tinderbox/` stay. One operation with one restore. A member with unsaved work blocks it (exit 2) unless `--force`. | `--dry-run`, `--move-to <dir>`, `--force`, `--yes`, `--json` | 0, 1, 2 |
-| `sync` | Makes the box match its intent on this machine, then runs `flint sync` in each selected member. | `--dry-run`, `--json`, `--only <names...>`, `--skip <names...>`, `--no-open` | 0, 1, 2 |
+| `sync` | Makes the box match its intent on this machine, then runs `flint sync` in each selected member. | `--dry-run`, `--json`, `--only <names...>`, `--skip <names...>` | 0, 1, 2 |
 | `status` | Reads: the box (its name, its org, its last sync) and the state of each member and connection. | `--json`, `--wide` | 0, 1 |
 | `check` | Reads: compares the intent with this machine and gives one next command for each finding. | `--json` | 0, 1 |
-| `heal` | Repairs the drift that `check` finds (with a backup of both box files), then runs the local sync of the box. It exits 1 when a finding stays. | `--dry-run`, `--yes`, `--json`, `--no-open` | 0, 1 |
+| `heal` | Repairs the drift that `check` finds (with a backup of both box files), then runs the local sync of the box. It exits 1 when a finding stays. | `--dry-run`, `--yes`, `--json` | 0, 1 |
 | `repo add <name> <source>` | Declares a repo and clones it from a Git source into `Repos/`, or references it at `path:<dir>`. | `--exposed-to <all\|names>`, `--mode <own\|reference>`, `--json` | 0, 1 |
 | `repo remove <name>` | Removes a repo and strips its codebase reference from each member. | `--purge`, `--yes`, `--json` | 0, 1 |
 | `repo list` | Reads: the repos, their mode, source, path, members, and whether each is on this machine. | `--wide` | 0, 1 |
@@ -286,7 +287,8 @@ Every command runs from the box root or from any folder in a member (see "Where 
   - `start` moves the current Flint into the new box.
   - `import` moves a Flint of the roster into the box. It asks unless `--yes`.
   - `remove --move-out <dir>` and `dissolve --move-to <dir>` move member folders out of the box.
-  - `rename` moves the member folder and points its Obsidian vault at the new folder. `rename --tinderbox` moves the box folder and points the vault of each member at the new folder.
+  - `rename` moves the member folder and relocates its vault registry entry. `rename --tinderbox` moves the box folder and relocates the vault registry entry of each member.
+  - A command that moves a member folder refuses when the vault of a member that moves is open in Obsidian. The refusal lists each open vault. `heal` does not refuse: it keeps the folder of that member. After a move, the vault registry entry follows the folder and keeps its vault id.
   - `heal` gives a member folder its canonical name. It moves a broken member folder aside as `<folder>.broken-<epoch milliseconds>`.
   - `flint move` of a member asks unless `--yes`. It removes the member from `tinderbox.toml`, then moves the folder.
 - **The one command that deletes:** `repo remove --purge` deletes the clone under `Repos/`. It asks unless `--yes`.
@@ -294,7 +296,7 @@ Every command runs from the box root or from any folder in a member (see "Where 
 - **The commands that write `tinderbox.toml`:** `init`, `start`, `import`, `add`, `remove`, `rename`, and `heal`. Also `repo add`, `repo remove`, `connection add`, `connection remove`, and `flint move` of a member. `rename` and `heal` back up `tinderbox.toml` and `tinderbox.json` to `.tinderbox/backups/` first. `dissolve` backs up both files first.
 - **The write gate comes first.** A write command refuses a newer or malformed record before its first effect, and nothing is written. See "The write gate".
 - **One operation, one restore.** `import`, `add`, `remove`, `rename`, `rename --tinderbox`, and `dissolve` plan every effect first. They keep the old bytes and roster rows. Then they do the effects, and the change of `tinderbox.toml` comes after the moves and the strips. When a step fails, the command undoes every completed step and exits 1. When an undo fails, the message names it, and the next command is `flint tinderbox check`. `dissolve` reports the box as dissolved only after both files and the roster row are removed.
-- **Preview first.** Run `--dry-run` first where it exists: `sync`, `heal`, `dissolve`. `org set` without `--apply` is a plan. `heal --dry-run` names each repair and each effect of its local sync: the record upgrade, `.tinderbox/`, the roster rows, and the Obsidian vaults. For a member that `heal` renames, it also names the folder move, the roster row, the vault that `heal` points at the new folder, and each wired reference to the old name that `heal` removes. `heal --no-open` registers no new vault. It still points the vault of a moved member at the new folder, so no vault names a folder that is gone.
+- **Preview first.** Run `--dry-run` first where it exists: `sync`, `heal`, `dissolve`. `org set` without `--apply` is a plan. `heal --dry-run` names each repair and each effect of its local sync: the record upgrade, `.tinderbox/`, and the roster rows. For a member that `heal` renames, it also names the folder move, the roster row, the vault registry entry that `heal` relocates, and each wired reference to the old name that `heal` removes. `check` reports a vault registry entry whose folder is gone, with the next command `flint obsidian vaults repair`. `heal` does not change that entry. `--no-open` on `init --from`, `sync`, and `heal` is retired: it prints one line, and the command runs.
 - **The commands that write nothing:** `status`, `check`, `git status`, `repo list`, `connection list`, each `--dry-run`, and `org set` without `--apply`.
 - **`dissolve` protects work.** It refuses when a member has uncommitted or unpushed work, unless `--force`. With no terminal to ask, it refuses unless `--yes`.
 - **Know which box you are in.** A command walks up to the nearest `tinderbox.toml`. A command in any folder under a box acts on that box, also in a repo under `Repos/`. Never run a write command in a box that you do not own. Scripts and checks run in a scratch box with an isolated home.
