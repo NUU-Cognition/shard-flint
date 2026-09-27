@@ -1,5 +1,5 @@
 ---
-description: "Repair the failure of a Flint command from its failure record, with the person, and write one repair note in the Computer flint"
+description: "Repair the failure of a Flint command from its failure record, with the person, and write one repair note in the Computer Flint"
 ---
 
 > [!important] THIS FILE IS AN INSTRUCTION. WHEN REFERENCED IT IS MEANT TO BE TAKEN AS AN ACTION.
@@ -14,7 +14,7 @@ A Flint command failed. `flint fix` started this repair session and gave you the
 
 - The failure record: a JSON file in `~/.nuucognition/flint/failures/` (in `$NUU_HOME/flint/failures/` when `NUU_HOME` is set). The prompt of the session gives its path and its content. `flint fix --list` lists the records.
 - The failed Flint: the field `flintPath` of the record. It is `null` when the command ran outside a Flint.
-- The Computer flint: the Flint of this session. When the machine has no Computer flint, the session runs in the failed Flint.
+- The Flint of this session: the prompt names it. It is the Computer Flint. When the machine has no Computer Flint, it is the failed Flint; when the failure has no Flint either, it is the Flint of the working folder of `flint fix`. When a Flint cannot select an agent, `flint fix` passes the session to the next Flint of this order, and the prompt says why.
 
 The failed Flint is usually outside the working folder of this session. Use absolute paths for each file and each command there. The harness can ask the person for permission for each edit outside the working folder. That is expected: tell the person why you edit the file.
 
@@ -40,13 +40,13 @@ The record has these fields: `command`, `args`, `exitCode`, `code`, `reason`, `n
 2. Read the state with no write:
    - `flint status` in the failed Flint (the versions and the migrations).
    - `flint obsidian status` in the failed Flint (the Obsidian payload).
-   - `flint doctor` (the machine, the Computer flint, the Flint registry, and the current Flint: the lock, the sync plan, the Git state, the Obsidian payload).
+   - `flint doctor -p '<flintPath>'`, or `flint doctor` when `flintPath` is `null` (the machine, the Computer Flint, the Flint registry, and the failed Flint: the lock, the sync plan, the Git state, the Obsidian payload). Its checks write nothing. When a row needs judgement (its next command is `flint fix`), it writes one new failure record: ignore that record, and do not start `flint fix` from this session.
 3. Reproduce the failure with no write: `flint sync --dry-run` or `flint plan` in the failed Flint. For a failure of `flint git sync`, run `flint git status`. For a failure of `flint tinderbox sync`, run `flint tinderbox sync --dry-run` in the box folder.
 4. Find the cause. Use the table below. When the cause is not in the table, read the tails of the record and the output of step 3.
 5. Tell the person the cause and the repair that you propose: the commands, and each file that changes. Ask before each change that rule 1 names.
 6. Do the repair. Prefer the `next` commands of the record.
 7. Run the failed command again. When it fails again, go back to step 3. Stop after three tries, and tell the person what is still wrong.
-8. Write one repair note in the Computer flint (see "The repair note").
+8. Write one repair note in the Computer Flint (see "The repair note").
 
 # Causes and Repairs
 
@@ -65,7 +65,7 @@ The record has these fields: `command`, `args`, `exitCode`, `code`, `reason`, `n
 
 # The Repair Note
 
-Write one note in the Computer flint with the Invironments shard. Run the command in the Computer flint. When the machine has no Computer flint, write the note in the failed Flint, and tell the person that `flint setup computer` makes the Computer flint.
+Write one note in the Computer Flint with the Invironments shard. Run the command in the Computer Flint. When the machine has no Computer Flint, write the note in the failed Flint, and tell the person that `flint setup computer` makes the Computer Flint.
 
 1. Write the body to a temporary file. The body has four sections:
    - `# What failed`: the command, its exit code, the failed Flint, and the time of the record.
@@ -85,4 +85,4 @@ Write one note in the Computer flint with the Invironments shard. Run the comman
 
 - The failed command runs with no failure, or the person knows what is still wrong and why.
 - Each change to the Git history, the lock, or `flint.toml` had the yes of the person.
-- One repair note in the Computer flint (or in the failed Flint when the machine has no Computer flint).
+- One repair note in the Computer Flint (or in the failed Flint when the machine has no Computer Flint).

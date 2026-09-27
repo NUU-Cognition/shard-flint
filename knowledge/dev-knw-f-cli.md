@@ -11,6 +11,7 @@ orbh-sessions:
   - "[[ec731b56-92e3-425a-9d01-bed0e4fc3365]]"
   - "[[0e5e27b5-779f-4068-941e-a93a7a39d3c8]]"
   - "[[1fe72314-c531-4439-81fd-b8f136b7e2cc]]"
+  - "[[65e535a9-3f77-404f-80b7-32bd43e9ca77]]"
 ---
 
 # Knowledge: CLI Reference
@@ -104,12 +105,28 @@ Behavior:
 
 Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=true|false`.
 
-## Identity and New Flints
+## Setup, Identity, and New Flints
 
-`flint setup` sets the identity of this machine once: your Name and the machine display name. The machine name (the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. Your Name and the machine names are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them. `flint config org set <slug>` sets the org of this machine: each new Flint gets it. The id comes from `--id <uuid>`, from the enrollment of this machine, or from a Flint of that org on this machine. `flint config org unset` makes new Flints local again. A NUU account and an org are optional.
+`flint setup` sets up this machine in six steps. Each step has a header (`Step 2 of 6 - Git author`), and a summary block ends the run:
+
+1. **Identity**: your Name and the machine display name (the name that people read, such as "Ada Laptop"). The machine name (`machine-slug`, the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. They are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them.
+2. **Git author**: shows the Git author, and asks the email when Git has none. A new Flint needs it for its first commit.
+3. **Environment**: checks Git, Node.js, Obsidian, and the CLI of each target of the Orbh default target list (`claude`, `codex`). A missing tool is `✘` with its install command. It never stops the setup.
+4. **Agent default**: shows the default target list and the target that Orbh selects now. In a terminal, the person can put another target first; setup writes that order to the machine layer (`defaultTargets` in `~/.nuucognition/orbh/settings.json`).
+5. **Computer Flint**: makes the Computer Flint (the answer "yes" is the default). It needs the network. With no network, it skips with `Later: flint setup computer`.
+6. **Open**: opens the Computer Flint in Obsidian one time. This is the one trust click of the machine ("Trust author and enable plugins"). Until a later release, this first open can show "Vault not found"; then the person uses "Open folder as vault" in Obsidian, and `flint open "your computer"` works later. With `NUU_HOME` set, the step opens nothing.
+
+With `--yes`, setup asks nothing and makes the Computer Flint. With `--json` or no terminal, it asks nothing and takes the flags: with no `--computer` and no `--yes`, it skips step 5. A second run confirms the stored values, keeps the Computer Flint, and opens nothing. Only step 1 and a stop (Ctrl-C) fail the run; each other step gives a warning and a `Later:` line.
+
+`flint config org set <slug>` sets the org of this machine: each new Flint gets it. The id comes from `--id <uuid>`, from the enrollment of this machine, or from a Flint of that org on this machine. `flint config org unset` makes new Flints local again. A NUU account and an org are optional.
 
 ```bash
-flint setup                              # Set your Name and the machine names (once per machine)
+flint setup                              # The six steps (once per machine; a second run confirms)
+flint setup --yes                        # Ask nothing: take each default, and make the Computer Flint
+flint setup --no-computer                # Skip step 5 (later: flint setup computer)
+flint setup --computer                   # Make the Computer Flint with no question
+flint setup --no-open                    # Skip step 6
+flint setup --name "<Name>" --machine-proper-name "<name>"   # Give the answers of step 1 as flags
 flint whoami                             # Show your Name, this machine, your org, and the NUU account
 flint config name "<Name>"               # Change your Name only
 flint config org set <slug> [--id <uuid>]   # The org of this machine: new Flints get it
@@ -121,6 +138,39 @@ flint org set <org>                      # Give this Flint an org; its id does n
 ```
 
 A Flint with no org is local. Its address starts with `@/` (for example `@/flint/my-notes`). An address that starts with `@/` names no org. It works only on this machine. To share the Flint, give it an org: `flint org set <org>`.
+
+`flint create` prints `Or start an agent: cd '<path>' && flint orbh i`. After the trust click of step 6, a new Flint opens in Obsidian with its plugins on and no trust prompt.
+
+## The Computer Flint
+
+The Computer Flint is the home of this machine: a Flint of the type `computer`, one for each machine. Its folder is `(Computer) <Machine Display Name>` in the home folder, for example `~/(Computer) Ada Laptop`. Its alias is `your computer` (`flint open "your computer"`, `flint cd "your computer"`). It is private. It holds `Mesh/Start Here.md` (what it is for, how to make a Flint, start an agent, and use `flint doctor` and `flint fix`), `Mesh/(System) Computer Flint.md`, and the repair notes of `flint fix`. `flint open` opens a new Flint through it with trust when no other vault runs the NUU Flint plugin.
+
+The machine display name and the name of the Computer Flint are one name. Two commands rename both: the folder, the `name` in `flint.toml`, the roster row, the vault registry entry of Obsidian, and `machine-display-name` in the NUU config. The alias `your computer` follows. The machine name (`machine-slug`) does not change; the last line says `The machine word of addresses stays <slug>.` A name of another Flint of this machine, or an open vault, refuses before any write.
+
+```bash
+flint setup computer                     # Make the Computer Flint later (--create, --convert <flint>, --dry-run)
+flint setup computer --show-claim        # The claim of this machine (~/.nuucognition/computer-flint.json): held or stale
+flint rename "<name>"                    # In the Computer Flint: rename the machine and the Computer Flint
+flint setup --machine-proper-name "<name>"   # The same rename, from any folder
+flint move "your computer" "<new path>"  # Move it; the claim follows, so Flint still finds it
+```
+
+`nuu setup --machine-proper-name` renames only the machine and prints `Later: flint setup --machine-proper-name '<name>'`. Do not move the Computer Flint by hand: the claim then names a missing folder (`--show-claim` says `stale`).
+
+## Doctor and Fix
+
+`flint doctor` checks this machine and the current Flint and starts no agent. The rows of the machine: Identity, NUU home, Git, Node.js, Obsidian, Agent (the default target list of Orbh), Computer flint, Flint registry. In a Flint (the working folder, or `-p <dir>`): Lock, Sync plan, Git, Obsidian payload. Each failed row has one `Next:` command that runs from the working folder. A row whose repair needs judgement has `Next: flint fix`; then the doctor writes one failure record and ends with `Or: flint fix`. It writes nothing else. Exit 0 when each check passes, else 1. `--json` gives `{ ok, kind: "doctor", code, reason, next, flint, checks: [{ id, label, ok, detail, scope, next? }], failureRecord? }`.
+
+When `flint sync`, `flint create` (`init`), `flint git sync`, `flint shard install`, `flint setup` (and its subcommands), or `flint tinderbox sync` fails, Flint writes one **failure record** and prints `Or: flint fix` after the `Next:` lines. With `--json`, the envelope has `failureRecord` (the path) and no line. An input refusal (a wrong command line: an unknown flag, a bad value, a name in use, not in a Flint, a missing Name or Git author) and a stop (Ctrl-C) write no record. The record is `<NUU home>/flint/failures/<id>.json` (mode 600, spec `flint-failure/0.1`) with `command`, `args`, `exitCode`, `code`, `reason`, `next`, `stderrTail`, `stdoutTail` (40 lines each), `flintVersion`, `flintPath`, `cwd`, and `time`. Flint removes the secrets first (credentials in URLs, token forms, secret `name=value` pairs, secret flags) and keeps the newest 20 records.
+
+`flint fix` starts a **repair session**: `flint orbh i --prompt-file <id>.prompt.md -p <Flint>` on the default target. The prompt file is beside the record. The session runs in the Computer Flint; with no Computer Flint, in the failed Flint (and it prints `Later: flint setup computer`); with neither, in the Flint of the working folder. A Flint that cannot select an agent passes the session to the next one (a `Fallback:` row); when none can, the list of this machine gives the target (a `Target:` row). The agent follows [[dev-sk-f-repair]]: it asks the person before each change to the Git history, the lock, or `flint.toml`, and it writes one repair note in the Computer Flint.
+
+```bash
+flint doctor [-p <dir>] [--json]         # Check this machine and a Flint; one next command per failed check
+flint fix                                # Repair the newest failure record in a repair session
+flint fix --list [--json]                # The failure records, the newest first
+flint fix <n|id|file>                    # Repair an older record (n = the number of --list)
+```
 
 ## Shard Discovery
 

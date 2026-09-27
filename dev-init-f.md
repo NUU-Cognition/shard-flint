@@ -138,15 +138,21 @@ Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is 
 
 The person who works in a Flint has one **Name** ("your Name" in the screens of the CLI). Your Name is how the person appears as the author of notes on this machine. It is bound to a `Mesh/People/@<Name>.md` file. Your Name is the same for every Flint on this machine: it is stored in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`).
 
-`flint setup` sets the identity of this machine once: your Name and the machine display name (the name that people read, such as "Ada Laptop"). The machine name (the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. `flint config name "<Name>"` changes your Name only. `flint config org set <slug>` sets the org of this machine: each new Flint gets it. The id comes from `--id <uuid>`, from the enrollment of this machine, or from a Flint of that org on this machine. `flint config org unset` makes new Flints local again. A NUU account (`flint login`) and an org are optional: Flint works with no NUU account and no org, and no local command checks them.
+`flint setup` sets up this machine in six steps: your Name and the machine display name (the name that people read, such as "Ada Laptop"), the Git author, a check of the tools, the agent default (the Orbh default target list), the Computer Flint, and its first open in Obsidian. The machine name (the short word after `#` in an address) comes from the machine display name, and a rename of the machine keeps it. The branch prefix (`machine-name`) takes its default from the hostname. `flint config name "<Name>"` changes your Name only. `flint config org set <slug>` sets the org of this machine: each new Flint gets it. The id comes from `--id <uuid>`, from the enrollment of this machine, or from a Flint of that org on this machine. `flint config org unset` makes new Flints local again. A NUU account (`flint login`) and an org are optional: Flint works with no NUU account and no org, and no local command checks them.
 
 A Flint with no org is local. Its address starts with `@/` (for example `@/flint/my-notes`). An address that starts with `@/` names no org. It works only on this machine. To share the Flint, give it an org: `flint org set <org>`. The Flint keeps its id.
 
+The **Computer Flint** is the home of the machine: the Flint `(Computer) <Machine Display Name>` in the home folder, with the alias `your computer`. It holds the "Start here" note and the repair notes. `flint rename "<name>"` in the Computer Flint, or `flint setup --machine-proper-name "<name>"`, renames the machine and the Computer Flint together.
+
+When a Flint command fails, its output ends with `Or: flint fix`. `flint fix` starts a repair session in the Computer Flint with the failure record; the repair session follows [[dev-sk-f-repair]]. `flint doctor` checks the machine and the current Flint and starts no agent.
+
 ```bash
-flint setup                      # Set your Name and the machine names (once per machine)
+flint setup                      # Set up this machine in six steps (a second run confirms)
 flint whoami                     # Show your Name, this machine, your org, and the NUU account
 flint config name "Your Name"    # Change your Name only
 flint create "<name>"            # Create a Flint (init is an alias)
+flint doctor                     # Check this machine and the current Flint; one next command per problem
+flint fix                        # Start a repair session for the last failure
 ```
 
 **When creating or editing artifacts**, resolve the Name (run `flint whoami`, or read `name` from the NUU config) and populate the `authors` frontmatter field with the person as a wikilink:
@@ -220,8 +226,10 @@ flint helper rename "<old>" "<new>"   # Rename a Mesh artifact + rewrite every [
 flint helper delete "<name>"          # Delete artifact + strip every frontmatter wikilink to it (use --archive to soft-delete)
 
 # This machine and new Flints
-flint setup                           # Set your Name and the machine names (once per machine)
+flint setup                           # Set up this machine in six steps: identity, Git author, tools, agent default, Computer Flint, first open
 flint whoami                          # Show your Name, this machine, your org, and the NUU account
+flint doctor                          # Check this machine and the current Flint; one next command per problem; starts no agent
+flint fix [--list]                    # Start a repair session for the last failure record (--list: the records)
 flint config name "<Name>"            # Change your Name only
 flint config org set <slug> [--id <uuid>]   # The org of this machine: new Flints get it
 flint create "<name>"                 # Create a Flint (init is an alias); --preset <name> adds shards
