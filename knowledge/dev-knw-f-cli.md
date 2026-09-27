@@ -129,7 +129,7 @@ A shard is a package with two entities: the **source** (the files a person edits
 A `<ref>` names one shard of this Flint. One resolver reads it in this order: the alias (its key in `flint.toml`), the shorthand, the address (`@org/<slug>` or `@org/shard/<slug>`), the id (`<uuid>`, `@<uuid>`, or a prefix of eight or more characters), then a former address (`@org/<former slug>` or `@org/shard/<former slug>`) or a former shorthand. A former form prints `moved: <old> is now <new>` and goes on. A bare word is an alias or a shorthand; a name is an address. The name, a former name, a bare former slug, and a folder name are not a ref: use the alias, or the address for a former name. A ref that names two shards is refused as `ambiguous`, with one next command per shard that names its alias.
 
 ```bash
-flint shard list [--json]             # One row per shard: ID ADDRESS ALIAS SHORTHAND VERSION STATE
+flint shard list [--json]             # One row per shard: ID PACKAGE ALIAS SHORTHAND VERSION STATE
 flint shard status <ref> [--json]     # The row, the Git state of the source, dependencies, pending migrations
 flint shard status <ref> --health     # Also run the health check (it writes nothing)
 flint shard info <ref>                # An alias of status
@@ -139,15 +139,15 @@ flint resolve <spec>                  # The answer of the walk: this Flint, this
 ```
 $ flint shard list
 Shards
-  ID                ADDRESS                             ALIAS          SHORTHAND   VERSION     STATE
-  4426ad5b          @nuucognition/shard/meeting-notes  meeting-notes  meet        0.1.0       edited
+  ID                PACKAGE                      ALIAS          SHORTHAND   VERSION     STATE
+  4426ad5b          @nuucognition/meeting-notes  meeting-notes  meet        0.1.0       edited
 
   1 shard, 1 declared
 ```
 
-`status` prints one row with the labels `Id`, `Address`, `Alias`, `Shorthand`, `Name`, `Version`, `State`, `Request`, `From`, `Registry`, `Folders`, in this order. `Version` is the version of the build here; when the source moved past its build, the row says `stale`.
+`status` prints one row with the labels `Id`, `Package`, `Address`, `Alias`, `Shorthand`, `Name`, `Version`, `State`, `Request`, `From`, `Registry`, `Folders`, in this order. `Version` is the version of the build here; when the source moved past its build, the row says `stale`.
 
-`--json`: `list` gives `{ rows: <row>[] }`; `status` gives `{ ...<row>, details, moved?, health? }`. A row is `{ id, held, alias, shorthand, name, address, request, state, version, from, registry, use, folders: { shard?, source? }, setup, pending, stale }`.
+`--json`: `list` gives `{ rows: <row>[] }`; `status` gives `{ ...<row>, details, moved?, health? }`. A row is `{ id, held, alias, shorthand, name, package, address, request, state, version, from, registry, use, folders: { shard?, source? }, setup, pending, stale }`.
 
 ## Shard Browsing
 
