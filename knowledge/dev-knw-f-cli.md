@@ -375,7 +375,7 @@ The Obsidian payload is the set of released files that Flint installs into `.obs
 - An applied setting is a key of `appearance.json` or `app.json` that the NUU Flint plugin applies at each load. To change one, use `flint obsidian applied set <file>.<key> <value>`, not an edit of the settings file.
 - The machine choice turns Obsidian on or off on this machine: `flint config set obsidian off` (or `on`). When it is `off`, Flint does not install the payload and does not open Obsidian.
 - With `NUU_HOME` set (isolation), `flint sync` still installs the payload, and Flint does not contact a live Obsidian.
-- Obsidian asks once for each new vault. The person clicks "Trust author and enable plugins". Flint writes no trust key.
+- Community-plugin trust: with the trust setting `auto` (the default), `flint open` asks the NUU Flint plugin of an open vault to open a Flint with trust, after the trust check (the payload is installed, the plugin files are the release files, and `.obsidian/plugins` holds no other plugin). When no vault runs the plugin, the Computer Flint opens first and carries the open (one more window). The plugin never changes a vault that the person put in Restricted Mode. Obsidian still asks ("Trust author and enable plugins") at the first open of the Computer Flint, with `flint config set obsidian-trust ask`, when the check fails, and with no open vault and no Computer Flint. `flint obsidian status` shows the setting and the check on the line `Trust`.
 - A 0.6.x Flint can hold a legacy Git payload in `.obsidian/`. Close its vault, then run `flint migrate run`: the step `l5` converts it and saves the old files in the backup store. `flint obsidian update` and `repair` convert it too. `flint sync` blocks on it (exit 2) and names the conversion command. `flint open` opens it and prints the same command.
 - When the vault is open or the fetch fails, the conversion waits (a pending conversion). `flint open` (after you close the vault) or the next `flint sync` completes it.
 
@@ -391,6 +391,7 @@ flint obsidian vaults repair          # Complete pending vault registry changes 
 flint open ["<name>"]                 # Open or focus a Flint in Obsidian [--no-launch]
 flint obshn <orbh-profile> [prompt]   # Open a terminal tab in Obsidian and launch flint orbh i <orbh-profile> [--account <name> --at <scope> -p <flint>]
 flint config set obsidian on|off      # The machine choice: Obsidian on or off on this machine
+flint config set obsidian-trust auto|ask   # The trust setting: flint open trusts a checked Flint (auto), or Obsidian asks (ask)
 ```
 
 Each `flint obsidian` command takes `-p <dir>` for another Flint. The commands `flint obsidian push`, `reset`, and `patches` are removed: each prints the new command. `profiles apply` is now `profiles activate <id>`.
