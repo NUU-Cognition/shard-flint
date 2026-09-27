@@ -129,7 +129,7 @@ A shard is a package with two entities: the **source** (the files a person edits
 A `<ref>` names one shard of this Flint. One resolver reads it in this order: the alias (its key in `flint.toml`), the shorthand, the address (`@org/<slug>` or `@org/shard/<slug>`), the id (`<uuid>`, `@<uuid>`, or a prefix of eight or more characters), then a former address (`@org/<former slug>` or `@org/shard/<former slug>`) or a former shorthand. A former form prints `moved: <old> is now <new>` and goes on. A bare word is an alias or a shorthand; a name is an address. The name, a former name, a bare former slug, and a folder name are not a ref: use the alias, or the address for a former name. A ref that names two shards is refused as `ambiguous`, with one next command per shard that names its alias.
 
 ```bash
-flint shard list [--json]             # One row per shard: ID PACKAGE ALIAS SHORTHAND VERSION STATE
+flint shard list [--json]             # One row per shard: ID PACKAGE SHORTHAND VERSION STATE (ALIAS when an alias differs from its slug)
 flint shard status <ref> [--json]     # The row, the Git state of the source, dependencies, pending migrations
 flint shard status <ref> --health     # Also run the health check (it writes nothing)
 flint shard info <ref>                # An alias of status
@@ -139,8 +139,8 @@ flint resolve <spec>                  # The answer of the walk: this Flint, this
 ```
 $ flint shard list
 Shards
-  ID                PACKAGE                      ALIAS          SHORTHAND   VERSION     STATE
-  4426ad5b          @nuucognition/meeting-notes  meeting-notes  meet        0.1.0       edited
+  ID                PACKAGE                      SHORTHAND   VERSION     STATE
+  4426ad5b          @nuucognition/meeting-notes  meet        0.1.0       edited
 
   1 shard, 1 declared
 ```
