@@ -12,6 +12,7 @@ orbh-sessions:
   - "[[0e5e27b5-779f-4068-941e-a93a7a39d3c8]]"
   - "[[1fe72314-c531-4439-81fd-b8f136b7e2cc]]"
   - "[[65e535a9-3f77-404f-80b7-32bd43e9ca77]]"
+  - "[[a6b4b0bd-1465-4645-b800-e12693e58dfa]]"
 ---
 
 # Knowledge: CLI Reference
@@ -148,7 +149,7 @@ The Computer Flint is the home of this machine: a Flint of the type `computer`, 
 The machine display name and the name of the Computer Flint are one name. Two commands rename both: the folder, the `name` in `flint.toml`, the roster row, the vault registry entry of Obsidian, and `machine-display-name` in the NUU config. The alias `your computer` follows. The machine name (`machine-slug`) does not change; the last line says `The machine word of addresses stays <slug>.` A name of another Flint of this machine, or an open vault, refuses before any write.
 
 ```bash
-flint setup computer                     # Make the Computer Flint later (--create, --convert <flint>, --dry-run)
+flint setup computer                     # Make the Computer Flint later (--dry-run); it never converts a Flint
 flint setup computer --show-claim        # The claim of this machine (~/.nuucognition/computer-flint.json): held or stale
 flint rename "<name>"                    # In the Computer Flint: rename the machine and the Computer Flint
 flint setup --machine-proper-name "<name>"   # The same rename, from any folder
