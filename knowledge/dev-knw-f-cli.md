@@ -13,6 +13,7 @@ orbh-sessions:
   - "[[1fe72314-c531-4439-81fd-b8f136b7e2cc]]"
   - "[[65e535a9-3f77-404f-80b7-32bd43e9ca77]]"
   - "[[a6b4b0bd-1465-4645-b800-e12693e58dfa]]"
+  - "[[b61b6398-0bf0-4b33-81ef-df08f56f2fc5]]"
 ---
 
 # Knowledge: CLI Reference
@@ -108,7 +109,7 @@ Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=
 
 ## Setup, Identity, and New Flints
 
-`flint setup` sets up this machine in six steps. Each step has a header (`Step 2 of 6 - Git author`), and a summary block ends the run:
+`flint setup` sets up this machine in seven steps. Each step has a header (`Step 2 of 7 - Git author`), and a summary block ends the run:
 
 1. **Identity**: your Name and the machine display name (the name that people read, such as "Ada Laptop"). The machine name (`machine-slug`, the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. They are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them.
 2. **Git author**: shows the Git author, and asks the email when Git has none. A new Flint needs it for its first commit.
@@ -116,17 +117,20 @@ Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=
 4. **Agent default**: shows the default target list and the target that Orbh selects now. In a terminal, the person can put another target first; setup writes that order to the machine layer (`defaultTargets` in `~/.nuucognition/orbh/settings.json`).
 5. **Computer Flint**: makes the Computer Flint (the answer "yes" is the default). It needs the network. With no network, it skips with `Later: flint setup computer`.
 6. **Open**: opens the Computer Flint in Obsidian one time. This is the one trust click of the machine ("Trust author and enable plugins"). Until a later release, this first open can show "Vault not found"; then the person uses "Open folder as vault" in Obsidian, and `flint open "your computer"` works later. With `NUU_HOME` set, the step opens nothing.
+7. **Guide**: clones the Guide of NUU Cognition (`https://github.com/NUU-Cognition/guide-nuu-cognition`) into `(Guide) NUU Cognition` in the home folder, beside the Computer Flint (the answer "yes" is the default). The Guide is a public Flint that a person asks questions with an agent; its Flint Help shard answers Flint questions and explains Flint problems. It needs the network. With no network, it skips with `Later: flint setup guide`. `flint setup guide` clones it alone.
 
-With `--yes`, setup asks nothing and makes the Computer Flint. With `--json` or no terminal, it asks nothing and takes the flags: with no `--computer` and no `--yes`, it skips step 5. A second run confirms the stored values, keeps the Computer Flint, and opens nothing. Only step 1 and a stop (Ctrl-C) fail the run; each other step gives a warning and a `Later:` line.
+With `--yes`, setup asks nothing, makes the Computer Flint, and clones the Guide. With `--json` or no terminal, it asks nothing and takes the flags: with no `--computer` and no `--yes`, it skips step 5; with no `--guide` and no `--yes`, it skips step 7. A second run confirms the stored values, keeps the Computer Flint and the Guide, and opens nothing. Only step 1 and a stop (Ctrl-C) fail the run; each other step gives a warning and a `Later:` line.
 
 `flint config org set <slug>` sets the org of this machine: each new Flint gets it. The id comes from `--id <uuid>`, from the enrollment of this machine, or from a Flint of that org on this machine. `flint config org unset` makes new Flints local again. A NUU account and an org are optional.
 
 ```bash
-flint setup                              # The six steps (once per machine; a second run confirms)
-flint setup --yes                        # Ask nothing: take each default, and make the Computer Flint
+flint setup                              # The seven steps (once per machine; a second run confirms)
+flint setup --yes                        # Ask nothing: take each default, make the Computer Flint, and clone the Guide
 flint setup --no-computer                # Skip step 5 (later: flint setup computer)
 flint setup --computer                   # Make the Computer Flint with no question
 flint setup --no-open                    # Skip step 6
+flint setup --no-guide                   # Skip step 7 (later: flint setup guide)
+flint setup guide                        # Clone the Guide of NUU Cognition alone (a present Guide stays)
 flint setup --name "<Name>" --machine-proper-name "<name>"   # Give the answers of step 1 as flags
 flint whoami                             # Show your Name, this machine, your org, and the NUU account
 flint config name "<Name>"               # Change your Name only
