@@ -142,7 +142,7 @@ The person who works in a Flint has one **Name** ("your Name" in the screens of 
 
 A Flint with no org is local. Its address starts with `@/` (for example `@/flint/my-notes`). An address that starts with `@/` names no org. It works only on this machine. To share the Flint, give it an org: `flint org set <org>`. The Flint keeps its id.
 
-The **Computer Flint** is the home of the machine: the Flint `(Computer) <Machine Display Name>` in the home folder, with the alias `your computer`. It holds the "Start here" note and the repair notes. `flint rename "<name>"` in the Computer Flint, or `flint setup --machine-proper-name "<name>"`, renames the machine and the Computer Flint together.
+The **Computer Flint** is the home of the machine: the Flint `(Computer) <Machine Display Name>` in the home folder. The word `computer` is reserved for it: `flint open computer` and `flint cd computer` always reach it, and no other Flint can have `computer` as its name, local name, or alias. It holds the "Start here" note and the repair notes. `flint rename "<name>"` in the Computer Flint, or `flint setup --machine-proper-name "<name>"`, renames the machine and the Computer Flint together.
 
 When a Flint command fails, its output ends with `Or: flint fix`. `flint fix` starts a repair session in the Computer Flint with the failure record; the repair session follows [[dev-sk-f-repair]]. `flint doctor` checks the machine and the current Flint and starts no agent.
 
