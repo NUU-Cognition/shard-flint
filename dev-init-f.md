@@ -254,6 +254,7 @@ flint shard install --core            # Install each missing core shard (Flint, 
 flint shard build <ref>               # Build the shard from its source in this Flint
 flint shard install --all-dev         # Build the shard of every source
 flint shard update [<ref>]            # Move the lock of each shard to the highest version inside its range (pnpm update)
+flint shard broadcast <ref>           # After a change to a source here: update the shard in each Flint of this machine that installs it from here
 flint shard uninstall <ref>           # Remove the shard and clean files
 
 # Sync and transport

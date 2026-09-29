@@ -264,10 +264,13 @@ flint shard build <ref>               # Build the shard from its source in this 
 flint shard install --all-dev         # Build the shard of every source
 flint shard reinstall [<ref>]         # Install the shard again from its record (a source record builds)
 flint shard update [<ref>]            # Move the lock of each shard to the highest version inside the range of its spec
+flint shard broadcast <ref>           # Update the shard in each Flint of this machine that installs it from this Flint [--dry-run --only <flint...> --json]
 flint shard uninstall <ref>           # Remove the build, its lock record, and its unchanged payload files
 ```
 
 `flint shard install` with no argument reads every record of `flint.toml`. A record that the lock does not satisfy (no lock line, or the range, the place, or the Git location changed) is installed or built, after its missing dependencies. A record that the lock satisfies is not moved: only `flint shard update` moves a version inside its range. `flint shard update` installs the missing dependencies of the new version first. The pins of the shard repositories (`flint.json#repos`) are lock data: only `flint shard install` with no argument and `flint shard update` write them. Then one registry read per record with a hash records the registry answer and follows a rename that the registry reports. When the registry does not answer, the notice is `The registry did not answer. The answers were not recorded.` `--dry-run` shows the plan and the answers and writes nothing.
+
+`flint shard broadcast <ref>` runs in the Flint that holds the source of a shard, after a change to the source. It updates each direct consumer on this machine: a Flint with a record `@org/<slug>#<this Flint>`, or `#<this machine>` when its walk selects this Flint. A Flint that installs from a consumer is not updated, and a place on another machine is skipped. The broadcast reads the roster one time and stages the package one time. A consumer whose lock holds the hash of the package is `current`, and the broadcast changes none of its files. Each other consumer updates in its own transaction. The broadcast installs no missing dependency, runs no migration, and makes no commit. A consumer that cannot take the package (a range that does not hold its version, a missing dependency, a dependent whose range breaks, a 0.6.0 lock, a newer version in its lock) gets a `refused` or `skipped` row with the reason and the next command to run in that Flint; the other consumers go on, and a `refused` row makes the exit code 1. `--dry-run` prints the rows and writes nothing; `--only <flint...>` limits the consumers.
 
 ```
 $ flint shard install @nuucognition/meeting-notes@^0.1
