@@ -109,28 +109,31 @@ Also available over HTTP as `POST /api/artifacts/by-title/<name>/delete?archive=
 
 ## Setup, Identity, and New Flints
 
-`flint setup` sets up this machine in seven steps. Each step has a header (`Step 2 of 7 - Git author`), and a summary block ends the run:
+`flint setup` sets up this machine in seven steps. Each step has a header (`Step 2 of 7 - Git author`), and a summary block ends the run. Setup needs internet access. It checks the network before the first step: with no network it stops with `Flint setup needs internet access. Connect to the internet, then run flint setup again.` (exit 1, code `setup-no-network`), asks nothing, and writes nothing.
 
 1. **Identity**: your Name and the machine display name (the name that people read, such as "Ada Laptop"). The machine name (`machine-slug`, the short word after `#` in an address) comes from the machine display name. The branch prefix (`machine-name`) takes its default from the hostname. They are in the NUU config (`config.toml` in the NUU home, `~/.nuucognition` or `$NUU_HOME`); every NUU CLI reads them.
 2. **Git author**: shows the Git author, and asks the email when Git has none. A new Flint needs it for its first commit.
 3. **Environment**: checks Git, Node.js, Obsidian, and the CLI of each target of the Orbh default target list (`claude`, `codex`). A missing tool is `✘` with its install command. It never stops the setup.
 4. **Agent default**: first, when the Orbh home has no `default.json`, copies the Orbh profiles from the public repository `NUU-Cognition/orbh-profiles` (the pull of `flint orbh profiles update`; it never writes `profiles.json`, and with no network it skips with `Later: flint orbh profiles update`). Then it shows the default target list and the target that Orbh selects now. In a terminal, the person can put another target first; setup writes that order to the machine layer (`defaultTargets` in `~/.nuucognition/orbh/settings.json`).
-5. **Computer Flint**: makes the Computer Flint (the answer "yes" is the default). It needs the network. With no network, it skips with `Later: flint setup computer`.
-6. **Open**: opens the Computer Flint in Obsidian one time. This is the one trust click of the machine ("Trust author and enable plugins"). Until a later release, this first open can show "Vault not found"; then the person uses "Open folder as vault" in Obsidian, and `flint open computer` works later. With `NUU_HOME` set, the step opens nothing.
-7. **Guide**: clones the Guide of NUU Cognition (`https://github.com/NUU-Cognition/guide-nuu-cognition`) into `(Guide) NUU Cognition` in the home folder, beside the Computer Flint (the answer "yes" is the default). The Guide is a public Flint that a person asks questions with an agent; its Flint Help shard answers Flint questions and explains Flint problems. It needs the network. With no network, it skips with `Later: flint setup guide`. `flint setup guide` clones it alone.
+5. **Computer Flint**: always makes the Computer Flint when it is missing, with no question. A Computer Flint that setup cannot make fails the run (exit 1, code `computer-not-made`, with the repair command). `--computer` and `--no-computer` are retired: each prints one line, and the run continues.
+6. **Guide**: clones the Guide of NUU Cognition (`https://github.com/NUU-Cognition/guide-nuu-cognition`) into `(Guide) NUU Cognition` in the home folder, beside the Computer Flint (the answer "yes" is the default). The Guide is a public Flint that a person asks questions with an agent; its Flint Help shard answers Flint questions and explains Flint problems. With no network, it skips with `Later: flint setup guide`. `flint setup guide` clones it alone.
+7. **Open and onboarding**: opens the Computer Flint in Obsidian on every run, and starts the onboarding session there (the launcher of `flint setup onboard`, below). The first open of a machine has the one trust click ("Trust author and enable plugins"); the plugin then reloads Obsidian once, and the session starts in a terminal tab after that reload. A later run resumes the recorded onboarding session. With `--no-open`, with Obsidian off, or with no Obsidian, the session runs in this terminal after the summary. With `NUU_HOME` set, the step opens nothing.
 
-With `--yes`, setup asks nothing, makes the Computer Flint, and clones the Guide. With `--json` or no terminal, it asks nothing and takes the flags: with no `--computer` and no `--yes`, it skips step 5; with no `--guide` and no `--yes`, it skips step 7. A second run confirms the stored values, keeps the Computer Flint and the Guide, and opens nothing. Only step 1 and a stop (Ctrl-C) fail the run; each other step gives a warning and a `Later:` line.
+With `--yes`, setup asks nothing and clones the Guide. With `--json` or no terminal, it asks nothing, takes the flags, and starts no session: step 7 opens the Computer Flint and names `flint setup onboard`. With no `--guide` and no `--yes`, it skips step 6. A second run confirms the stored values, keeps the Computer Flint and the Guide, opens the Computer Flint, and resumes the onboarding session. Step 1, step 5, and a stop (Ctrl-C) fail the run; each other step gives a warning and a `Later:` line.
+
+`flint setup onboard` starts or resumes the onboarding session in the Computer Flint. The prompt (`packages/flint/prompts/onboarding/welcome.md`) explains Flint and helps the person make the first Flint. The route, in this order: `obsidian-tab` (the plugin of the Computer Flint runs: the tab starts now), `waits-for-trust` or `waits-for-obsidian` (the CLI writes `.flint/onboarding/request.json`, then opens the Computer Flint; the plugin starts the tab), `same-terminal` (a terminal only), `new-window` (no terminal), and `printed`. The CLI records the session in `.flint/onboarding/session.json`. `--json` gives `{ ok, route, sessionId, resumed, computerFlint, handoffNote?, reason, next? }` and never uses the terminal. `--handoff <file>` writes the handoff note of the setup agent (`Mesh/(System) Setup Handoff.md`) and starts a new session that reads it first.
 
 `flint config org set <slug>` sets the org of this machine: each new Flint gets it. The id comes from `--id <uuid>`, from the enrollment of this machine, or from a Flint of that org on this machine. `flint config org unset` makes new Flints local again. A NUU account and an org are optional.
 
 ```bash
 flint setup                              # The seven steps (once per machine; a second run confirms)
-flint setup --yes                        # Ask nothing: take each default, make the Computer Flint, and clone the Guide
-flint setup --no-computer                # Skip step 5 (later: flint setup computer)
-flint setup --computer                   # Make the Computer Flint with no question
-flint setup --no-open                    # Skip step 6
-flint setup --no-guide                   # Skip step 7 (later: flint setup guide)
+flint setup --yes                        # Ask nothing: take each default and clone the Guide
+flint setup --no-open                    # Do not open Obsidian: the onboarding session runs in this terminal
+flint setup --no-guide                   # Skip step 6 (later: flint setup guide)
 flint setup guide                        # Clone the Guide of NUU Cognition alone (a present Guide stays)
+flint setup onboard                      # Start or resume the onboarding session in the Computer Flint
+flint setup onboard --handoff <file> --target claude --json   # The form of the agent of the setup page (no terminal)
+flint setup onboard --print              # The plan: the target, new or resume, the session id; writes nothing
 flint setup --name "<Name>" --machine-proper-name "<name>"   # Give the answers of step 1 as flags
 flint whoami                             # Show your Name, this machine, your org, and the NUU account
 flint config name "<Name>"               # Change your Name only
