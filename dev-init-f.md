@@ -144,7 +144,7 @@ A Flint with no org is local. Its address starts with `@/` (for example `@/flint
 
 The **Computer Flint** is the home of the machine: the Flint `(Computer) <Machine Display Name>` in the home folder. The word `computer` is reserved for it: `flint open computer` and `flint cd computer` always reach it, and no other Flint can have `computer` as its name, local name, or alias. It holds the "Start here" note and the repair notes. `flint rename "<name>"` in the Computer Flint, or `flint setup --machine-proper-name "<name>"`, renames the machine and the Computer Flint together.
 
-When a Flint command fails, its output ends with `Or: flint fix`. `flint fix` starts a repair session in the Computer Flint with the failure record; the repair session follows [[dev-sk-f-repair]]. `flint doctor` checks the machine and the current Flint and starts no agent.
+Once a day, a command in a terminal checks in the background for a newer Flint and newer Orbh profiles; a later command names each with its command (`flint update`, `flint orbh profiles update`). `FLINT_NO_UPDATE_CHECK=1` or `flint config set update-check off` turns it off, and it never runs in an Orbh session. When a Flint command fails, its output ends with `Or: flint fix`. `flint fix` starts a repair session in the Computer Flint with the failure record; the repair session follows [[dev-sk-f-repair]]. `flint doctor` checks the machine and the current Flint and starts no agent.
 
 ```bash
 flint setup                      # Set up this machine in seven steps; it ends in the Computer Flint with the onboarding session

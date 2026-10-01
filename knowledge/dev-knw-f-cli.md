@@ -167,7 +167,7 @@ flint move computer "<new path>"        # Move it; the claim follows, so Flint s
 
 ## Doctor and Fix
 
-`flint doctor` checks this machine and the current Flint and starts no agent. The rows of the machine: Identity, NUU home, Git, Node.js, Obsidian, Agent (the default target list of Orbh), Computer Flint, Flint registry. In a Flint (the working folder, or `-p <dir>`): Lock, Sync plan, Git, Obsidian payload. Each failed row has one `Next:` command that runs from the working folder. A row whose repair needs judgement has `Next: flint fix`; then the doctor writes one failure record and ends with `Or: flint fix`. It writes nothing else. Exit 0 when each check passes, else 1. `--json` gives `{ ok, kind: "doctor", code, reason, next, flint, checks: [{ id, label, ok, detail, scope, next? }], failureRecord? }`.
+`flint doctor` checks this machine and the current Flint and starts no agent. The rows of the machine: Identity, NUU home, Git, Node.js, Obsidian, the terminal of Obsidian (PATH, font, python3), Agent (the default target list of Orbh), Launcher, Computer Flint, Flint registry, Flint version (it names a newer release from the release check and never fails for it), Orbh profiles (it fails with `Next: flint orbh profiles update` when the Orbh home has no `default.json`). In a Flint (the working folder, or `-p <dir>`): Lock, Sync plan, Git, Obsidian payload. Each failed row has one `Next:` command that runs from the working folder. A row whose repair needs judgement has `Next: flint fix`; then the doctor writes one failure record and ends with `Or: flint fix`. It writes nothing else. Exit 0 when each check passes, else 1. `--json` gives `{ ok, kind: "doctor", code, reason, next, flint, checks: [{ id, label, ok, detail, scope, next? }], failureRecord? }`.
 
 When `flint sync`, `flint create` (`init`), `flint git sync`, `flint shard install`, `flint setup` (and its subcommands), or `flint tinderbox sync` fails, Flint writes one **failure record** and prints `Or: flint fix` after the `Next:` lines. With `--json`, the envelope has `failureRecord` (the path) and no line. An input refusal (a wrong command line: an unknown flag, a bad value, a name in use, not in a Flint, a missing Name or Git author) and a stop (Ctrl-C) write no record. The record is `<NUU home>/flint/failures/<id>.json` (mode 600, spec `flint-failure/0.1`) with `command`, `args`, `exitCode`, `code`, `reason`, `next`, `stderrTail`, `stdoutTail` (40 lines each), `flintVersion`, `flintPath`, `cwd`, and `time`. Flint removes the secrets first (credentials in URLs, token forms, secret `name=value` pairs, secret flags) and keeps the newest 20 records.
 
@@ -178,6 +178,20 @@ flint doctor [-p <dir>] [--json]         # Check this machine and a Flint; one n
 flint fix                                # Repair the newest failure record in a repair session
 flint fix --list [--json]                # The failure records, the newest first
 flint fix <n|id|file>                    # Repair an older record (n = the number of --list)
+```
+
+## Updates and the Release Check
+
+`flint update` installs the newest release of the npm dist-tag `latest` of `@nuucognition/flint-cli` (an exact version, with `npm install -g`). It compares the versions by semver, so it never offers an older version. A flint that is a build of a checkout (ndv, a dev build) installs nothing: update the checkout, then build it. `--check` installs nothing; `--json` prints one value with `current`, `latest`, `state` (`newer`, `current`, `ahead`, `unknown`), `available`, and `install` (the channel of `flint where`). The registry is `npm_config_registry` when set.
+
+**The release check.** Once a day, a command in a terminal starts one background process (`flint update --check --background`). It asks the registry for the newest Flint and compares the `default.json` of the Orbh profiles repository with the local file. It writes a state file in the cache folder of the system (`~/Library/Caches/nuucognition/flint/` on macOS, `$XDG_CACHE_HOME` or `~/.cache` on Linux), never in the NUU home. A later command in a terminal prints one line for each newer item, at most once a day: `Flint <version> is available (this machine has <version>). Next: flint update`, and `Newer Orbh profiles are available. Next: flint orbh profiles update`. The command never waits for the network. Nothing installs by itself.
+
+No check runs and no notice prints in a pipe, with `--json`, in CI, in an Orbh session (`ORBH_SESSION_ID`), for `flint update` and `flint setup`, on a machine that is not set up, with `FLINT_NO_UPDATE_CHECK=1`, or after `flint config set update-check off`.
+
+```bash
+flint update                             # Install the newest release (an npm install only)
+flint update --check [--json]            # Name the newest release; install nothing
+flint config set update-check off        # Turn the daily release check off (on turns it back on)
 ```
 
 ## Shard Discovery
