@@ -25,6 +25,8 @@ The Mesh is **flat** — folders are display only; structure lives in frontmatte
 
 Shards are cognitive programs — self-contained packages that extend what an agent can do inside a Flint. A shard has a **source** (the files a person edits) and a **shard** (the built package that agents load). Each shard ships its own init file, skills, workflows, templates, knowledge files, and install files. Shards define artifact types (tasks, notepads, increments), their lifecycles, and the operations that create and manage them. Without shards, a Flint is just an empty folder. With shards, it becomes a structured environment for planning, building, and tracking work.
 
+**Modules.** A module is a built-in capability of the Flint CLI, such as cron schedules (`crons`) or direct messages to the Flint (`dms`). A Flint turns a module on with a table `[modules.<id>]` in `flint.toml`, and `flint sync` makes it real on this machine. A module is not a shard: it has no source, no version, and no folder, and it gives behaviour of the machine, not agent content. `flint module list` shows the modules and whether this Flint declares each one. See [[dev-knw-f-cli]] § Modules.
+
 ## Shard Rules
 
 Shards extend your capabilities. Each shard is a self-contained unit with its own context, skills, templates, workflows, and knowledge. **You must follow these rules strictly.**

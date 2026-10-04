@@ -14,6 +14,7 @@ orbh-sessions:
   - "[[65e535a9-3f77-404f-80b7-32bd43e9ca77]]"
   - "[[a6b4b0bd-1465-4645-b800-e12693e58dfa]]"
   - "[[b61b6398-0bf0-4b33-81ef-df08f56f2fc5]]"
+  - "[[ffb27033-03e2-4fb2-850c-a9f83a880880]]"
 ---
 
 # Knowledge: CLI Reference
@@ -376,7 +377,7 @@ flint git publish <url>               # Set origin, commit, and push to main (th
 flint git <git args...>               # Passthrough to git at the Flint root
 ```
 
-`flint sync` has two steps: `Resolve Flint` and `Reconcile content`. It never asks the registry, and it never touches the origin of the Flint. It writes no shard version and no pin: it checks out the pin of each shard repository, and it fetches only a pinned commit that is absent. Its one write to the lock removes a stale lock line: a line that `flint.toml` does not declare and that has no folder under `Shards/`. It fetches only bytes that the lock or a declaration names and that are absent or differ: a locked build, the pinned Obsidian payload release when the machine cache does not hold it, a declared source that is not cloned, a repository clone, a source repository snapshot. The step `Reconcile content` installs the pinned Obsidian payload and never moves the pin (see § Obsidian). After the kernel, the row `Fetch workspace repositories` runs `git fetch origin` in each workspace repository (Task 1101): a repository root with an origin that the run did not clone. The fetch moves only the remote-tracking refs: sync never pulls, merges, or checks out. Each repository gets one result against its base (the upstream, else `origin/<default>`): `up to date`, `ahead`, `behind`, both, `skipped`, or `fetch failed`. The row of each repository carries the result in `data` for `--json`, and the detail of `Reconcile content` sums it (`3 workspace repositories fetched, 2 behind origin, 1 fetch failed`). A repository that is behind, diverged, or failed gives one notice (`workspace-behind` with the next command `git pull --ff-only` in its folder, `workspace-diverged`, `workspace-fetch-failed`). A fetch changes no count and no status. `flint sync --dry-run` and `flint plan` open no socket: they fetch nothing and name the repositories that sync fetches. A halted rebase blocks the run (exit 2) with the next command `flint git sync --continue`. A held merge, cherry-pick, or revert blocks it too: finish it with `git <kind> --continue` or stop it with `git <kind> --abort`, then run `flint sync`. A `flint.toml` that does not parse blocks the run (exit 2): correct the file, then run `flint sync`. When the branch has commits that the cached ref `origin/<branch>` does not have, sync gives the notice `Local history is N commits ahead of origin. Run flint git sync.` A branch with no `origin/<branch>` ref (never pushed) gives no notice. The flags `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs.
+`flint sync` has two steps: `Resolve Flint` and `Reconcile content`. A Flint that declares a module gets a third step, `Reconcile modules` (see § Modules). It never asks the registry, and it never touches the origin of the Flint. It writes no shard version and no pin: it checks out the pin of each shard repository, and it fetches only a pinned commit that is absent. Its one write to the lock removes a stale lock line: a line that `flint.toml` does not declare and that has no folder under `Shards/`. It fetches only bytes that the lock or a declaration names and that are absent or differ: a locked build, the pinned Obsidian payload release when the machine cache does not hold it, a declared source that is not cloned, a repository clone, a source repository snapshot. The step `Reconcile content` installs the pinned Obsidian payload and never moves the pin (see § Obsidian). After the kernel, the row `Fetch workspace repositories` runs `git fetch origin` in each workspace repository (Task 1101): a repository root with an origin that the run did not clone. The fetch moves only the remote-tracking refs: sync never pulls, merges, or checks out. Each repository gets one result against its base (the upstream, else `origin/<default>`): `up to date`, `ahead`, `behind`, both, `skipped`, or `fetch failed`. The row of each repository carries the result in `data` for `--json`, and the detail of `Reconcile content` sums it (`3 workspace repositories fetched, 2 behind origin, 1 fetch failed`). A repository that is behind, diverged, or failed gives one notice (`workspace-behind` with the next command `git pull --ff-only` in its folder, `workspace-diverged`, `workspace-fetch-failed`). A fetch changes no count and no status. `flint sync --dry-run` and `flint plan` open no socket: they fetch nothing and name the repositories that sync fetches. A halted rebase blocks the run (exit 2) with the next command `flint git sync --continue`. A held merge, cherry-pick, or revert blocks it too: finish it with `git <kind> --continue` or stop it with `git <kind> --abort`, then run `flint sync`. A `flint.toml` that does not parse blocks the run (exit 2): correct the file, then run `flint sync`. When the branch has commits that the cached ref `origin/<branch>` does not have, sync gives the notice `Local history is N commits ahead of origin. Run flint git sync.` A branch with no `origin/<branch>` ref (never pushed) gives no notice. The flags `--no-git` and `--no-update` are retired: each prints one line that names the new command, and the sync runs.
 
 A declared repository, a workspace repository, and a bundle each have a name that is one folder name. Sync checks that each folder is inside its parent folder before it writes. A reference to a Flint that is not on this machine is one report row, not a failure. The next command for a broken codebase reference is `flint fulfill codebase <name> <path>`. `flint reference flint` and `flint reference remove` write the declaration only. `flint reference codebase` writes the declaration and records the path of this machine in `.flint/references.json`. All three print `Next: flint sync`: the sync fulfils the reference.
 
@@ -385,6 +386,98 @@ For shards, sync runs two reconciles. **The shard reconcile** (feature `shards`)
 `flint git sync` checkpoints the local work, fetches, integrates, runs the local sync, checkpoints the writes of the sync, and pushes. A conflict halts before the local sync: resolve it, then run `flint git sync --continue`. `flint git merge` does the same with no push. Each next command of a merge uses the verb `merge`: after a conflict, run `flint git merge` again; after a remote history rewrite, run `flint git merge --replay`. `--continue` with `--replay`, `--force-remote`, or `--force-local` is refused. `flint git resolve` takes paths relative to the working directory. A held merge, cherry-pick, or revert refuses `sync` and `merge` with exit 2, and the run changes nothing. The next command is `git <kind> --continue`; then run the command again. One Git run at a time holds the run lock of the repository, `<git dir>/flint-git-sync.lock`: `sync`, `merge`, `--continue`, `--abort`, and `resolve` take it. When the wait for the lock times out (60 seconds), the report is `blocked` with exit 2. When the local sync fails, the push still sends the integrated history as it is, with no second fetch; when origin moved during that sync, the push is rejected, and the next `flint git sync` sends it. A Git halt prints under `Failed` and exits 2. `--json` prints the report as one JSON value.
 
 `flint git init` in an existing repository refreshes the full policy: `.gitignore`, `.gitattributes`, and `rerere.enabled`. `flint git publish <url>` refuses a folder that is not the root of a repository, with the next command `flint git init`. The passthrough (`flint git <git args...>`) gives the terminal to git, so an editor and `add -p` work. A network command of the passthrough keeps the network timer of the other Git commands.
+
+## Modules
+
+A **module** is a built-in capability of the Flint CLI. A Flint turns a module on with a table `[modules.<id>]` in `flint.toml`, and `flint sync` makes the state of this machine match the table. A module is not a shard. A shard is a package of agent content (skills, knowledge, templates, types). A module is behaviour of the machine: it has no source, no version, no manifest, no install, no lock record, and no folder in the Flint. Its version is the version of Flint. Flint 0.7.0 has two modules, `crons` and `dms`, and a shard cannot turn on a module. The legacy section `[mods]` is not a module section: no code reads it.
+
+```bash
+flint module list [--json]            # The modules of this build of Flint, and whether this Flint declares each one
+flint module status [<id>] [--json]   # The state and the sync plan of each module; writes nothing
+flint module add <id>                 # Write [modules.<id>] (or remove enabled = false); then run flint sync
+flint module remove <id>              # Delete [modules.<id>], or write enabled = false when it holds declarations; then run flint sync
+```
+
+```toml
+[modules.dms]          # A bare table turns the module on.
+
+[modules.crons]
+enabled = false        # The table and its declarations stay, and the module is off.
+```
+
+- **The writes.** `add` and `remove` write `flint.toml` through the guarded writer, under the config lock, and keep every comment. When the guard cannot prove an edit safe, the command writes nothing. The two commands change no machine state: each prints `Next: flint sync`.
+- **Remove keeps declarations.** `remove` deletes a table that has no key except `enabled`. A table that holds declarations (schedules, a target) gets `enabled = false`, because a command never deletes the declarations of a person.
+- **The sync step.** `flint sync` runs the step `Reconcile modules` after `Reconcile content`. The step shows only when the Flint declares a module or a module has work. `flint sync --dry-run` and `flint plan` show each change of a module as `Would …` and apply nothing. A failure of a module fails its own step only.
+- **Pause, never delete.** When a declaration is removed or gets `enabled = false`, sync pauses the object of the module on this machine (a cron schedule, the station `dm`). The history of the object stays. A new declaration with the same key resumes the object. Sync never deletes the object of a module.
+- **Managed objects.** Each object that a module makes is in the Orb store (`.orb/`, ignored by Git) and carries the managed metadata `{ flintId, module, key, declHash }`. Sync never changes an object with no managed metadata. `flint.json` and `.flint/` hold nothing of a module: `flint module status` computes the plan each time.
+- **Unknown ids.** A table `[modules.<id>]` with an id that this build of Flint does not have gives the warning `unknown-module` in the sync report and in `flint doctor`. The exit code does not change, the other modules continue, and sync keeps the table. `flint module add <id>` refuses an unknown id and names the known ids.
+- **A declaration that does not parse** is reported, and sync does not reconcile its module. Sync never reads a parse failure as a removal.
+- **Doctor.** `flint doctor` has the row `Modules`. A module with changes to apply gives `Next: flint sync`; a declaration that does not parse gives `Next: flint module status <id>`.
+
+## Crons
+
+The module `crons` gives a Flint its own cron schedules. A schedule fires a headless Orbh session with a prompt, on one machine: the **owner machine**. The orchestrator of that machine sweeps the schedules every 60 s.
+
+```toml
+[modules.crons]
+machine = "katana"                       # Optional: the default owner (a machine slug, or a machine id)
+target  = "claude/o5h"                   # Optional: the default target; else the Orbh default target
+
+[modules.crons.schedules.morning-brief]
+expr        = "0 7 * * 1-5"              # Required: a 5-field cron expression
+timezone    = "Australia/Sydney"         # Optional: an IANA timezone; default: the clock of the owner machine
+prompt      = "Write the brief of the day."   # Or prompt-file = "Mesh/Agents/Morning Brief.md" (give exactly one)
+description = "The brief of the day"     # Optional
+# Optional: machine, target, misfire = "coalesce"|"skip", overlap = "skip"|"allow", enabled = false
+```
+
+The key of a schedule table is the name of the schedule: lower-case letters, digits, and hyphens. A `prompt-file` is a path relative to the Flint root, inside the Flint. Sync reads the prompt file and stores its text in the schedule, so after an edit of the prompt file, run `flint sync`.
+
+```bash
+flint cron list [--json]                 # The declared schedules (owner, state here, next due, last fire) and the local schedules; writes nothing
+flint cron add <name> --expr "<cron>" (--prompt "<text>" | --prompt-file <path>) [--timezone <iana>] [--target <runtime/profile>] [--description <text>] [--machine <slug|id>]
+flint cron remove <name>                 # Delete the declaration; the next sync pauses the schedule and keeps its history
+flint cron own [<name>]                  # Make this machine the owner of one schedule (no name: the default owner of [modules.crons])
+flint cron run <name>                    # Request one fire on the next orchestrator sweep (as flint orbh cron run-now)
+```
+
+**The owner machine rule.** Only the owner machine fires a schedule. The owner is `machine` of the schedule, else `machine` of `[modules.crons]`. A value with the UUID shape is compared with the machine id; each other value is compared with the machine slug (`machine-slug` of the NUU config). `flint cron add` and `flint cron own` write the slug of this machine, because a person reads the slug in a diff. On the owner machine, sync makes or updates the schedule. On each other machine, sync pauses the schedule when it exists there. So when Git brings `flint.toml` to two machines, only one machine fires the schedule. A schedule with no owner fires on no machine: `flint cron list` and the sync report name `flint cron own <name>`.
+
+- `flint cron add` checks the schedule with the parse of sync before it writes. Its default owner is this machine. It refuses a name that `flint.toml` declares already, the name of a local schedule, and the name of a deleted schedule. When `flint.toml` has no `[modules.crons]`, it writes that table too.
+- `flint cron run` refuses a schedule that this machine does not own, and a schedule that sync has not made yet.
+- Each change of `flint.toml` needs `flint sync` on the owner machine. When sync leaves an enabled schedule on this machine and the Orbh orchestrator does not run, sync starts the orchestrator.
+- **The fire-time check.** Before each fire, the orchestrator reads `flint.toml` again. It skips the fire (reason `ineligible`) when the declaration is absent, disabled, owned by another machine or by no machine, or does not parse. So a removed schedule does not fire, also before the next sync.
+- The fired session has no parent. In 0.7.0, its result goes to no person.
+
+**Local schedules stay local.** `flint orbh cron create` makes a local schedule in the Orb store `.orb/`, and Git ignores `.orb/`. So a local schedule does not travel with the Flint, and sync never changes it. `flint cron list` shows it under "Local schedules". A declared schedule shows `crons` in the column `MANAGED` of `flint orbh cron list`, and `flint orbh cron delete` refuses it with the next command `flint cron remove <name>`. See [[knw-foh-machinery]] for the cron store.
+
+## Direct Messages
+
+The module `dms` lets a person or an agent send a direct message (DM) to a Flint of this machine. A DM is one text request with one answer. It is an item of the station `dm` of the receiver Flint. It is not a message to a live session.
+
+```toml
+[modules.dms]
+# Each key is optional: the bare table turns DMs on.
+target = "claude/o5h"     # The target of the session that answers (<runtime>/<profile>); else the Orbh default target
+mode   = "oneshot"        # "oneshot": a new session for each DM; "resident": one bound session
+prompt = "..."            # The duty of the session that answers; or prompt-file = "<path>"; else the built-in DM duty
+```
+
+The key `allow` accepts only `"local"` in 0.7.0: each process of this OS user can send a DM.
+
+```bash
+flint dm send <flint> "<text>"                          # Send one DM; print the receipt
+flint dm send <flint> "<text>" --wait [--timeout <s>]   # Send one DM and wait for the answer (default 600 s)
+flint dm show <flint> <item>                            # The state of one DM, its text, and its answer; writes nothing
+flint dm inbox [--json]                                 # The DMs of this Flint, newest first; writes nothing
+```
+
+- **The receiver.** `<flint>` is a name, an id, or an address of a Flint of this machine. `flint sync` in the receiver Flint makes the station `dm`. A DM to a Flint with no `[modules.dms]` fails with the next command `flint module add dms` (run it in the receiver Flint). A paused station `dm` refuses a DM too.
+- **The receipt.** `send` queues the DM and returns. It prints the item id, the sender, and `Next: flint dm show <flint> <item>`. With `--wait`, it waits for the answer and prints it. When no answer comes before the timeout, it exits 1, and the DM stays queued. When the receiver fails the DM, it exits 1 with the reason.
+- **The answer.** The station `dm` starts a session on its target, and that session answers with `flint orbh station respond-item dm <item> "<answer>"`. So each DM starts a real agent session in the receiver Flint, unless a session is bound to the station `dm`. Do not send a test DM to a Flint whose station `dm` has no bound session.
+- **The sender** is the Orbh session id, or `@<Name>#<machine-slug>` for a person in a terminal. It is attribution, not authentication.
+- **Removal.** `flint module remove dms` and `flint sync` pause the station `dm`. No new DM is claimed, and the queued DMs and the answers stay.
+- **Local only in 0.7.0.** A DM goes only to a Flint of this machine. A reference that names another machine (`…#<machine>`) is refused. DMs to another machine through the NUU Network are not in 0.7.0.
 
 
 ## Workspace
