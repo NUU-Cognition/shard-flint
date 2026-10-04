@@ -441,7 +441,7 @@ flint cron own [<name>]                  # Make this machine the owner of one sc
 flint cron run <name>                    # Request one fire on the next orchestrator sweep (as flint orbh cron run-now)
 ```
 
-**The owner machine rule.** Only the owner machine fires a schedule. The owner is `machine` of the schedule, else `machine` of `[modules.crons]`. A value with the UUID shape is compared with the machine id; each other value is compared with the machine slug (`machine-slug` of the NUU config). `flint cron add` and `flint cron own` write the slug of this machine, because a person reads the slug in a diff. On the owner machine, sync makes or updates the schedule. On each other machine, sync pauses the schedule when it exists there. So when Git brings `flint.toml` to two machines, only one machine fires the schedule. A schedule with no owner fires on no machine: `flint cron list` and the sync report name `flint cron own <name>`.
+**The owner machine rule.** Only the owner machine fires a schedule. The owner is `machine` of the schedule, else `machine` of `[modules.crons]`. A value with the UUID shape is compared with the machine id; each other value is compared with the machine slug (`machine-slug` of the NUU config). `flint cron add` and `flint cron own` write the slug of this machine, because a person reads the slug in a diff. On the owner machine, sync makes or updates the schedule. On each other machine, sync pauses the schedule when it exists there. So when Git brings `flint.toml` to two machines, only the owner machine fires the schedule. Flint does not check that two machines have different slugs, so a slug owner is safe only when each machine that syncs the Flint has a different machine slug. When one exact machine must own a schedule, write its machine id (a UUID) in `machine`: `nuu machine id` prints it, and `flint cron add <name> --machine <machine id>` writes it. A schedule with no owner fires on no machine: `flint cron list` and the sync report name `flint cron own <name>`.
 
 - `flint cron add` checks the schedule with the parse of sync before it writes. Its default owner is this machine. It refuses a name that `flint.toml` declares already, the name of a local schedule, and the name of a deleted schedule. When `flint.toml` has no `[modules.crons]`, it writes that table too.
 - `flint cron run` refuses a schedule that this machine does not own, and a schedule that sync has not made yet.
@@ -459,7 +459,7 @@ The module `dms` lets a person or an agent send a direct message (DM) to a Flint
 [modules.dms]
 # Each key is optional: the bare table turns DMs on.
 target = "claude/o5h"     # The target of the session that answers (<runtime>/<profile>); else the Orbh default target
-mode   = "oneshot"        # "oneshot": a new session for each DM; "resident": one bound session
+mode   = "oneshot"        # "oneshot": a session answers the queued DMs, then finishes; "resident": a bound session waits for more DMs
 prompt = "..."            # The duty of the session that answers; or prompt-file = "<path>"; else the built-in DM duty
 ```
 
@@ -473,8 +473,8 @@ flint dm inbox [--json]                                 # The DMs of this Flint,
 ```
 
 - **The receiver.** `<flint>` is a name, an id, or an address of a Flint of this machine. `flint sync` in the receiver Flint makes the station `dm`. A DM to a Flint with no `[modules.dms]` fails with the next command `flint module add dms` (run it in the receiver Flint). A paused station `dm` refuses a DM too.
-- **The receipt.** `send` queues the DM and returns. It prints the item id, the sender, and `Next: flint dm show <flint> <item>`. With `--wait`, it waits for the answer and prints it. When no answer comes before the timeout, it exits 1, and the DM stays queued. When the receiver fails the DM, it exits 1 with the reason.
-- **The answer.** The station `dm` starts a session on its target, and that session answers with `flint orbh station respond-item dm <item> "<answer>"`. So each DM starts a real agent session in the receiver Flint, unless a session is bound to the station `dm`. Do not send a test DM to a Flint whose station `dm` has no bound session.
+- **The receipt.** `send` queues the DM and returns. It prints the receiver Flint (its name and its id), the item id, the sender, and `Next: flint dm show @<flint id> <item>`. The next command names the Flint by its id, because two Flints of this machine can have one name. With `--wait`, it waits for the answer and prints it. When no answer comes before the timeout, it exits 1, and the DM stays queued. When the receiver fails the DM, it exits 1 with the reason.
+- **The answer.** When a DM waits and no session serves the station `dm`, the station starts a session on its target. The session answers each DM with `flint orbh station respond-item dm <item> "<answer>"`. In the mode `oneshot`, the session answers the queued DMs and finishes when no DM is left, so one session can answer more than one DM. In the mode `resident`, one session is bound to the station and waits for more DMs. So a DM can start a real agent session in the receiver Flint. Do not send a test DM to a Flint whose station `dm` has no bound session.
 - **The sender** is the Orbh session id, or `@<Name>#<machine-slug>` for a person in a terminal. It is attribution, not authentication.
 - **Removal.** `flint module remove dms` and `flint sync` pause the station `dm`. No new DM is claimed, and the queued DMs and the answers stay.
 - **Local only in 0.7.0.** A DM goes only to a Flint of this machine. A reference that names another machine (`…#<machine>`) is refused. DMs to another machine through the NUU Network are not in 0.7.0.
