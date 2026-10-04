@@ -264,7 +264,7 @@ flint sync                            # Make the files match the lock and the de
 flint git sync                        # Exchange history with origin; the local sync runs before the push
 ```
 
-Three commands, one job each. `flint sync` makes the files of this Flint match its lock and its declarations. `flint shard install` makes the lock match the specs. `flint git sync` exchanges history with origin. `flint sync` never asks the shard registry and never touches the origin of the Flint. Its one network action beside the fetch of missing bytes is a `git fetch` of each workspace repository, which it reports and never pulls. It writes no shard version and no pin; its one lock write removes a stale lock line.
+Three commands, one job each. `flint sync` makes the files of this Flint match its lock and its declarations. `flint shard install` makes the lock match the specs. `flint git sync` exchanges history with origin. `flint sync` never asks the shard registry and never touches the origin of the Flint. Its one network action beside the fetch of missing bytes is a `git fetch` of each workspace repository, which it reports and never pulls. It writes no pin and never moves a shard of the registry or of Git to another version; a build of a source or of a path record takes the version of that source or folder (see [[knw-f-cli]] § Sync).
 
 Authoring commands (create, build, dev, clone, release, fork, rename, id, push, pull, migrate, scripts) are documented by the Knap shard — load `Shards/Knap/init-knap.md` when authoring.
 
