@@ -173,11 +173,14 @@ When `flint sync`, `flint create` (`init`), `flint git sync`, `flint shard insta
 
 `flint fix` starts a **repair session**: `flint orbh i --prompt-file <id>.prompt.md -p <Flint>` on the default target. The prompt file is beside the record. The session runs in the Computer Flint; with no Computer Flint, in the failed Flint (and it prints `Later: flint setup computer`); with neither, in the Flint of the working folder. A Flint that cannot select an agent passes the session to the next one (a `Fallback:` row); when none can, the list of this machine gives the target (a `Target:` row). The agent follows [[dev-sk-f-repair]]: it asks the person before each change to the Git history, the lock, or `flint.toml`, and it writes one repair note in the Computer Flint.
 
+`flint feedback ["<text>"]` sends feedback about Flint to NUU Cognition (`--bug`, `--idea`, `--question`; default `feedback`). It builds a report with the text and a context block (the Flint version, the OS and the arch, the Node.js version; `--with-failure` adds the newest failure record), with no home path, user name, host name, token, or Flint path. It shows the report, asks in a terminal, and then opens a prefilled new issue of `NUU-Cognition/flint-public` (`--email`: an email to `hello@nuucognition.com`); the person submits it. `--no-open`, `--json`, and no terminal only print the report and the link; `--yes` opens with no question. To help a person, an agent runs it with `--json`, shows the report, and runs it again with `--yes` only after the person agrees. A local copy goes to `<NUU home>/flint/feedback/`.
+
 ```bash
 flint doctor [-p <dir>] [--json]         # Check this machine and a Flint; one next command per failed check
 flint fix                                # Repair the newest failure record in a repair session
 flint fix --list [--json]                # The failure records, the newest first
 flint fix <n|id|file>                    # Repair an older record (n = the number of --list)
+flint feedback --bug "<text>" --json     # Build a feedback report and its link; opens nothing without --yes
 ```
 
 ## Updates and the Release Check
