@@ -1,5 +1,9 @@
 # Flint Releases
 
+## Release 0.4.1
+
+- `knw-f-cli` § Modules: each line of a module in `flint sync` and `flint module status` is `(module) <name>: …`; a real sync shows the detail of `apply` after ` — `; the logs of a module show in the section `Module logs` and in `--json` as `moduleLogs`. Requires a Flint CLI with NUU Flint Task 1130.
+
 ## Release 0.4.0
 
 The docs of the Flint 0.7.0 CLI. Requires a Flint CLI of 0.7.0 (`flint module`, `flint feedback`, the new `flint setup`).
