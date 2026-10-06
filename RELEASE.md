@@ -1,5 +1,17 @@
 # Flint Releases
 
+## Release 0.4.0
+
+The docs of the Flint 0.7.0 CLI. Requires a Flint CLI of 0.7.0 (`flint module`, `flint feedback`, the new `flint setup`).
+
+- `init-f` and `knw-f-cli`: **modules** are packages of the kind `module` (`@<org>/module/<slug>`, `Modules/`, the records in `[modules]`, the lock `flint.json#modules`). The commands `flint module list | status | install | uninstall | build | update | release | start | stop | restart | control | settings` and `flint module <name> <command>`; the settings file `Modules/<Name>.settings.toml` and its write; desired objects and the rule "pause, never delete"; live modules under the Flint server; the row `Modules` of `flint doctor`; a legacy `[modules.<id>]` table with the steps by hand (no migration). NUU Flint Tasks 1109 and 1125.
+- `init-f` and `knw-f-cli`: the **env files** `flint.env`, `flint.env.local` (wins), and `flint.env.example`; an agent can read Flint-level values from them and must never copy a value. NUU Flint Task 1125.
+- `knw-f-cli`: the first-party modules **crons** (`flint module crons list | run | result | own`, the owner rule) and **dms** (`flint module dms send | show | inbox`). NUU Flint Tasks 1110, 1111, and 1125.
+- `init-f` and `knw-f-cli`: module authoring is in the Knap shard (workflow `knap_module`). NUU Flint Task 1128.
+- `knw-f-cli`: `flint feedback` (the kinds, the privacy rule, the consent, the agent path with `--json` and `--yes`). NUU Flint Task 1116.
+- `init-f` and `knw-f-cli`: `flint setup` in seven steps (the first copy of the Orbh profiles in step 4, the Computer Flint always made, the onboarding session, no setup with no network), the reserved word `computer`, and the daily release check. NUU Flint Tasks 1075, 1077, 1083, and 1103.
+- `knw-f-cli`: `flint sync` fetches each workspace repository and reports its result; the lock text of a build of a source or a path record; `flint shard broadcast`. NUU Flint Tasks 1085, 1101, and 1122.
+
 ## Release 0.3.6
 
 - `init-f`: the word for an `otmp-` file is **note template** (Report 083, the glossary of the Flint Obsidian model). A note template is a Templater template. A CLI of NUU Flint Task 1055 installs it with `force` semantics and a conflict check, byte for byte: no `#readonly`, no install-time placeholders, and no `id` in the lock. The install replaces an unchanged note template. It keeps a changed copy and names the next command `flint shard reinstall <alias> --replace-note-templates`.
