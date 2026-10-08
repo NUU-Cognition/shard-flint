@@ -42,7 +42,7 @@ Find the shards that exist before you build anything. Show the operator the cata
    | Plan and track work | `NUU-Cognition/shard-projects`, `NUU-Cognition/shard-plan`, `NUU-Cognition/shard-increments` |
    | Think, brainstorm, take notes | `NUU-Cognition/shard-notepad`, `NUU-Cognition/shard-memory` |
    | Write reports, specs, guides | `NUU-Cognition/shard-reports`, `NUU-Cognition/shard-specifications`, `NUU-Cognition/shard-guides` |
-   | Work on a codebase | `NUU-Cognition/shard-orbcode`, `NUU-Cognition/shard-code`, `NUU-Cognition/shard-codebase` |
+   | Work on a codebase | `NUU-Cognition/shard-ite` (a program of the template `software`), `NUU-Cognition/shard-code`, `NUU-Cognition/shard-codebase` |
    | Process meetings | `NUU-Cognition/shard-meetings` |
    | Teach or learn a topic | `NUU-Cognition/shard-learn` |
    | Make decisions with review | `NUU-Cognition/shard-proposals`, `NUU-Cognition/shard-mandate` |
