@@ -16,6 +16,7 @@ orbh-sessions:
   - "[[b61b6398-0bf0-4b33-81ef-df08f56f2fc5]]"
   - "[[ffb27033-03e2-4fb2-850c-a9f83a880880]]"
   - "[[5e7386c8-d7ac-4fbb-886d-6f9e5a41023b]]"
+  - "[[d0c32612-4481-4a28-b4d5-75859b6e590e]]"
 ---
 
 # Knowledge: CLI Reference
@@ -268,6 +269,17 @@ flint shard hstart-dev <ref>          # The source, headless
 The header names the shard: `# Shard: <Name> (<sh>) v<version>`, then `Id`, `Address`, `Alias`, `State` (`published <tag>`, `snapshot <sha>`, or `edited`), and `Request`. A shard bound by reference (`use = "reference"`) loads from the folder in its place. `start` of a shard whose source changed after the build prints `The build of <alias> is stale: its source changed after the build. Next: flint shard build <alias>` on stderr and loads the build.
 
 The start refuses and exits 1 when setup is required (it prints `FORCE SETUP`, the setup file, and the `SETUP REQUIRED` banner), when shard migrations are pending, or when a reference source is gone. With `--json` the output is one JSON value, also on a refusal (`{ ok: false, code, reason, next }`).
+
+## Shard Invocations
+
+An invocation is the durable record of one use of a shard (`.flint/invocations/<id>/events.jsonl`). `start` writes a load record. `invoke <ref> <workflow>` opens a workflow run with its steps, outputs, and parent, and each write ends with the hint lines `now:`, `read:`, `next:`, and `part of:`. Read [[dev-knw-f-invocations]] before you run a workflow with an invocation file.
+
+```bash
+flint shard invoke <ref> <workflow> --input <name>=<value>   # Open a workflow invocation (default parent: the top of the stack)
+flint shard step                                             # Where am I: the steps of the top of the stack and the hint
+flint shard step done|skip <step>                            # Settle the current step (--evidence '<…>' or --reason '<why>')
+flint shard invocations [show|stack|set-input|set-output|close|unlock]   # See, change, and close the records
+```
 
 ## Shard Install / Update
 

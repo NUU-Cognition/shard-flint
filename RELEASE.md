@@ -1,5 +1,13 @@
 # Flint Releases
 
+## Release 0.5.0
+
+The use side of shard invocations. Requires a Flint CLI with NUU Orbh Tasks 743 and 744 (flint `117821f` or later).
+
+- New knowledge `knw-f-invocations`: the record of one use of a shard (`.flint/invocations/<id>/events.jsonl`), the kinds `load` and `workflow`, and the commands to see them (`flint shard invocations`, `show`, `stack`, `flint shard step`). A workflow run: `flint shard invoke <ref> <workflow> --input`, the steps in order (`flint shard step done <step> --evidence`, `step skip <step> --reason`), `invocations set-input`, `set-output`, `close --outcome done|abandoned`, `--abandon-children`, and `unlock`. The stack: the default parent (the top of the stack of the session), `--parent`, `--root`, `FLINT_PARENT_INVOCATION` for a child session, and `back in:` after a child closes. How to follow the hints `now:`, `read:`, `next:`, `part of:`. The Page block `INVOCATIONS` and the Page after a compaction; Steel (the page Invocations, ⌘9, and the tab Story of a session). The refusals and the way out of each (`step-out-of-order`, `evidence-required`, `steps-open`, `outputs-missing`, `children-open`, `parent-closed`, and more). NUU Orbh Task 744.
+- `knw-f-cli`: a new section "Shard Invocations" with the commands and a link to `knw-f-invocations`.
+- `init-f`: one line under "Loading a Shard" that points to `knw-f-invocations`. The authoring side (the invocation file) is in the Knap shard (`knw-knap-invocations`).
+
 ## Release 0.4.1
 
 - `knw-f-cli` § Modules: each line of a module in `flint sync` and `flint module status` is `(module) <name>: …`; a real sync shows the detail of `apply` after ` — `; the logs of a module show in the section `Module logs` and in `--json` as `moduleLogs`. Requires a Flint CLI with NUU Flint Task 1130.

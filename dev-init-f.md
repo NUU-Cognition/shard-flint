@@ -54,6 +54,8 @@ Run `flint shard start <ref>` (the alias or the shorthand) to get the shard's ma
 
 **Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <ref>` only when you edit it. See Source and Shard below.
 
+**Invocations**: a workflow with an invocation file runs as a durable record: `flint shard invoke <ref> <workflow>` opens it, `flint shard step done|skip <step>` settles its steps in order, and each write ends with `next:` (do the first line first). Read [[dev-knw-f-invocations]] before you run one.
+
 **Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse [query]` shows what this Flint can install: the shards of the shard registry and the shard sources of the Flints of this machine, each with its state here and the spec that installs it. `flint resolve <spec>` says where one package is. See Choosing Shards below.
 
 ### Source and Shard

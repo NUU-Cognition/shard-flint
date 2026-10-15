@@ -20,6 +20,7 @@ Shards/(Dev) Flint/
     knw-f-templates.md          # Template syntax reference
     knw-f-artifacts.md          # Artifact conventions reference
     knw-f-cli.md                # CLI commands reference
+    knw-f-invocations.md        # Shard invocations: steps, outputs, the stack, the next hints, the refusals
   install/
     inst-f-flint_init.md        # Default Flint Init for a new Flint (installs as Mesh/(System) Flint Init.md)
     otmp-f-default.md           # Note template (Templater): bare note (UUID only)
@@ -36,3 +37,4 @@ Shards/(Dev) Flint/
 - **Notes** — Base notes, concept notes (`#note/concept`), record notes (`#note/record`)
 - **Navigation** — Search-first, find files by name/tag
 - **CLI commands** — Available tools and helpers
+- **Shard invocations** — Run a workflow as a durable record: `flint shard invoke`, `flint shard step`, the stack of a session, and the `next:` hints
