@@ -3,6 +3,7 @@
 ## Release 0.5.1
 
 - `init-f`, section Mesh: the mesh is flat except for section folders. A document is in zero or one section, and the folder of a sectioned document has meaning: it lives in the folder `(Section) <Name>/` of its section; every other folder is display only. `Mesh/Sections/` holds section folders at any depth, and a section folder is never inside another one. The staging sections New → Working → Consolidated stay. (Spec) Mesh Section and Group Model, Migration section 4; NUU Mesh Task 697.
+- `shard.yaml`: the range of `@nuucognition/invironments` is `^0` (was `^0.1.1`), so a Flint can install Invironments 0.1.x or 0.2.x. The ruling asked for `>=0.1.1 <0.3.0`; the shard resolver parses only an exact version, a caret range, and a tilde range, so `^0` (every 0.x version) is the nearest accepted form. Each Flint keeps its own Invironments version until it migrates (Migration section 3).
 
 ## Release 0.5.0
 
