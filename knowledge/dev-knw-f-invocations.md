@@ -273,7 +273,7 @@ A `ready` condition can name an assumed state. Then the verdict is `ready (assum
 
 ## Modes
 
-An invocation runs in one of two **modes**: `interactive` or `headless`. The mode comes from the Orbh session: an interactive session gives `interactive`; a headless, subagent, or ping session gives `headless`. With no Orbh session, the mode is `interactive`. `--mode interactive|headless` sets the mode, for a test. The record keeps it (`opened.mode`) for each workflow invocation, and the output of `invoke` prints it on the `Mode:` line. A wrong value refuses with `mode-invalid`; `--mode interactive` with `--headless` refuses with `mode-conflict`.
+An invocation runs in one of two **modes**: `interactive` or `headless`. The mode comes from the Orbh session: an interactive session gives `interactive`; a headless, subagent, or ping session gives `headless`. With no Orbh session, the mode is `interactive`. `--mode interactive|headless` sets the mode, for a test. The record keeps it (`opened.mode`) for each workflow invocation, and the output of `invoke` prints it on the `Mode:` line. A wrong value refuses with `mode-invalid`.
 
 One workflow file serves both modes:
 
@@ -283,13 +283,15 @@ One workflow file serves both modes:
 - **The conditions.** A behaviour, a next workflow, or a ready condition can depend on the mode. For example, `do_task` hands the task to `review_task` only in the headless mode.
 - **A child** takes the mode of the session. Its command names the mode only when the mode of the frame differs from the mode of the session. The Page knows the mode of the session too, so its child commands are the same as the CLI hint.
 
-**Deprecated.** The headless files (`hwkfl-<sh>-<name>.md`, `hinit-<sh>.md`) and `flint shard hstart` go away (NUU Orbh Task 748). Until the removal wave:
+**Removed.** The headless files (`hwkfl-<sh>-<name>.md`, its invocation file, and `hinit-<sh>.md`), `flint shard hstart`, `hstart-dev`, and `--headless` are removed (NUU Orbh Task 748):
 
-- `invoke --headless` is an alias of `--mode headless`: `⚠ --headless is deprecated. It is an alias of --mode headless. Use --mode headless.`
-- While a shard still has an `hwkfl-` invocation file, the headless mode reads it first: `⚠ This invoke reads the headless invocation file of hwkfl-<sh>-<name>. The hwkfl- files are deprecated: merge …`
-- `hstart` prints `⚠ The headless start is deprecated (one workflow for each mode).` With an `hinit-` file, it reads that file. With none, it loads the init (`… has no headless init, so this start loads init-<sh>.md. Use: flint shard start <ref>`).
+- `invoke --headless` refuses with `headless-flag-removed` before any write: `✘ --headless is removed. The mode comes from the Orbh session. Outside a headless Orbh session, use --mode headless.` The `Next:` command is the same command without the flag. A load (`flint shard invoke <ref> --headless`) refuses the same way.
+- `hstart` and `hstart-dev` refuse with `hstart-removed`: `✘ flint shard hstart is removed. One workflow serves each mode, and the mode comes from the Orbh session.`, with `Next: flint shard start '<ref>'` (`start-dev` for `hstart-dev`).
+- The CLI reads no headless file. `--mode headless` reads `wkfl-<sh>-<name>.invocation.json`, also when the shard still has an `hwkfl-` file. `invoke <ref> hwkfl-<sh>-<name>` refuses with `invocation-file-missing`.
+- The health check gives a problem for each `hinit-`, `hwkfl-`, and `hwkfl-*.invocation.json` file: `removed: merge into <target> with wkfl-knap-migrate_headless_to_modes`.
+- An old record of an `hwkfl-` workflow with no recorded mode still reads as a headless frame: `invocations show` and `close --outcome abandoned` work on it. A step write on such an open frame refuses, because its invocation file is gone. Close it with `--outcome abandoned`, and open the `wkfl-` workflow again. It is another workflow, so nothing is copied; the state entry settles the steps that the state proves. When a session close or return stops on such a frame, `--no-behaviours` is the way out.
 
-After the removal wave, `--headless`, `hstart`, and `hstart-dev` are removed. A headless session runs `flint shard start <ref>` and follows the callouts.
+A headless session runs `flint shard start <ref>` and follows the callouts.
 
 ## The stack
 
@@ -421,7 +423,9 @@ $ flint shard step done gather --invocation inv-fb7aa19ea2b0
 | `invocation-admission-failed` | `invoke` | The admission lock cannot be taken, for example because a folder of the index is a link. | Read the reason. The folder must be a real folder inside the Flint. |
 | `invocation-record-failed` | `invoke`, `step`, `set-input`, `set-output`, `close` | The record was not written. | Read the reason. On `lock-held`, follow its `Next:` command. Then run the command again. |
 | `toward-invalid`, `toward-shard-unknown`, `toward-workflow-unknown` | `invoke` | `--toward` is not `'<shard> <workflow>'`, or names no shard of this Flint, or names a workflow with no invocation file. | Fix the target. `flint shard list` and the refusal list the valid names. |
-| `mode-invalid`, `mode-conflict` | `invoke` | `--mode` is not `interactive` or `headless`, or `--mode interactive` goes with `--headless`. | Give one valid mode. |
+| `mode-invalid` | `invoke` | `--mode` is not `interactive` or `headless`. | Give one valid mode. |
+| `headless-flag-removed` | `invoke` | `--headless` is removed. Nothing was written. | Run the `Next:` command: the same command without the flag. The mode comes from the Orbh session; outside a headless Orbh session, use `--mode headless`. |
+| `hstart-removed` | `flint shard hstart`, `hstart-dev` | The headless start is removed. | Run the `Next:` command: `flint shard start '<ref>'` (`start-dev`). |
 | `assumed-state-invalid`, `assumed-state-unknown`, `reason-required` | `flint shard assumed set`, `withdraw` | The state name is not valid, the artifact has no such state, or `--reason` is empty. | Fix the name or the reason. `flint shard assumed '<artifact>'` lists the states. |
 
 ## See also

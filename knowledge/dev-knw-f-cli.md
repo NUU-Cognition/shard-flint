@@ -265,7 +265,7 @@ flint shard start <ref>               # The shard (loads init-<sh>.md), in both 
 flint shard start-dev <ref>           # The source (loads dev-init-<sh>.md), in both modes
 ```
 
-`flint shard hstart <ref>` and `hstart-dev <ref>` are deprecated (NUU Orbh Task 748). Until the removal wave, they print a notice: with an `hinit-<sh>.md` they load it as before, else they load the init. After the removal wave, they are removed. Use `start`.
+`flint shard hstart <ref>` and `hstart-dev <ref>` are removed (NUU Orbh Task 748). They refuse with `hstart-removed` (`flint shard hstart is removed. One workflow serves each mode, and the mode comes from the Orbh session.`) and give the next command `flint shard start '<ref>'` (`start-dev`). A headless session runs `start`, reads the section `# Headless` of the init, and follows the `> [!headless]` callouts. The manifest names only `init-<sh>.md` and the `wkfl-` workflows.
 
 The header names the shard: `# Shard: <Name> (<sh>) v<version>`, then `Id`, `Address`, `Alias`, `State` (`published <tag>`, `snapshot <sha>`, or `edited`), and `Request`. A shard bound by reference (`use = "reference"`) loads from the folder in its place. `start` of a shard whose source changed after the build prints `The build of <alias> is stale: its source changed after the build. Next: flint shard build <alias>` on stderr and loads the build.
 
