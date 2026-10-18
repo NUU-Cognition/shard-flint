@@ -54,7 +54,7 @@ Run `flint shard start <ref>` (the alias or the shorthand) to get the shard's ma
 
 **Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <ref>` only when you edit it. See Source and Shard below.
 
-**Invocations**: a workflow with an invocation file runs as a durable record: `flint shard invoke <ref> <workflow>` opens it, `flint shard step done|skip <step>` settles its steps in order, and each write ends with `next:` (do the first line first). Read [[dev-knw-f-invocations]] before you run one.
+**Invocations**: a workflow with an invocation file runs as a durable record: `flint shard invoke <ref> <workflow>` opens it, `flint shard step done|skip <step>` settles its steps in order, and each write ends with `next:` (do the first line first). When `invoke` refuses because an artifact is not ready (`input-not-ready`), do not edit the artifact to pass the check: in an interactive session, tell the person the state now, the state that the workflow needs, and each way, and run the way that the person picks; in a headless session, return the refusal as the blocker. `flint shard ready '<artifact>'` lists the workflows that can take an artifact next. Read [[dev-knw-f-invocations]] before you run one.
 
 **Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse [query]` shows what this Flint can install: the shards of the shard registry and the shard sources of the Flints of this machine, each with its state here and the spec that installs it. `flint resolve <spec>` says where one package is. See Choosing Shards below.
 
@@ -77,12 +77,11 @@ The Flint keeps the shard state in three places: `flint.toml` holds the intent (
 | Pattern | Purpose |
 |---------|---------|
 | `shard.yaml` | Manifest — name, version, dependencies, setup, types, folders, install |
-| `init-[sh].md` | Interactive context — load first, defines shard rules |
-| `hinit-[sh].md` | Headless init — loaded in Orbh sessions instead of `init-[sh].md` |
+| `init-[sh].md` | Context — load first, defines shard rules; its `# Headless` section holds the rules of a headless session |
 | `setup-[sh].md` | Setup lifecycle — one-time setup instructions for the shard |
 | `sk-[sh]-[name].md` | Skill — atomic task, follow actions exactly |
-| `wkfl-[sh]-[name].md` | Workflow — multi-stage, human review between stages |
-| `hwkfl-[sh]-[name].md` | Headless workflow — used in headless Orbh sessions |
+| `wkfl-[sh]-[name].md` | Workflow — multi-stage, human review between stages; `> [!headless]` callouts in a stage say what a headless session does there |
+| `wkfl-[sh]-[name].invocation.json` | Invocation file of a workflow — inputs, steps, outputs, behaviours, readiness, and the next workflow; `flint shard invoke` reads it |
 | `tmp-[sh]-[name]-v<X.X>.md` | Template — versioned structural guide for creating artifacts |
 | `knw-[sh]-[name].md` | Knowledge — deep reference material |
 | `ast-[sh]-[name].[ext]` | Asset — non-markdown files |
@@ -180,13 +179,14 @@ When editing files with frontmatter, append your session ID to the `orbh-session
 - If the field doesn't exist, create it. If it exists, append your ID.
 - All agent types (Claude, Codex, etc.) use the same `orbh-sessions` field — there are no per-runtime session fields.
 
-### Headless Mode
+### Modes
 
-A Flint agent can run headless inside an Orbh session (no interactive terminal). In that mode:
+A Flint agent runs in one of two modes: `interactive` (a person at the terminal) or `headless` (an Orbh session with no person: a headless, subagent, or ping session). The mode comes from the Orbh session. One set of files serves both modes:
 
-- Run `flint shard hstart <ref>` (`hstart-dev` for a source). It loads `hinit-<sh>.md` and its required reading, in place of `init-<sh>.md`.
-- `hstart` lists each `hwkfl-<sh>-<name>.md` in place of the interactive `wkfl-*` of the same name, and it lists a `wkfl-*` that has no headless variant. Headless workflows drop human stage gates and report progress via Orbh session keys instead.
-- A shard with no headless init refuses `hstart` with the next command `flint shard start <ref>`. Run that command and read the interactive init. There is no automatic fallback.
+- Load a shard with `flint shard start <ref>` (`start-dev` for a source) in both modes. In a headless session, also read the section `# Headless` of the init, when it has one: the interface keys, the phase values, and the result delivery.
+- A workflow has `> [!headless]` callouts in the stages that differ. In a headless session, do the normal text of each stage and follow its callout; when they conflict, the callout wins. An interactive session ignores the callouts.
+- A workflow invocation knows the mode. In the headless mode, it skips each step that only a person can do (`flint shard step` shows the skip), and its hints print the text of the headless mode.
+- Deprecated: `flint shard hstart`, `hstart-dev`, `--headless`, and the headless files `hinit-<sh>.md` and `hwkfl-<sh>-<name>.md` (NUU Orbh Task 748). Until the removal wave, they still work with a notice: `hstart` loads an `hinit-` file when the shard has one, else the init. After the removal wave, they are removed. Use `flint shard start <ref>`.
 
 Headless orchestration details (session lifecycle, status, interface keys, returning results) are owned by the Orbh shard — load `Shards/Orbh/init-foh.md` when operating in that context.
 
@@ -245,10 +245,9 @@ flint org set <org>                   # Give this Flint an org (a local Flint ha
 flint shard list                      # One row per shard: id, address, alias, shorthand, version, state
 flint shard browse [query]            # What this Flint can install: the shard registry and the shard sources of this machine
 flint shard status <ref>              # The row, the Git state of the source, dependencies, pending migrations (info is an alias)
-flint shard start <ref>               # Dynamic manifest of the shard (interactive)
-flint shard start-dev <ref>           # Dynamic manifest of the source (interactive)
-flint shard hstart <ref>              # Dynamic manifest of the shard (headless)
-flint shard hstart-dev <ref>          # Dynamic manifest of the source (headless)
+flint shard start <ref>               # Dynamic manifest of the shard (both modes)
+flint shard start-dev <ref>           # Dynamic manifest of the source (both modes)
+flint shard ready '<artifact>'        # The workflows of the installed shards that can take the artifact, with each verdict
 flint resolve <spec>                  # Where a package is: this Flint, this machine, or the shard registry
 
 # Shard lifecycle
