@@ -182,7 +182,7 @@ read:    Stage 3: Task Review of Shards/Projects/workflows/wkfl-proj-do_task.md
 
 **What `invoke` copies, and why.** When the earlier invocation is of the same workflow and it did not close `done` (for example, its session closed in the middle of the work), `invoke` copies its settled steps, in order from the first, and its outputs (`via: continued`). The earlier session did that work, and the record proves it. Thus a new session continues from the first open step, and it does not do the work again. The output says what it copied. Read the stages of the copied steps when you need their context: the work is in the artifact and in the outputs, not in your context.
 
-- **`--fresh`** copies nothing: the new invocation starts at step 1. The link stays. Use it when the person wants a new pass, or when the earlier work is wrong.
+- **`--fresh`** copies no settled step or output from the earlier invocation. The state entry and the mode skips still apply, so the new invocation can start after step 1. The link stays. Use it when the person wants a new pass, or when the earlier work is wrong.
 - **`continue-open`.** When the earlier invocation is still open in a live session, `invoke` refuses: two sessions must not work on one artifact at the same time. Find that session (`flint shard invocations --artifact '<artifact>'`). When it still works on the artifact, stop, and tell the person. When it does not, close its invocation (`flint shard invocations close <id> --outcome abandoned --reason '<why>'`), or invoke with `--fresh`.
 - An earlier invocation that closed `done`, or of another workflow, gives only the link: nothing is copied.
 
