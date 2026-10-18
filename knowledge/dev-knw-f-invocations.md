@@ -87,7 +87,8 @@ For a 0.3 file, the open does these things in order, before the agent starts:
 - The behaviours of `invocation.open` run. For example, `task-open` of Projects sets a `todo` task to `in-progress`.
 - `invoke` opens no Orbh procedure. Use `flint shard step`, not `flint orbh procedure step`.
 - In an Orbh session, run `invoke` in the Flint of the session. An invoke that writes to another Flint refuses (`invocation-flint-mismatch`), because the behaviours of the session read only the Flint of the session.
-- A 0.1 or 0.2 file has no readiness check, no continuation, no state entry, and no next workflow.
+- A 0.1 or 0.2 file has no readiness check, no artifact identity, no continuation, no state entry, and no next workflow. Each workflow invocation, of each format, records its mode: the output has a `Mode:` line, for example `Mode: interactive (no Orbh session mode is known)` or `Mode: headless (--mode)`.
+- A step that `invoke` settles (the copy, the state entry, or the mode) runs no `step.done:<step>` behaviour. Only `flint shard step done` runs it.
 
 ### Steps
 
@@ -135,23 +136,27 @@ In a 0.3 file, an artifact input can declare **ready**: the state that the workf
 
 | Verdict | Meaning |
 |---|---|
-| `ready` | The frontmatter meets the condition. |
-| `ready (assumed)` | The condition passes through an **assumed state**, and the line names its source: `(Task) 750 … is assumed scoped by proj scope_task inv-…, while status todo`. See [Assumed states](#assumed-states). |
-| `not ready` | A part of the condition fails. `invoke` refuses. |
+| `ready` | The frontmatter meets the condition: `- task: (Task) 006 Todo Task · ready`. |
+| `ready (assumed)` | The condition passes through an **assumed state**, and the line names its source: `- task: (Task) 003 In Review · ready (assumed verified by f (assumption) inv-61043394aeab (the person says it is verified))`. See [Assumed states](#assumed-states). |
+| `not ready` | A part of the condition fails. `invoke` refuses. With `--not-ready`, the line is `not ready, opened with --not-ready (status is in-progress, not review)`. |
+
+The verdicts are under `Readiness:` in the output of `invoke`.
 
 **The refusal.** `input-not-ready` writes nothing. It gives the state now, the state that the workflow needs, and the **ways** to make the artifact ready:
 
 ```
-$ flint shard invoke proj review_task --input task='(Task) 746 Parallel Auth Refresh'
-✘ (Task) 746 Parallel Auth Refresh is in-progress. proj review_task needs: status review.
-  Next: flint shard invoke proj do_task --input task='(Task) 746 Parallel Auth Refresh' --toward 'proj review_task'
-  Or:   flint shard invoke proj review_task --input task='(Task) 746 Parallel Auth Refresh' --not-ready '<why>'
-  Tell the person what (Task) 746 Parallel Auth Refresh needs, and ask before you make it ready.
+$ flint shard invoke proj review_task --input task='(Task) 001 Review Me'
+✘ (Task) 001 Review Me is status in-progress. proj review_task needs: status review.
+  Tell the person what (Task) 001 Review Me needs, and ask before you make it ready.
+  Next: flint shard invoke proj do_task --input task='(Task) 001 Review Me' --toward 'proj review_task'
+  Or:   flint shard invoke proj review_task --input 'task=(Task) 001 Review Me' --not-ready '<why>'
 ```
 
-- A way is a workflow that moves the artifact forward (an `invoke` command with `--toward`), a script of the shard that you run by hand, or a line that says what to do (for example, "make a new task that continues it").
-- The `--not-ready '<why>'` command opens the invocation anyway. The record keeps the reason.
-- The last line depends on the mode of the session.
+- The first line is the reason: the state of the artifact now, and the condition of the workflow in words.
+- A `say` way is a line after the reason, for example `(Task) 002 Done Task is done. For more work, make a new task that continues it with sk-proj-supersede_task.` A `run` way is a line too: `Run by hand: flint shard <sh> <script>`. The CLI never runs it.
+- The next line depends on the mode. Interactive: `Tell the person what <title> needs, and ask before you make it ready.` Headless: `Do not choose. Return this refusal as the blocker, or use flint orbh approval request.` It prints before the commands.
+- `Next:` and `Or:` give the commands: each `invoke` way, with `--toward`, then the override with `--not-ready '<why>'`. In the headless mode, each command has `--mode headless`. With `--json`, the commands are in `next`, and the lines are in `lines`.
+- `--not-ready '<why>'` passes only `input-not-ready`. It does not pass an input that is not found, ambiguous, unreadable, or of the wrong type.
 
 **The doctrine.** Follow these rules when `invoke` or `set-input` refuses an artifact:
 
@@ -160,11 +165,11 @@ $ flint shard invoke proj review_task --input task='(Task) 746 Parallel Auth Ref
 3. **In a headless session, do not choose.** No person can pick a way. Return the refusal as the blocker: a subagent puts the reason and the ways in its return to its dispatcher. A headless root can also use `flint orbh approval request "<title>" --body "<the reason and the ways>"`, and continue with the way of the verdict.
 4. **`--not-ready '<why>'` only when the person asks.** Pass it only when the person asks for it in the current message, as for `--with task-confirm`. Write the words of the person as the reason.
 
-The other refusals of an input say that the value is wrong, not the artifact: a title with a typo (`input-not-found`), a title of two files (`input-ambiguous`: give the path), or an artifact of another type (`input-wrong-type`). Fix the value and invoke again.
+The other refusals of an input say that the value is wrong, not the artifact: a title with a typo (`input-not-found`), a title of two files (`input-ambiguous`: give the path), an artifact of another type (`input-wrong-type`: the `(Type)` prefix of the file name decides), or a file whose frontmatter cannot be parsed (`input-unreadable`). Fix the value, or tell the person about the file, and invoke again.
 
 ## Toward
 
-`--toward '<shard> <workflow>'` names the workflow that this invocation makes the artifact ready for. The `invoke` way of a refusal adds it for you. The record keeps the target, and while the frame is open, the output of `invoke`, `flint shard step`, and the Page show a `toward:` line. When the frame closes `done`, the close checks the target first: when the artifact now qualifies, `next:` is the command of the target.
+`--toward '<shard> <workflow>'` names the workflow that this invocation makes the artifact ready for. The `invoke` way of a refusal adds it for you. The record keeps the target. While the frame is open, its hint ends with the line `toward:  proj review_task (after this frame closes done)`: the output of `invoke`, `flint shard step`, `invocations show`, and the Page show it. When the frame closes `done`, the close checks the target first: `ready:   (Task) 001 Review Me is review. It qualifies for proj review_task, the target of --toward.`, then `next:` with the command. A `--toward` with a wrong form refuses before any write: `toward-invalid` (not `<shard> <workflow>`), `toward-shard-unknown`, or `toward-workflow-unknown` (the shard has no invocation file of that name).
 
 A workflow can do less when it goes toward a target. For example, `do_task` toward `proj review_task` does not ask for the confirm of the person: it sets the task to `review`, skips its step `close`, and closes `done`, so that a reviewer takes the task. Read the `# Invocation` section of the workflow when you see a `toward:` line.
 
@@ -173,22 +178,26 @@ A workflow can do less when it goes toward a target. For example, `do_task` towa
 At the open, `invoke` finds the newest invocation, of any session, open or closed, that took or made the same artifact. The link uses the Mesh `id` of the artifact, so a rename does not break it. The record keeps the link (`opened.continues`), and the output of `invoke` names it:
 
 ```
-$ flint shard invoke proj do_task --input task='(Task) 745 Fix Stale Context % in Shell Chrome'
-✓ opened inv-… · continues inv-6431ac116ad7 (proj create_and_do_task, session-closed, session 1651d8ef)
-  settled by the state: work, report (task.status = review)
-now:     step 3/4 review
-read:    Stage 3: Task Review of Shards/Projects/workflows/wkfl-proj-do_task.md
+$ flint shard invoke proj do_task --input task='(Task) 008 Fresh Me'
+…
+Continues: inv-0f619aa485fc (proj do_task · (Task) 008 Fresh Me, abandoned) via task
+Copied: 1 settled step (work), via: continued
+…
+now:     step 2/4 report
 ```
 
 **What `invoke` copies, and why.** When the earlier invocation is of the same workflow and it did not close `done` (for example, its session closed in the middle of the work), `invoke` copies its settled steps, in order from the first, and its outputs (`via: continued`). The earlier session did that work, and the record proves it. Thus a new session continues from the first open step, and it does not do the work again. The output says what it copied. Read the stages of the copied steps when you need their context: the work is in the artifact and in the outputs, not in your context.
 
 - **`--fresh`** copies no settled step or output from the earlier invocation. The state entry and the mode skips still apply, so the new invocation can start after step 1. The link stays. Use it when the person wants a new pass, or when the earlier work is wrong.
-- **`continue-open`.** When the earlier invocation is still open in a live session, `invoke` refuses: two sessions must not work on one artifact at the same time. Find that session (`flint shard invocations --artifact '<artifact>'`). When it still works on the artifact, stop, and tell the person. When it does not, close its invocation (`flint shard invocations close <id> --outcome abandoned --reason '<why>'`), or invoke with `--fresh`.
+- **`continue-open`.** When the earlier invocation of the same workflow is still open and its session is live, `invoke` refuses: two sessions must not work on one artifact at the same time. A session is live when its work state is not terminal: an awaiting session counts as live, and so does your own session. An open invocation with no Orbh session counts as live too: nothing proves that it ended. Find the invocation (`flint shard invocations --artifact '<artifact>'`). When its session still works on the artifact, stop, and tell the person. When it does not, close the invocation (the `Next:` command: `flint shard invocations close <id> --outcome abandoned --reason '<why>'`), or invoke with `--fresh` (the `Or:` command).
+- **An ended session.** When the earlier invocation is open in a session that is not live (it ended), `invoke` copies it and prints a note with the command that closes it.
+- A step that the earlier invocation skipped by its mode is not copied, and the copy stops there: the mode of the new invocation decides that step again.
+- **Parallel invokes.** Two invokes on the same artifact and workflow take one admission lock. The second waits up to 15 s, then refuses with `invocation-admission-busy`: run it again when the first one ends.
 - An earlier invocation that closed `done`, or of another workflow, gives only the link: nothing is copied.
 
-**The state entry.** After the copy, `invoke` settles each leading step whose `done-when` the state of the artifact meets (`via: state`, with the evidence, for example `task.status = review`). Thus `do_task` on a task in `review` starts at the step `review`, also when a person did the work by hand. Check that the state is true before you continue: read the artifact, and when the work is not there, tell the person.
+**The state entry.** After the copy, `invoke` settles each leading step whose `done-when` the state of the artifact meets (`via: state`, with the evidence, for example `task.status = review`). The output says `settled by the state: work, report (task.status = review)`. Thus `do_task` on a task in `review` starts at the step `review`, also when a person did the work by hand. Check that the state is true before you continue: read the artifact, and when the work is not there, tell the person.
 
-**The thread of an artifact.** `flint shard invocations --artifact '<artifact>'` lists the invocations that took or made the artifact, oldest first, with the `continues` links: for example `scope_task` (session A), `do_task` (session B), `review_task` (session C). The list reads an index. The index is a cache: when a list or a link misses an invocation, run `flint shard invocations reindex`.
+**The thread of an artifact.** `flint shard invocations --artifact '<artifact>'` lists the invocations that took or made the artifact, oldest first, with the `continues` links: for example `scope_task` (session A), `do_task` (session B), `review_task` (session C). The list reads an index by the Mesh `id` (and by the title for a file with no `id`). The index is a cache. When a key cannot be trusted, `flint shard invocations` warns: `The index of the artifacts has <n> key(s) whose readers scan all records (…). Repair: flint shard invocations reindex`. Run that command. It prints `Rebuilt the index of the artifacts in .flint/invocations/.index/artifacts: <n> records read, <m> lines written.`
 
 ## The next workflow
 
@@ -198,13 +207,17 @@ When a frame closes `done`, the close checks the workflows that come next, and i
 2. each `then` workflow of the invocation file whose condition is true (for example, `do_task` has `then: review_task` only in the headless mode).
 
 ```
-$ flint shard invocations close --outcome done
-✓ proj scope_task · Invocation Readiness closed (done) · outputs: task = (Task) 750 Invocation Readiness
-ready:   (Task) 750 Invocation Readiness is todo. It qualifies for proj do_task.
-next:    flint shard invoke proj do_task --input task='(Task) 750 Invocation Readiness'
+$ flint shard invocations close inv-786b9a102a31 --outcome done
+proj scope_task (inv-786b9a102a31): closed (done) · outputs: task = (Task) 006 Todo Task
+assumed: scoped of (Task) 006 Todo Task, while status todo
+
+ready:   (Task) 006 Todo Task is todo. It is assumed scoped by proj scope_task inv-786b9a102a31, while status todo. It qualifies for proj do_task.
+next:    flint shard invoke proj do_task --root --input task='(Task) 006 Todo Task'
 ```
 
-- A workflow that qualifies gets `ready:` and `next:` (the `invoke` command). A workflow that does not qualify gets `not ready:` with the reason and the ways.
+- `assumed:` names each assumed state that the close wrote.
+- A workflow that qualifies gets `ready:` and `next:` (the `invoke` command). A workflow that does not qualify gets `not ready:` with the reason, and `ways:` with the commands of its ways. A next-workflow verdict has no mode line ("Tell the person …"): the close is not a refusal.
+- Each `next:` command names its parent: `--parent <id>` of the open ancestor, else `--root`. Run it as printed.
 - A frame with an open parent prints `back in:` first, and these lines after it.
 - A close with another outcome (`abandoned`, `session-closed`, `session-returned`) prints no next workflow.
 - **Do not run the next workflow by yourself.** In an interactive session, give the `next:` command to the person, and run it when the person asks. In a headless session, put it in the result: the dispatcher or the person starts it.
@@ -218,7 +231,11 @@ $ flint shard ready '(Task) 745 Fix Stale Context % in Shell Chrome'
   ✓ proj do_task         ready · it starts at step 3/4 review
 ```
 
-`--json` gives `{ ok, artifact, workflows, assumed }`.
+- Each line gives the verdict, the start step, the earlier invocation that it continues, and the steps that the mode skips (`· skipped by the mode: close`). Then the `next:` command, or the reason and the `way:` commands of a workflow that is not ready.
+- `· proj scope_task  makes a Task (output task), takes no Task` names a workflow that makes the type and does not take it.
+- `Assumed states that hold:` and `Invocation files that cannot be read:` follow the list.
+- `--mode headless` checks for the headless mode (and its commands get `--mode headless`). `--dev` reads the invocation files of the sources. A shard bound by reference is read in its place. The command writes nothing.
+- `--json` gives `{ ok, artifact, workflows, makes, assumed, problems, mode, next }`.
 
 ## Assumed states
 
@@ -236,7 +253,19 @@ flint shard assumed set '<artifact>' <state> --reason '<why>'       # Set a stat
 flint shard assumed withdraw '<artifact>' <state> --reason '<why>'  # Withdraw a state (an assumption record)
 ```
 
-A `ready` condition can name an assumed state. Then the verdict is `ready (assumed)`, and the line names the invocation that gave the state.
+The output of `flint shard assumed '<artifact>'`:
+
+```
+(Task) 007 Continue Me · id b53a4ecf-… · Mesh/Types/Tasks/(Task) 007 Continue Me.md
+✗ scoped by proj scope_task inv-85828887d8a0, while status todo · does not hold: its guard is false now: status is in-progress, not todo (2026-10-18T07:27:54.514Z)
+```
+
+- `✓ … · holds` or `✗ … · does not hold: <why>`. The reason is the guard, a later state, or the withdrawal (`it was withdrawn by inv-…: <reason>`).
+- The guard reads the file with the identity of the artifact (its Mesh `id`), not another file with the title.
+- A state that was set before the file had an `id` still holds after the `id` is added: the reader takes the key of the `id` and the key of the title now.
+- `set` and `withdraw` refuse before any write: `assumed-state-invalid` (the name is not a lower-case name of at most 32 characters), `assumed-state-unknown` (the artifact has no such state to withdraw), `reason-required` (an empty `--reason`).
+
+A `ready` condition can name an assumed state. Then the verdict is `ready (assumed)`, and the line names the invocation that gave the state. When no state of the list holds, the refusal says `<title> has no assumed state. <shard> <workflow> needs: assumed <states>.`
 
 **When to set one by hand.** Set an assumed state only when the person says that the artifact is in that state, and no workflow gave it: for example, an old task that the person knows is scoped. Write the words of the person as the reason. Do not set a state to pass a readiness check on your own: that is an edit of the artifact to pass the check.
 
@@ -244,17 +273,23 @@ A `ready` condition can name an assumed state. Then the verdict is `ready (assum
 
 ## Modes
 
-An invocation runs in one of two **modes**: `interactive` or `headless`. The mode comes from the Orbh session: an interactive session gives `interactive`; a headless, subagent, or ping session gives `headless`. With no Orbh session, the mode is `interactive`. `--mode interactive|headless` sets the mode, for a test. The record keeps it, and the output of `invoke` prints it.
+An invocation runs in one of two **modes**: `interactive` or `headless`. The mode comes from the Orbh session: an interactive session gives `interactive`; a headless, subagent, or ping session gives `headless`. With no Orbh session, the mode is `interactive`. `--mode interactive|headless` sets the mode, for a test. The record keeps it (`opened.mode`) for each workflow invocation, and the output of `invoke` prints it on the `Mode:` line. A wrong value refuses with `mode-invalid`; `--mode interactive` with `--headless` refuses with `mode-conflict`.
 
 One workflow file serves both modes:
 
 - **The callouts.** A stage that differs in a headless session has a `> [!headless]` callout inside that stage. In a headless session, do the normal text of the stage and follow its callout; when they conflict, the callout wins. An interactive session ignores the callouts. After a compaction, read the stage in `read:` again, with its callout.
-- **The skipped steps.** A step only for a person (for example the confirm of a task) is skipped at the open in the headless mode (`via: mode`). `flint shard step` shows each step that the mode skipped. Do not settle it by hand.
+- **The skipped steps.** A step only for a person (for example the confirm of a task) is skipped at the open in the headless mode (`via: mode`). The output of `invoke` says `Skipped (mode): close (interactive only)`, and `flint shard step` shows the skip. Do not settle it by hand.
 - **The hints.** A step can have one `next:` text for each mode. The hint prints the text of the mode of the frame.
 - **The conditions.** A behaviour, a next workflow, or a ready condition can depend on the mode. For example, `do_task` hands the task to `review_task` only in the headless mode.
-- **A child** takes the mode of the session. Its command names the mode only when the mode of the frame differs from the mode of the session.
+- **A child** takes the mode of the session. Its command names the mode only when the mode of the frame differs from the mode of the session. The Page knows the mode of the session too, so its child commands are the same as the CLI hint.
 
-**Deprecated.** The headless files (`hwkfl-<sh>-<name>.md`, `hinit-<sh>.md`) and `flint shard hstart` go away (NUU Orbh Task 748). Until the removal wave: `invoke --headless` is an alias of `--mode headless`, with a notice; while a shard still has an `hwkfl-` file, the headless mode reads it first, with a notice; `hstart` prints a notice. After the removal wave, `--headless`, `hstart`, and `hstart-dev` are removed. A headless session runs `flint shard start <ref>` and follows the callouts.
+**Deprecated.** The headless files (`hwkfl-<sh>-<name>.md`, `hinit-<sh>.md`) and `flint shard hstart` go away (NUU Orbh Task 748). Until the removal wave:
+
+- `invoke --headless` is an alias of `--mode headless`: `⚠ --headless is deprecated. It is an alias of --mode headless. Use --mode headless.`
+- While a shard still has an `hwkfl-` invocation file, the headless mode reads it first: `⚠ This invoke reads the headless invocation file of hwkfl-<sh>-<name>. The hwkfl- files are deprecated: merge …`
+- `hstart` prints `⚠ The headless start is deprecated (one workflow for each mode).` With an `hinit-` file, it reads that file. With none, it loads the init (`… has no headless init, so this start loads init-<sh>.md. Use: flint shard start <ref>`).
+
+After the removal wave, `--headless`, `hstart`, and `hstart-dev` are removed. A headless session runs `flint shard start <ref>` and follows the callouts.
 
 ## The stack
 
@@ -381,7 +416,13 @@ $ flint shard step done gather --invocation inv-fb7aa19ea2b0
 | `input-ambiguous` | `invoke`, `set-input` | The value names two Mesh files. | Give the path under `Mesh/`. |
 | `input-unreadable` | `invoke`, `set-input` | The Mesh file cannot be read, or its frontmatter cannot be parsed. | Fix the frontmatter of the file, then invoke again. |
 | `input-wrong-type` | `invoke`, `set-input` | The `(Type)` prefix of the file name is not the type of the input. | Give an artifact of the type that the workflow takes. `flint shard ready '<artifact>'` lists the workflows that take this one. |
-| `continue-open` | `invoke` | The earlier invocation on the same artifact is still open in a live session. | Close that invocation (`flint shard invocations close <id> --outcome abandoned --reason '<why>'`) when its session does not work on it, or invoke with `--fresh`. |
+| `continue-open` | `invoke` | The earlier invocation of the same workflow on the same artifact is still open, and its session is live (awaiting counts), or it names no session. | Close that invocation (`flint shard invocations close <id> --outcome abandoned --reason '<why>'`) when its session does not work on it, or invoke with `--fresh`. |
+| `invocation-admission-busy` | `invoke` | Another invoke on the same artifact and workflow holds the admission lock for more than 15 s. | Run the same command again when the other invoke ends. |
+| `invocation-admission-failed` | `invoke` | The admission lock cannot be taken, for example because a folder of the index is a link. | Read the reason. The folder must be a real folder inside the Flint. |
+| `invocation-record-failed` | `invoke`, `step`, `set-input`, `set-output`, `close` | The record was not written. | Read the reason. On `lock-held`, follow its `Next:` command. Then run the command again. |
+| `toward-invalid`, `toward-shard-unknown`, `toward-workflow-unknown` | `invoke` | `--toward` is not `'<shard> <workflow>'`, or names no shard of this Flint, or names a workflow with no invocation file. | Fix the target. `flint shard list` and the refusal list the valid names. |
+| `mode-invalid`, `mode-conflict` | `invoke` | `--mode` is not `interactive` or `headless`, or `--mode interactive` goes with `--headless`. | Give one valid mode. |
+| `assumed-state-invalid`, `assumed-state-unknown`, `reason-required` | `flint shard assumed set`, `withdraw` | The state name is not valid, the artifact has no such state, or `--reason` is empty. | Fix the name or the reason. `flint shard assumed '<artifact>'` lists the states. |
 
 ## See also
 
