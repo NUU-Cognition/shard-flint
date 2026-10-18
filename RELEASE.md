@@ -1,5 +1,11 @@
 # Flint Releases
 
+## Release 0.5.2
+
+- `knw-f-invocations`, `init-f`, and `knw-f-cli` describe readiness, continuation, assumed states, the next workflow, and modes (NUU Orbh Task 748): the refusals and their ways, `--not-ready`, `--toward`, `--fresh`, `continue-open`, `then` and `flint shard ready`, `flint shard assumed`, the artifact index and `reindex`, and the mode of the Orbh session.
+- Headless workflows, headless inits, `flint shard hstart`, and `--headless` are removed. The docs give the refusals `hstart-removed` and `headless-flag-removed`, and the health problem of a headless file.
+- Requires a Flint CLI with NUU Orbh Task 748.
+
 ## Release 0.5.1
 
 - `init-f`, section Mesh: the mesh is flat except for section folders. A document is in zero or one section, and the folder of a sectioned document has meaning: it lives in the folder `(Section) <Name>/` of its section; every other folder is display only. `Mesh/Sections/` holds section folders at any depth, and a section folder is never inside another one. The staging sections New → Working → Consolidated stay. (Spec) Mesh Section and Group Model, Migration section 4; NUU Mesh Task 697.
