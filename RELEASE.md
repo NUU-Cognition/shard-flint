@@ -1,5 +1,11 @@
 # Flint Releases
 
+## Release 0.5.3
+
+- The stamp rule (`init-f` § Session Tracking, `knw-f-artifacts`, `knw-f-templates`, `sk-f-stitch`, and the install files of the staging sections): an agent stamps a note with the field `orb:` and the v1 address of `flint address me`. Old notes keep `orbh-sessions`. A writer never removes it, and each reader reads both fields (NUU Orbh Mission 027).
+- A stamp item counts as the stamp of the session only by an exact form: the address of `flint address me`, the short form `@v1/<org>/session/<uuid>`, `[[<uuid>]]`, or the bare UUID (revision R27 of Mission 027).
+- Requires a Flint CLI with Mission 027 (flint `9314abc` or later) for `flint address me`.
+
 ## Release 0.5.2
 
 - `knw-f-invocations`, `init-f`, and `knw-f-cli` describe readiness, continuation, assumed states, the next workflow, and modes (NUU Orbh Task 748): the refusals and their ways, `--not-ready`, `--toward`, `--fresh`, `continue-open`, `then` and `flint shard ready`, `flint shard assumed`, the artifact index and `reindex`, and the mode of the Orbh session.
