@@ -53,7 +53,7 @@ flint helper pins list --session <id> --path /path/to/flint
 The helper uses `ORBH_SESSION_ID` unless you pass `--session`. Use `--orb-root` or `--at` for an explicit store.
 It follows the current session's workspace after a shell directory change. It rejects a target from another Flint.
 
-`set` replaces the list in argument order. `add` appends new paths and removes duplicates. `remove` accepts missing files.
+`set` replaces the list in argument order. `add` puts the new paths first, in argument order, and removes duplicates: a path that is already pinned moves to the start. So the latest pin is at the top. `remove` accepts missing files.
 `list` prints JSON. `clear` writes an empty list. Quote each filename, including its extension.
 
 Paths are relative to the Flint root. Absolute paths within that root also work.
@@ -65,7 +65,7 @@ The session interface key `flint:markdown-pins` holds a JSON array of path strin
 The helper uses the normal session setter, including manager routing and durable events.
 Pins stay with the session across resume and compaction. Child sessions start with their own list.
 
-The finder shows matching pins first in stored order. Other matches keep the usual fuzzy ranking.
+The finder shows matching pins first in stored order, and the Orbh menu shows the first nine pins in stored order. Other matches keep the usual fuzzy ranking.
 It refreshes pins while open. A missing file remains visible as unavailable.
 Renames do not update pins automatically. Remove the old path and add the new path after a rename.
 Malformed interface values produce an error without a write.
