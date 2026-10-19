@@ -5,6 +5,8 @@ required-reading:
   - knowledge/dev-knw-f-templates.md
   - knowledge/dev-knw-f-types.md
   - knowledge/dev-knw-f-cli.md
+orb:
+  - "@v1/nuucognition/session/9010418b-f6be-418d-8b5c-95dfff830c8a#flint/nuu-orbh"
 ---
 
 # Flint Agent Environment
@@ -134,6 +136,7 @@ Templates define how to create artifacts. When you encounter an artifact with a 
 - **Context window**: Limited — load files on demand, never assume prior knowledge
 - **Session**: Stateless — each conversation starts fresh
 - **Return to root**: At the end of every turn, `cd` back to the Flint root (`cd $ROOT`). Commands may take you into codebases or subdirectories — always return so the next turn starts from a predictable location.
+- **Temporary files**: In an Orbh session, keep drafts, intermediate output, and one-task scripts in `$ORBH_SCRATCH_DIR` (the `scratch/` folder of the spool of the session), not in `/tmp` and not in the scratchpad that a harness names. Finished work goes into the Mesh. A session in a wisp also has the wisp memory, `$ORBH_WISP_MEMORY_DIR`. See the Orbh shard ([[init-foh]] § Temporary Files and Wisp Memory).
 
 ### First Action
 
