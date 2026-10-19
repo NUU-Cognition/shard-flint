@@ -176,7 +176,7 @@ authors:
 
 When you create or edit a file with frontmatter, stamp your session in the field `orb:`:
 - Run `flint address me`. Append its `by` address to `orb:` as a quoted string: `orb: ["@v1/<org>/session/<uuid>#flint/<slug>"]`.
-- If the field does not exist, create it. If your session is already in `orb:` or in `orbh-sessions` (the same session id), add nothing.
+- If the field does not exist, create it. Add nothing only when `orb:` or `orbh-sessions` has an item that is exactly your `by` address, the short form `@v1/<org>/session/<uuid>`, `[[<uuid>]]`, or your bare `<uuid>`. Do not parse other items: append your address.
 - Old notes have the field `orbh-sessions` (`"[[<uuid>]]"` items). Never remove it, and add no new item to it.
 - All agent types (Claude, Codex, etc.) use the same `orb:` field — there are no per-runtime session fields. See [[dev-knw-f-artifacts]] § Session Tracking.
 

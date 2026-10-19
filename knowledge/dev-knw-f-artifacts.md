@@ -178,7 +178,8 @@ Agents stamp their sessions in the frontmatter field `orb:`. An item of `orb:` i
 1. Run `flint address me`. Its `by` line is the address of your session (`flint address me --json` gives `{ by, as, org }`).
 2. When the file has no `orb:` field, create it with your address.
 3. When the file has `orb:`, append your address to the list.
-4. When your session is already in `orb:` or in `orbh-sessions` (the same session id), add nothing. Two items are the same session when they have the same session id, also when their org or place is different.
+4. Add nothing only when `orb:` or `orbh-sessions` has an item that is exactly one of these forms (with no quotes, trimmed): your `by` address, the short form `@v1/<org>/session/<uuid>`, `[[<uuid>]]`, or your bare `<uuid>` (the UUID in lower case or capitals). Each other item is no stamp of your session, so append your address.
+5. Do not parse an address to decide (R27 of NUU Orbh Mission 027). An item can look like your session and still be another thing: a wisp with the same UUID, an address with a bad place, or text around an address. A rare duplicate of another valid form is accepted: each reader matches two items by kind and key, also when their org or place is different.
 
 ```yaml
 # Before
