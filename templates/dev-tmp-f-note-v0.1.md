@@ -1,5 +1,7 @@
 ---
 description: "Default note — base untyped model, differentiated by tags"
+orb:
+  - "@v1/nuucognition/session/17a6a729-0275-4ec6-ae83-70b1340527ff#flint/nuu-orbh"
 ---
 
 # Filename: Mesh/[Note Title].md
@@ -16,7 +18,8 @@ description: "Default note — base untyped model, differentiated by tags"
 id: [generate-uuid]
 tags:
   - "#note"
-[agent]-sessions:
+orb:
+  - "[the output of flint address me]"
 template: "[[dev-tmp-f-note-v0.1]]"
 authors: /* from your Name (flint whoami); omit if no Name is set */
   - "[[@Person Name]]"
