@@ -62,8 +62,8 @@ Use this to bundle source code alongside Mesh artifacts in a single stitched con
    tags:
      - "#note"
      - "#note/stitch"
-   orbh-sessions:
-     - "[[your-session-id]]"
+   orb:
+     - "[the by address of flint address me]"
    authors:
      - "[[@Person Name]]"  /* from the Name of this machine (flint whoami); omit if no Name is set */
    ---

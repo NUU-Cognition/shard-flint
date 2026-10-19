@@ -174,10 +174,11 @@ authors:
 
 ### Session Tracking
 
-When editing files with frontmatter, append your session ID to the `orbh-sessions` field:
-- `orbh-sessions: [your-session-id]`
-- If the field doesn't exist, create it. If it exists, append your ID.
-- All agent types (Claude, Codex, etc.) use the same `orbh-sessions` field — there are no per-runtime session fields.
+When you create or edit a file with frontmatter, stamp your session in the field `orb:`:
+- Run `flint address me`. Append its `by` address to `orb:` as a quoted string: `orb: ["@v1/<org>/session/<uuid>#flint/<slug>"]`.
+- If the field does not exist, create it. If your session is already in `orb:` or in `orbh-sessions` (the same session id), add nothing.
+- Old notes have the field `orbh-sessions` (`"[[<uuid>]]"` items). Never remove it, and add no new item to it.
+- All agent types (Claude, Codex, etc.) use the same `orb:` field — there are no per-runtime session fields. See [[dev-knw-f-artifacts]] § Session Tracking.
 
 ### Modes
 

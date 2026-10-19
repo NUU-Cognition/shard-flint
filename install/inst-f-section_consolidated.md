@@ -4,7 +4,7 @@ tags:
   - "#ie"
   - "#ie/sections/consolidated"
 description: Settled nodes — consolidated into their long-term form
-orbh-sessions:
+orb:
 template: "[[tmp-ie-section-v0.1]]"
 created: {{date}}
 modified: {{date}}

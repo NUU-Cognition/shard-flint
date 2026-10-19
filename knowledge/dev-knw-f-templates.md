@@ -181,19 +181,21 @@ This is the filename stem of the template (without `.md`). It creates a permanen
 
 ### Session Tracking
 
-Templates include `orbh-sessions` as a placeholder:
+Templates include `orb:` as a placeholder:
 
 ```yaml
-orbh-sessions:
-  - "[[agent-session-uuid]]"
+orb:
+  - "[the output of flint address me]"
 ```
 
-Add your session ID when creating or substantively editing an artifact:
+When you create or substantively edit an artifact, append the `by` address of `flint address me` (the v1 address of your session):
 
 ```yaml
-orbh-sessions:
-  - "[[154d8abd-6089-4b1d-9969-6cb51dfe926b]]"
+orb:
+  - "@v1/nuucognition/session/154d8abd-6089-4b1d-9969-6cb51dfe926b#flint/nuu-flint"
 ```
+
+An old template or an old note can have `orbh-sessions` (`"[[<uuid>]]"` items). Never remove it, and add no new item to it. The full rule is in [[dev-knw-f-artifacts]] § Session Tracking.
 
 ### UUID Generation
 

@@ -4,7 +4,7 @@ tags:
   - "#ie"
   - "#ie/sections/new"
 description: The dump section — new nodes captured with no destination land here, safe but homeless
-orbh-sessions:
+orb:
 template: "[[tmp-ie-section-v0.1]]"
 created: {{date}}
 modified: {{date}}

@@ -81,9 +81,9 @@ increment: "[[(Increment) 3.16.0 - Shard Registry]]"
 due: 2026-03-01
 completed:
 priority: high
-orbh-sessions:
-  - "[[154d8abd-6089-4b1d-9969-6cb51dfe926b]]"
-  - "[[60be4985-9cd6-42f1-8245-e56c1ad68324]]"
+orb:
+  - "@v1/nuucognition/session/154d8abd-6089-4b1d-9969-6cb51dfe926b#flint/nuu-flint"
+  - "@v1/nuucognition/session/60be4985-9cd6-42f1-8245-e56c1ad68324#flint/nuu-flint"
 template: "[[tmp-proj-task-v0.1]]"
 authors:
   - "[[@Nathan Luo]]"
@@ -107,7 +107,8 @@ authors:
 | `completed`         | ISO 8601 date       | Completion date                             |
 | `priority`          | `low\|medium\|high` | Priority level                              |
 | `authors`           | string[]            | Person wikilinks from the Name of this machine (`flint whoami`) |
-| `orbh-sessions`     | string[]            | Session IDs of agents that edited this file |
+| `orb`               | string[]            | The v1 addresses of the agent sessions that edited this file (`flint address me`) |
+| `orbh-sessions`     | string[]            | The old session field (`"[[<uuid>]]"` items). Old notes keep it; no new item goes into it |
 
 ## Tags
 
@@ -170,28 +171,46 @@ active → archived
 3. **Skills/workflows handle transitions** — don't change status ad-hoc; use the appropriate skill
 ## Session Tracking
 
-Agents track their involvement by appending session IDs to the `orbh-sessions` frontmatter field. All agent types use a single unified field.
+Agents stamp their sessions in the frontmatter field `orb:`. An item of `orb:` is the v1 address of one session. All agent types use this one field.
 
 ### How It Works
 
-1. When editing a file with frontmatter, check for an `orbh-sessions` field
-2. If it exists, append your session ID to the list
-3. If it doesn't exist, create it with your session ID
+1. Run `flint address me`. Its `by` line is the address of your session (`flint address me --json` gives `{ by, as, org }`).
+2. When the file has no `orb:` field, create it with your address.
+3. When the file has `orb:`, append your address to the list.
+4. When your session is already in `orb:` or in `orbh-sessions` (the same session id), add nothing. Two items are the same session when they have the same session id, also when their org or place is different.
 
 ```yaml
 # Before
-orbh-sessions:
-  - "[[previous-session-id]]"
+orb:
+  - "@v1/nuucognition/session/154d8abd-6089-4b1d-9969-6cb51dfe926b#flint/nuu-flint"
 
 # After
-orbh-sessions:
-  - "[[previous-session-id]]"
-  - "[[your-current-session-id]]"
+orb:
+  - "@v1/nuucognition/session/154d8abd-6089-4b1d-9969-6cb51dfe926b#flint/nuu-flint"
+  - "@v1/nuucognition/session/<your-session-uuid>#flint/nuu-flint"
 ```
 
-### Unified Field
+### The Address
 
-All agent runtimes (Claude Code, Codex, etc.) write to the same `orbh-sessions` field. There are no per-runtime session fields. Orbh sessions map to native runtime sessions via the runs model in the session JSON.
+- The form is `@v1/<org>/session/<uuid>#flint/<slug>`. The place `#flint/<slug>` names the Flint of the session (a Computer Flint has `#flint.computer/<slug>`).
+- The org is the org of the Flint. When the Flint has no org and the person is logged in, it is the org of the person (`flint org set <org>` makes it permanent). Else the org is empty: `@v1//session/<uuid>#flint/<slug>`.
+- Quote each item. YAML does not permit a plain value that starts with `@`.
+- An item is an address, not a wikilink. Obsidian shows no link from the note to the session.
+- Stamp only `by` (the session). Do not stamp `as` (a wisp or an agent): Orbh finds the wisp of a session from the session.
+- With a CLI that has no `flint address me` (a release before the v1 addresses), write the short form with no place: `"@v1/<org>/session/<ORBH_SESSION_ID>"`, with the org of `flint.toml` (`[flint] org`), else the empty org.
+
+### The Old Field: `orbh-sessions`
+
+Notes from before the v1 addresses have the field `orbh-sessions`, with `"[[<uuid>]]"` items (some have bare UUIDs). These notes are not migrated.
+
+- Never remove `orbh-sessions` from a note, and never change its items.
+- Add no new item to `orbh-sessions`. A new stamp goes into `orb:`, also in a note that has `orbh-sessions`.
+- A reader of the sessions of a note reads both fields.
+
+### One Field for All Runtimes
+
+All agent runtimes (Claude Code, Codex, etc.) write to the same `orb:` field. There are no per-runtime session fields. Orbh sessions map to native runtime sessions via the runs model in the session JSON.
 
 ### When to Track
 
@@ -233,7 +252,7 @@ The `@` prefix is the naming convention. These files can be empty — the filena
 - `authors` is always a list (even with one person)
 - The person is the author, not the agent — agents act *on behalf of* the person
 - Do NOT add authors when only reading a file
-- Do NOT confuse authors with `[agent]-sessions` — sessions track agent involvement, authors track human attribution
+- Do NOT confuse authors with `orb:` (or the old `orbh-sessions`) — sessions track agent involvement, authors track human attribution
 
 ## Wikilinks
 
