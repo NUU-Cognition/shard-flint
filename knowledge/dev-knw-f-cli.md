@@ -37,31 +37,45 @@ To make a numbered artifact, use `flint helper artifact create`. It holds a lock
 
 `flint helper type newnumber` is a read. It shows the next number and reserves nothing. Do not write a file with the number that it gives: another agent can take the same number.
 
-## Session Markdown Pins
+## Session Pins
 
-Use pins to show important Markdown files first in the current session's finder. Open the finder with `Ctrl-]` then `o`.
+Use pins to show the important things of the current session first. A pin is a Markdown file or an HTML file in the Flint, an http or https link, or an Ops task. The Orbh menu (`Ctrl-]`) shows the first nine pins: press the digit of a pin to open it. The finder (`Ctrl-]` then `o`) shows all pins above the other files.
 
 ```bash
 flint helper pins set "Mesh/Types/Tasks/(Task) 687 Example.md" "Mesh/Notes/Design.md"
 flint helper pins add "Mesh/Notes/Decision.md"
-flint helper pins remove "Mesh/Notes/Decision.md"
+flint helper pins add "Mesh/Reports/Board.html"
+flint helper pins add "https://ops.nuucognition.com/nuucognition/tasks" --name "Ops tasks"
+flint helper pins add "@v1/nuucognition/task.dev/<id>#ops"
+flint helper pins add "<id>" --type task
+flint helper pins remove "Mesh/Notes/Decision.md" "https://ops.nuucognition.com/nuucognition/tasks"
 flint helper pins list
 flint helper pins clear
 flint helper pins list --session <id> --path /path/to/flint
 ```
 
+| Kind | Target | Opens |
+|---|---|---|
+| `markdown` | A `.md` or `.markdown` file in the Flint | In Obsidian from the menu, in the Markdown viewer from the finder |
+| `html` | A `.html` or `.htm` file in the Flint | With the default app of the system, usually the browser |
+| `link` | An http or https URL | In the browser |
+| `task` | An Ops task or task group | Its Ops page in the browser |
+
 The helper uses `ORBH_SESSION_ID` unless you pass `--session`. Use `--orb-root` or `--at` for an explicit store.
 It follows the current session's workspace after a shell directory change. It rejects a target from another Flint.
 
-`set` replaces the list in argument order. `add` puts the new paths first, in argument order, and removes duplicates: a path that is already pinned moves to the start. So the latest pin is at the top. `remove` accepts missing files.
-`list` prints JSON. `clear` writes an empty list. Quote each filename, including its extension.
+`set` replaces the list in argument order. `add` puts the new pins first, in argument order, and removes duplicates: a pin that is already in the list moves to the start, with the new name. So the latest pin is at the top. `remove` finds a pin by its path, its URL, or its task address, and accepts missing files.
+`list` prints JSON. `clear` writes an empty list. Quote each target.
+
+The extension of a path gives the kind of a file. `--type <kind>` sets the kind (`markdown`, `html`, `link`, or `task`), and it must agree with the target. `--name <name>` sets the name that the menu and the finder show. It takes one target only.
+A task target is read in Ops with `ops` (`NUU_OPS_CLI`), as `flint orbh task pin` does: the pin gets the title, the web link, and the address of the task. When Ops does not resolve it, the add refuses. A task in this list is not the task pin of the session (`flint orbh task pin`).
 
 Paths are relative to the Flint root. Absolute paths within that root also work.
-Additions must be readable `.md` or `.markdown` files of at most 2 MiB.
+Additions must be readable `.md` or `.markdown` files of at most 2 MiB, or regular `.html` or `.htm` files.
 Hidden paths, symbolic links, and dependency or build directories are outside the finder scope.
 The helper checks all additions before it writes. An invalid addition leaves the list unchanged.
 
-The session interface key `flint:markdown-pins` holds a JSON array of path strings. It is separate from `artifacts`.
+The session interface key `flint:markdown-pins` holds a JSON array. A file pin with no name is its path string. Another pin is an object with `type`, an optional `name`, `path` or `url`, and `address` for a task. So a list of only Markdown paths has the same form as before the pin kinds. It is separate from `artifacts`.
 The helper uses the normal session setter, including manager routing and durable events.
 Pins stay with the session across resume and compaction. Child sessions start with their own list.
 
