@@ -75,7 +75,7 @@ Additions must be readable `.md` or `.markdown` files of at most 2 MiB, or regul
 Hidden paths, symbolic links, and dependency or build directories are outside the finder scope.
 The helper checks all additions before it writes. An invalid addition leaves the list unchanged.
 
-The session interface key `flint:markdown-pins` holds a JSON array. A file pin with no name is its path string. Another pin is an object with `type`, an optional `name`, `path` or `url`, and `address` for a task. So a list of only Markdown paths has the same form as before the pin kinds. It is separate from `artifacts`.
+The session interface key `flint:pins` holds a JSON array with one object for each pin: `type`, an optional `name`, `path` (a file) or `url` (a link or a task), and `address` for a task. It is separate from `artifacts`.
 The helper uses the normal session setter, including manager routing and durable events.
 Pins stay with the session across resume and compaction. Child sessions start with their own list.
 
