@@ -1,5 +1,9 @@
 # Flint Releases
 
+## Release 0.5.5
+
+- Session Pins (`knw-f-cli`): a pin is a Markdown file, an HTML file, or a link. An Ops task is not a pin: a session keeps it as an object (`flint orbh objects add <address> --subscribe`). The task pin (`flint orbh task`) is removed (NUU Flint Task 1323). A stored task pin of an earlier build reads as a link.
+
 ## Release 0.5.3
 
 - The stamp rule (`init-f` § Session Tracking, `knw-f-artifacts`, `knw-f-templates`, `sk-f-stitch`, and the install files of the staging sections): an agent stamps a note with the field `orb:` and the v1 address of `flint address me`. Old notes keep `orbh-sessions`. A writer never removes it, and each reader reads both fields (NUU Orbh Mission 027).
