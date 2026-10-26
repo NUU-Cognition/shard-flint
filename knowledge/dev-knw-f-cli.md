@@ -614,6 +614,7 @@ The Obsidian payload is the set of released files that Flint installs into `.obs
 - When the vault is open, `flint sync` does not install. The install waits (a pending install), and the exit code is 0. Close the Flint in Obsidian, then run `flint open "<name>"`: the pending install completes before the launch.
 - `flint obsidian update` moves the pin to the recommended release (or to `--to <release>`) and installs it. It keeps every personal setting.
 - A release file that changed outside Flint blocks the install (exit 2), and no file changes. Preview the fix with `flint obsidian repair --replace --dry-run`. Do not edit the release files in `.obsidian/`.
+- `flint obsidian reset` is the clean slate. It puts every file of `.obsidian/` (the release files, the settings files, other plugins, `workspace.json`) into one backup, removes them, and installs the pinned release fresh with its initial settings. It always asks first: `--yes` skips the question, and `--json` or no terminal refuses with `obsidian_reset_confirm` before any write. On an open vault, it writes and then reloads Obsidian. `flint obsidian backups restore <id>` gives the old files back. Use `repair` to keep the personal settings.
 - An applied setting is a key of `appearance.json` or `app.json` that the NUU Flint plugin applies at each load. To change one, use `flint obsidian applied set <file>.<key> <value>`, not an edit of the settings file.
 - The machine choice turns Obsidian on or off on this machine: `flint config set obsidian off` (or `on`). When it is `off`, Flint does not install the payload and does not open Obsidian.
 - With `NUU_HOME` set (isolation), `flint sync` still installs the payload, and Flint does not contact a live Obsidian.
@@ -625,6 +626,7 @@ The Obsidian payload is the set of released files that Flint installs into `.obs
 flint obsidian status                 # The payload (pinned, installed, available, pending), the vault, the plugin, and the next command [--check --tinderbox --json]
 flint obsidian update                 # Pin the recommended release and install it; keep every personal setting [--to <release> --allow-downgrade --replace --tinderbox --only <names...> --dry-run --json]
 flint obsidian repair                 # Restore the release files of the pinned release [--replace --reset-settings --file <path> --dry-run --json]
+flint obsidian reset                  # Replace .obsidian with a fresh install of the pin; every file goes to a backup first [--yes --dry-run --json]
 flint obsidian reload                 # Reload Obsidian for this Flint; list the terminal tabs that stop [--yes --json]
 flint obsidian backups list|show|restore|prune           # The backup store of the Obsidian payload
 flint obsidian profiles list|activate <id>|deactivate    # The appearance profiles of the installed release
@@ -636,7 +638,7 @@ flint config set obsidian on|off      # The machine choice: Obsidian on or off o
 flint config set obsidian-trust auto|ask   # The trust setting: flint open trusts a checked Flint (auto), or Obsidian asks (ask)
 ```
 
-Each `flint obsidian` command takes `-p <dir>` for another Flint. The commands `flint obsidian push`, `reset`, and `patches` are removed: each prints the new command. `profiles apply` is now `profiles activate <id>`.
+Each `flint obsidian` command takes `-p <dir>` for another Flint. The commands `flint obsidian push` and `patches` are removed: each prints the new command. `profiles apply` is now `profiles activate <id>`.
 
 ## Send / Inbox
 
