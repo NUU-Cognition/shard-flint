@@ -18,6 +18,8 @@ orbh-sessions:
   - "[[5e7386c8-d7ac-4fbb-886d-6f9e5a41023b]]"
   - "[[d0c32612-4481-4a28-b4d5-75859b6e590e]]"
   - "[[ec13c5bf-9eab-4982-b35a-cffc13d48950]]"
+orb:
+  - "@v1/nuucognition/session/342542ae-e47b-4383-9837-13aaabc74c64#flint/nuu-orbh"
 ---
 
 # Knowledge: CLI Reference
@@ -54,7 +56,7 @@ flint helper pins list --session <id> --path /path/to/flint
 
 | Kind | Target | Opens |
 |---|---|---|
-| `markdown` | A `.md` or `.markdown` file in the Flint | In Obsidian from the menu, in the Markdown viewer from the finder |
+| `markdown` | A `.md` or `.markdown` file in the Flint | From the menu: in Obsidian when the pane runs in Obsidian, else in the Markdown viewer. From the finder: in the Markdown viewer |
 | `html` | A `.html` or `.htm` file in the Flint | With the default app of the system, usually the browser |
 | `link` | An http or https URL | In the browser |
 
