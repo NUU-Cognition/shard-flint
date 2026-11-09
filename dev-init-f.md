@@ -23,6 +23,8 @@ The Mesh is a data structure which is a list of markdown files that reference ea
 
 The Mesh is **flat except for section folders**: a document is in zero or one section, and the folder of a sectioned document has meaning — it lives in the folder `(Section) <Name>/` of its section; every other folder is display only. Structure lives in frontmatter tags. The structure layer comes from the **Invironments shard** (`ie`), a dependency of Flint: `#ie/sections/<key>` says which section a node is in (zero or one), `#ie/groups/<key>` says what collections it's part of, and a bare `#ie` marks a `(Section)` header. The Flint shard owns the conventions built on it: `Mesh/Main/` holds the staging sections (**New → Working → Consolidated**; dumped notes land in New), `Mesh/Sections/` holds other section folders at any depth (a section folder is never inside another one), `Mesh/Groups/` holds group definitions. Load the `ie` shard for the full grammar and tooling.
 
+The Flint CLI installs the `mesh` command, which reads and writes the documents of a mesh. `flint create` makes each new Flint a mesh root (`mesh.json` and `mesh.toml`). The **Mesh shard** (`mesh`), a core shard, tells an agent which `mesh` command to use for each job and how to use it safely. Run `flint shard start mesh` before you use the `mesh` command.
+
 # Shards
 
 Shards are cognitive programs — self-contained packages that extend what an agent can do inside a Flint. A shard has a **source** (the files a person edits) and a **shard** (the built package that agents load). Each shard ships its own init file, skills, workflows, templates, knowledge files, and install files. Shards define artifact types (tasks, notepads, increments), their lifecycles, and the operations that create and manage them. Without shards, a Flint is just an empty folder. With shards, it becomes a structured environment for planning, building, and tracking work.
@@ -97,12 +99,12 @@ Source files add a `dev-` prefix (e.g. `dev-sk-<sh>-<name>.md`). Everything unde
 
 ### Choosing Shards
 
-The **core shards** are Flint (`@nuucognition/shard/flint`) and Orbh (`@nuucognition/shard/orbh`). Everything else is chosen for what the Flint is for. `flint create` gives every new Flint the core shards, whatever its preset declares, and Invironments (Flint needs it). Then it installs the shards of the preset. The preset `blank` (the default of `flint create`) adds no shards. The preset `default` adds Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code. `flint create --help` lists the other presets. A clone (`flint create --from <url>`) keeps the shard list of its files. An install from a path or a Git location needs no NUU account and no org. Only a publish to the shard registry (`flint shard release`) needs an org. The rules:
+The **core shards** are Flint (`@nuucognition/shard/flint`), Orbh (`@nuucognition/shard/orbh`), and Mesh (`@nuucognition/shard/mesh`). Everything else is chosen for what the Flint is for. `flint create` gives every new Flint the core shards, whatever its preset declares, and Invironments (Flint needs it). Then it installs the shards of the preset. The preset `blank` (the default of `flint create`) adds no shards. The preset `default` adds Projects, Notepad, Plan, Increments, Reports, Agents, and Claude Code. `flint create --help` lists the other presets. A clone (`flint create --from <url>`) keeps the shard list of its files. An install from a path or a Git location needs no NUU account and no org. Only a publish to the shard registry (`flint shard release`) needs an org. The rules:
 
 1. **Look before you build.** Before you install a shard and before you create one, run `flint shard browse <word>` (what exists: the shard registry and the shard sources of this machine) and `flint shard list` (what this Flint has). If a shard already provides the capability, install it with the spec in its row. Do not create a duplicate shard. When the shard registry does not answer, `browse` lists only the shard sources of this machine and prints one warning; then also search the site of the shard registry, `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the shard registry.
 2. **New Flint: ask, then suggest.** In the first session of a new Flint, ask the operator what the Flint is for. Then use [[dev-sk-f-shard_browse]] to suggest shards and install the operator's picks with `flint shard install <spec>` (the missing dependencies come too).
 3. **On demand later.** When the operator asks for a capability, look first and install the matching shard. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine (install it as `@org/<slug>#<flint>`).
-4. **Core missing?** When `flint shard list` has no row for `flint` or `orbh`, run `flint shard install --core`. It installs each core shard that this Flint does not have and leaves the present ones alone.
+4. **Core missing?** When `flint shard list` has no row for `flint`, `orbh`, or `mesh`, run `flint shard install --core`. It installs each core shard that this Flint does not have and leaves the present ones alone.
 5. **Load after install.** Run `flint shard start <alias>` and read the init file before you use a new shard.
 
 ### Shard Manifest
@@ -259,7 +261,7 @@ flint shard install                   # Make the lock match the specs of flint.t
 flint shard install @org/name[@range][#place]   # Install a package (the shard registry, or a place)
 flint shard install --from-git <owner/repo[#ref]>   # Install from a Git location
 flint shard install --from-path <dir>           # Install from a folder on this machine
-flint shard install --core            # Install each missing core shard (Flint, Orbh)
+flint shard install --core            # Install each missing core shard (Flint, Orbh, Mesh)
 flint shard build <ref>               # Build the shard from its source in this Flint
 flint shard install --all-dev         # Build the shard of every source
 flint shard update [<ref>]            # Move the lock of each shard to the highest version inside its range (pnpm update)

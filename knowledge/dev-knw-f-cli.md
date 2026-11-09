@@ -202,7 +202,7 @@ flint feedback --bug "<text>" --json     # Build a feedback report and its link;
 
 ## Updates and the Release Check
 
-`flint update` installs the newest release of the npm dist-tag `latest` of `@nuucognition/flint-cli` (an exact version, with `npm install -g`). It compares the versions by semver, so it never offers an older version. A flint that is a build of a checkout (ndv, a dev build) installs nothing: update the checkout, then build it. `--check` installs nothing; `--json` prints one value with `current`, `latest`, `state` (`newer`, `current`, `ahead`, `unknown`), `available`, and `install` (the channel of `flint where`). The registry is `npm_config_registry` when set.
+`flint update` installs the newest release of the npm dist-tag `latest` of `@nuucognition/flint-cli` (an exact version, with `npm install -g`). The package also installs the `mesh` command, at the version of `@nuucognition/mesh-cli` that this release of the package names. It compares the versions by semver, so it never offers an older version. A flint that is a build of a checkout (ndv, a dev build) installs nothing: update the checkout, then build it. `--check` installs nothing; `--json` prints one value with `current`, `latest`, `state` (`newer`, `current`, `ahead`, `unknown`), `available`, and `install` (the channel of `flint where`). The registry is `npm_config_registry` when set.
 
 **The release check.** Once a day, a command in a terminal starts one background process (`flint update --check --background`). It asks the registry for the newest Flint and compares the `default.json` of the Orbh profiles repository with the local file. It writes a state file in the cache folder of the system (`~/Library/Caches/nuucognition/flint/` on macOS, `$XDG_CACHE_HOME` or `~/.cache` on Linux), never in the NUU home. A later command in a terminal prints one line for each newer item, at most once a day: `Flint <version> is available (this machine has <version>). Next: flint update`, and `Newer Orbh profiles are available. Next: flint orbh profiles update`. The command never waits for the network. Nothing installs by itself.
 
@@ -261,13 +261,13 @@ The catalog has two kinds of entries. A **public** entry comes from the shard re
 
 When the shard registry does not answer, `browse` lists the shard sources of this machine and prints one warning with the reason. Then also search the site of the shard registry, `https://shards.nuucognition.com/registry`. `flint resolve @org/shard/<slug>` says whether one package is in this Flint, on this machine, or in the shard registry. If a shard already provides the capability, install it instead of writing a duplicate. Prefer a public shard over a local source; a local source is a working version in another Flint of this machine.
 
-**Core shards** are Flint (`@nuucognition/shard/flint`) and Orbh (`@nuucognition/shard/orbh`). Every new Flint gets them, whatever its preset declares; a clone keeps the shard list of its files. When `flint shard list` has no row for one of them, install it:
+**Core shards** are Flint (`@nuucognition/shard/flint`), Orbh (`@nuucognition/shard/orbh`), and Mesh (`@nuucognition/shard/mesh`). Every new Flint gets them, whatever its preset declares; a clone keeps the shard list of its files. `flint setup` also installs a core shard that an existing Computer Flint has no record of. When `flint shard list` has no row for one of them, install it:
 
 ```bash
 flint shard install --core            # Install each missing core shard; leave the present ones alone
 ```
 
-`--core` installs a missing core shard through the normal install path (its dependencies first, then the lock). It reads the lock by shard id, address, or Git location, never by folder. It takes no other source: with a spec, `--from-git`, `--from-path`, or `--all-dev` it refuses and names the two commands to run. `--json` gives `{ ok, shards, present }`. The core shards install from their Git locations (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`), because the shard registry does not serve them as `@nuucognition/<slug>` yet.
+`--core` installs a missing core shard through the normal install path (its dependencies first, then the lock). It reads the lock by shard id, address, or Git location, never by folder. It takes no other source: with a spec, `--from-git`, `--from-path`, or `--all-dev` it refuses and names the two commands to run. `--json` gives `{ ok, shards, present }`. The core shards install from their Git locations (`NUU-Cognition/shard-flint`, `NUU-Cognition/shard-orbh`, `NUU-Cognition/shard-mesh`), because the shard registry does not serve them as `@nuucognition/<slug>` yet.
 
 ## Shard Manifests (loading shards)
 
@@ -313,7 +313,7 @@ flint shard install                              # No argument: make the lock ma
 flint shard install @org/name[@range][#place]    # From the shard registry (published), or from a place
 flint shard install --from-git <owner/repo[#ref]>  # From a Git location; the shard registry names the state
 flint shard install --from-path <dir>            # From a folder on this machine
-flint shard install --core                       # Each missing core shard (Flint, Orbh)
+flint shard install --core                       # Each missing core shard (Flint, Orbh, Mesh)
 flint shard install <input> --alias <alias>      # Install under another key (a second shard with the same slug)
 flint shard install <input> --reference          # No build under Shards/; the loader reads the folder in its place
 flint shard install <input> --no-deps            # Do not install the missing dependencies first

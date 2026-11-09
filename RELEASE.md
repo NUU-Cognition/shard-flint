@@ -3,6 +3,7 @@
 ## Release 0.5.5
 
 - Session Pins (`knw-f-cli`): a pin is a Markdown file, an HTML file, or a link. An Ops task is not a pin: a session keeps it as an object (`flint orbh objects add <address> --subscribe`). The task pin (`flint orbh task`) is removed (NUU Flint Task 1323). A stored task pin of an earlier build reads as a link.
+- The Mesh shard is a core shard, the Flint CLI installs the `mesh` command, and `flint create` makes each new Flint a mesh root (`init-f`, `knw-f-cli`). An agent runs `flint shard start mesh` before it uses the `mesh` command.
 
 ## Release 0.5.3
 
