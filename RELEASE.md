@@ -2,6 +2,8 @@
 
 ## Release 0.5.5
 
+- The shard index (`init-f` § Shard Rules, § First Action, § Shard Manifest; `knw-f-cli` § Shard Discovery): the Flint CLI writes `.flint/shard-index.md` with one line for each installed shard, and the launch prompt attaches it. Before a task, an agent reads the index and loads each shard whose line matches. The `description` of `shard.yaml` says when to use the shard (about 20 words, a recommendation). NUU Flint Task 1338. Requires a Flint CLI with Task 1338.
+- The description of the Flint shard says when to use it.
 - Session Pins (`knw-f-cli`): a pin is a Markdown file, an HTML file, or a link. An Ops task is not a pin: a session keeps it as an object (`flint orbh objects add <address> --subscribe`). The task pin (`flint orbh task`) is removed (NUU Flint Task 1323). A stored task pin of an earlier build reads as a link.
 - The Mesh shard is a core shard, the Flint CLI installs the `mesh` command, and `flint create` makes each new Flint a mesh root (`init-f`, `knw-f-cli`). An agent runs `flint shard start mesh` before it uses the `mesh` command.
 

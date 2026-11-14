@@ -38,7 +38,7 @@ Shards are cognitive programs — self-contained packages that extend what an ag
 Shards extend your capabilities. Each shard is a self-contained unit with its own context, skills, templates, workflows, and knowledge. **You must follow these rules strictly.**
 
 1. **Load before use.** Always read a shard's init file before using any of its skills, workflows, or templates. No exceptions.
-2. **On-demand only.** Never load all shards. Only init shards relevant to the current task.
+2. **On-demand only.** Never load all shards. Before a task, read the shard index (`.flint/shard-index.md`). Load each shard whose line matches the task, and no other.
 3. **Init gives you the rules.** A shard's init file defines what the shard does, its lifecycle, its file types, and how to use them. Read it fully.
 4. **Skills are atomic.** Skills are single-purpose tasks with no human checkpoints. Follow the skill's actions exactly.
 5. **Workflows have stages.** Workflows are multi-step tasks with human review points between stages. Do not skip stages.
@@ -59,6 +59,8 @@ Run `flint shard start <ref>` (the alias or the shorthand) to get the shard's ma
 **Sources** live at `Shards/(Source Remote) <Name>/` or `Shards/(Source Local) <Name>/` and prefix every source file with `dev-` (e.g. `dev-init-<sh>.md`, `dev-sk-<sh>-<name>.md`). Load a source with `flint shard start-dev <ref>` only when you edit it. See Source and Shard below.
 
 **Invocations**: a workflow with an invocation file runs as a durable record: `flint shard invoke <ref> <workflow>` opens it, `flint shard step done|skip <step>` settles its steps in order, and each write ends with `next:` (do the first line first). When `invoke` refuses because an artifact is not ready (`input-not-ready`), do not edit the artifact to pass the check: in an interactive session, tell the person the state now, the state that the workflow needs, and each way, and run the way that the person picks; in a headless session, return the refusal as the blocker. `flint shard ready '<artifact>'` lists the workflows that can take an artifact next. Read [[dev-knw-f-invocations]] before you run one.
+
+**The shard index**: `.flint/shard-index.md` lists the shards of this Flint, one for each line: the shorthand, the name, and the description (when to use the shard). The Flint CLI writes it at each launch and after each shard write, and the launch prompt attaches it. Do not edit it.
 
 **Discovering shards**: `flint shard list` shows what this Flint has. `flint shard browse [query]` shows what this Flint can install: the shards of the shard registry and the shard sources of the Flints of this machine, each with its state here and the spec that installs it. `flint resolve <spec>` says where one package is. See Choosing Shards below.
 
@@ -111,7 +113,7 @@ The **core shards** are Flint (`@nuucognition/shard/flint`), Orbh (`@nuucognitio
 
 Each shard has a `shard.yaml` at its root declaring identity, dependencies, and installation behavior:
 
-- `shard-spec`, `shard` (the package name, quoted: `shard: "@nuucognition/flint"`; its slug is the slug of `name`), `id` (the shard id), `source: { id, of? }` (the source id), `version`, `name`, `shorthand`, `description`. A manifest at `shard-spec: "0.3.0"` has `org` (the org slug) in place of `shard`
+- `shard-spec`, `shard` (the package name, quoted: `shard: "@nuucognition/flint"`; its slug is the slug of `name`), `id` (the shard id), `source: { id, of? }` (the source id), `version`, `name`, `shorthand`, `description` (one sentence that says when to use the shard; about 20 words is the recommendation, and no command checks it; the shard index shows it). A manifest at `shard-spec: "0.3.0"` has `org` (the org slug) in place of `shard`
 - `formerNames`, `formerShorthands`, `of` — the rename history and the fork origin, written by the CLI
 - `dependencies:` — a map from package name to range (e.g. `"@nuucognition/flint": "^0.2"`)
 - `setup:` — `full | flint | local` when the shard needs one-time setup
@@ -142,7 +144,7 @@ Templates define how to create artifacts. When you encounter an artifact with a 
 
 ### First Action
 
-Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is about, how to navigate it, what shards are installed, and the instructions of this Flint.
+Always read `Mesh/(System) Flint Init.md` first. It contains what this Flint is about, how to navigate it, and the instructions of this Flint. Then read the shard index (`.flint/shard-index.md`): it lists the shards that are installed and when to use each one.
 
 ### Identity
 
